@@ -46,8 +46,8 @@
 <body>
 
     <div id="mainMenu">
-        <h1 style="font-size: 40px; margin-bottom: 0;">Cheetah Engine 🐾</h1>
-<p style="font-size: 20px; <p style=<p style="font-size: 20px; color: #aaa; margin-top: 5px; margin-bottom: 6px;">ادخل لتحميل صور  الساحة وابدء اللعب! <p id="killCountDisplay"></p>
+        <h1 style="font-size: 40px; margin-bottom: 0;">Cheetah Engine</h1>
+        <p style="font-size: 20px; color: #aaa; margin-top: 5px; margin-bottom: 6px;">ادخل لتحميل صور الساحة وابدء اللعب! <p id="killCountDisplay"></p>
         <button class="menu-btn" style="background:var(--danger)" id="survivalBtn">وضع البقاء (Survival)</button>
         <button class="menu-btn" style="background:var(--success)" id="creativeBtn">وضع البناء (Creative)</button>
         <button class="menu-btn" style="background:var(--primary)" id="openCustomizer">تغيير صور الساحة</button>
@@ -55,13 +55,13 @@
 
     <div id="customizerOverlay">
         <div class="config-card">
-            <h2 style="margin-top:0;">🐾 studeo cheetah 🐾 </h2>
+            <h2 style="margin-top:0;">studeo cheetah</h2>
             
-            <a href="https://www.mediafire.com/folder/b13hcdpufhlc6/assets+power" target="_blank" class="repo-btn"><span>📂</span> تحميل الملحقات</a>
+            <a href="https://www.mediafire.com/folder/b13hcdpufhlc6/assets+power" target="_blank" class="repo-btn">تحميل الملحقات</a>
             <div class="preview-container">
                 <div class="preview-wrapper">
                     <label for="playerLoader"><div class="preview-box"><img id="playerPreview" src=""></div></label>
-                    <span class="preview-label"> اللاعب</span>
+                    <span class="preview-label">اللاعب</span>
                 </div>
                 <div class="preview-wrapper">
                     <label for="enemyLoader"><div class="preview-box"><img id="enemyPreview" src=""></div></label>
@@ -74,7 +74,7 @@
             </div>
             
             <div class="slider-container">
-                <span class="slider-label">حجم أزرار التحكم. انتضر لتحميل الصور! : <span id="sizeVal">75</span>px</span>
+                <span class="slider-label">حجم أزرار التحكم: <span id="sizeVal">75</span>px</span>
                 <input type="range" id="btnSizeSlider" min="50" max="200" value="75">
             </div>
 
@@ -93,7 +93,10 @@
         <button id="exitBtn">خروج</button>
         <button id="clearBtn">مسح</button>
         <div class="controls">
-            <div style="display: flex; gap: 10px;"><button class="control-btn" id="rightBtn"></button><button class="control-btn" id="leftBtn"></button></div>
+            <div style="display: flex; gap: 10px;">
+                <button class="control-btn" id="rightBtn"></button>
+                <button class="control-btn" id="leftBtn"></button>
+            </div>
             <div style="display: flex; gap: 10px;">
                 <button class="control-btn" id="attackBtn" style="background:rgba(231,76,60,0.4)"></button>
                 <button class="control-btn" id="dashBtn" style="background:rgba(243,156,18,0.4)"></button>
@@ -102,6 +105,304 @@
         </div>
     </div>
     <div class="info-badge">🎬 8-Frame Animation System</div>
+
+    <canvas id="gameCanvas"></canvas>
+
+<script>
+    const playerImgObj = new Image(); 
+    const bgImgObj = new Image(); 
+    const enemyImgObj = new Image(); 
+
+    async function loadImageAsDataURL(path) {
+        try {
+            const response = await fetch(path);
+            if (!response.ok) return null;
+            const blob = await response.blob();
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.readAsDataURL(blob);
+            });
+        } catch(e) { return null; }
+    }
+
+    (async function initStorage() {
+        const pData = await loadImageAsDataURL('player.png');
+        const bData = await loadImageAsDataURL('screen.png');
+        const eData = await loadImageAsDataURL('enemy.png');
+        
+        if (pData) localStorage.setItem('playerImage', pData);
+        if (bData) localStorage.setItem('bgImage', bData);
+        if (eData) localStorage.setItem('enemyImage', eData);
+        
+        if (!localStorage.getItem('playerImage')) {
+            const canvas = document.createElement('canvas'); canvas.width = 800; canvas.height = 100;
+            const ctx = canvas.getContext('2d'); ctx.fillStyle = '#f39c12'; ctx.fillRect(0, 0, 800, 100);
+            localStorage.setItem('playerImage', canvas.toDataURL());
+        }
+        if (!localStorage.getItem('bgImage')) {
+            const canvas = document.createElement('canvas'); canvas.width = 1920; canvas.height = 1080;
+            const ctx = canvas.getContext('2d'); ctx.fillStyle = '#1a472a'; ctx.fillRect(0, 0, 1920, 1080);
+            localStorage.setItem('bgImage', canvas.toDataURL());
+        }
+        if (!localStorage.getItem('enemyImage')) {
+            const canvas = document.createElement('canvas'); canvas.width = 100; canvas.height = 100;
+            const ctx = canvas.getContext('2d'); ctx.fillStyle = '#e74c3c'; ctx.beginPath(); ctx.arc(50, 50, 40, 0, Math.PI*2); ctx.fill();
+            localStorage.setItem('enemyImage', canvas.toDataURL());
+        }
+        
+        const finalP = localStorage.getItem('playerImage');
+        const finalB = localStorage.getItem('bgImage');
+        const finalE = localStorage.getItem('enemyImage');
+
+        if(finalP) { playerImgObj.src = finalP; document.getElementById('playerPreview').src = finalP; storage.player = finalP; }
+        if(finalB) { bgImgObj.src = finalB; document.getElementById('bgPreview').src = finalB; storage.bg = finalB; }
+        if(finalE) { enemyImgObj.src = finalE; document.getElementById('enemyPreview').src = finalE; storage.enemy = finalE; }
+    })();
+
+    const storage = {
+        player: localStorage.getItem('playerImage'), 
+        bg: localStorage.getItem('bgImage'),
+        enemy: localStorage.getItem('enemyImage'),
+        platforms: JSON.parse(localStorage.getItem('gamePlatforms') || "[]"),
+        lastX: parseFloat(localStorage.getItem('playerLastX')) || 400,
+        lastY: parseFloat(localStorage.getItem('playerLastY')) || 1400,
+        kills: parseInt(localStorage.getItem('totalKills')) || 0,
+        btnSize: localStorage.getItem('controlsSize') || 75
+    };
+
+    function updateMenuDisplay() {
+        document.getElementById('killCountDisplay').innerHTML = storage.kills > 0 ? "آخر نتيجة قتال: " + storage.kills : "اضغط الشاشة تبني اضغط المربع تهدم. ";
+    }
+    updateMenuDisplay();
+
+    function applyBtnSize(size) {
+        document.querySelectorAll('.control-btn').forEach(btn => {
+            btn.style.width = size + 'px'; btn.style.height = size + 'px';
+        });
+    }
+    applyBtnSize(storage.btnSize);
+
+    const slider = document.getElementById('btnSizeSlider');
+    const sizeVal = document.getElementById('sizeVal');
+    slider.value = storage.btnSize; sizeVal.innerText = storage.btnSize;
+    slider.oninput = function() {
+        sizeVal.innerText = this.value; applyBtnSize(this.value);
+        localStorage.setItem('controlsSize', this.value);
+    }
+
+    class GameCore {
+        constructor(mode) {
+            this.mode = mode;
+            this.canvas = document.getElementById('gameCanvas');
+            this.ctx = this.canvas.getContext('2d');
+            this.LOGIC_WIDTH = 1280; this.LOGIC_HEIGHT = 720;
+            this.x = storage.lastX; this.y = storage.lastY;
+            this.playerHealth = 100; this.maxHealth = 100;
+            this.enemies = []; this.enemySpawnTimer = 0;
+            this.speed = 450; this.gravity = 1340; this.jumpForce = -650;
+            this.velocityY = 0; this.moveDir = 0; this.facingRight = true;
+            this.groundY = 1200; this.radius = 60; this.jumpCount = 0;
+            this.zoom = 1.5; this.camX = this.x; this.camY = this.y;
+            this.isDashing = false; this.canDash = true;
+            this.isAttacking = false; this.attackTime = 0;
+            this.canAttack = true; 
+            this.platforms = storage.platforms;
+            this.isDead = false; this.lastTimestamp = 0;
+            this.currentFrame = 0; this.animTimer = 0; this.animSpeed = 0.12; this.walkFrame = 1;
+            this.init();
+        }
+
+        init() {
+            document.getElementById('mainMenu').style.display = 'none';
+            document.getElementById('gameCanvas').style.display = 'block';
+            document.getElementById('uiLayer').style.display = 'block';
+            if(this.mode === 'survival') document.getElementById('healthBarContainer').style.display = 'block';
+            window.addEventListener('resize', () => this.resize());
+            this.resize(); this.bindControls();
+            requestAnimationFrame((t) => this.loop(t));
+        }
+
+        resize() {
+            this.scale = Math.min(window.innerWidth / this.LOGIC_WIDTH, window.innerHeight / this.LOGIC_HEIGHT);
+            this.canvas.width = this.LOGIC_WIDTH * this.scale;
+            this.canvas.height = this.LOGIC_HEIGHT * this.scale;
+        }
+
+        spawnEnemy() {
+            if (this.mode !== 'survival' || this.isDead) return;
+            const side = Math.random() > 0.5 ? 1 : -1;
+            this.enemies.push({ x: this.x + (side * 500), y: this.y - 100, health: 50, maxHealth: 50, radius: 45, speed: 200 });
+        }
+
+        updateAnimation(dt, isMoving) {
+            if (this.isAttacking) { this.currentFrame = 7; return; }
+            if (this.isDashing) { this.currentFrame = 6; return; }
+            if (Math.abs(this.velocityY) > 50 || this.jumpCount > 0) { this.currentFrame = 5; return; }
+            if (isMoving && this.moveDir !== 0) {
+                this.animTimer += dt;
+                if (this.animTimer >= this.animSpeed) { this.animTimer = 0; this.walkFrame = (this.walkFrame % 4) + 1; }
+                this.currentFrame = this.walkFrame; return;
+            }
+            this.currentFrame = 0; this.walkFrame = 1; this.animTimer = 0;
+        }
+
+        bindControls() {
+            const btn = (id, down, up) => {
+                const el = document.getElementById(id);
+                if(el) {
+                    el.onpointerdown = (e) => { e.preventDefault(); if(!this.isDead) down(); };
+                    if(up) el.onpointerup = (e) => { e.preventDefault(); up(); };
+                }
+            };
+            btn('leftBtn', () => { this.moveDir = -1; this.facingRight = false; }, () => this.moveDir = 0);
+            btn('rightBtn', () => { this.moveDir = 1; this.facingRight = true; }, () => this.moveDir = 0);
+            btn('jumpBtn', () => { if(this.jumpCount < 2 && !this.isDead) { this.velocityY = this.jumpForce; this.jumpCount++; } });
+            btn('dashBtn', () => { if (this.canDash && !this.isDead) { this.isDashing = true; this.canDash = false; setTimeout(() => this.isDashing = false, 200); setTimeout(() => this.canDash = true, 760); } });
+            btn('attackBtn', () => { if (this.canAttack && !this.isDead) { this.isAttacking = true; this.attackTime = 0.3; this.canAttack = false; document.getElementById('attackBtn').style.opacity = "0.3"; setTimeout(() => { this.canAttack = true; document.getElementById('attackBtn').style.opacity = "1"; }, 600); } });
+
+            this.canvas.onpointerdown = (e) => {
+                if(this.isDead) return;
+                const rect = this.canvas.getBoundingClientRect();
+                const mx = (e.clientX - rect.left) / (this.scale * this.zoom) + this.camX - (this.LOGIC_WIDTH / (2 * this.zoom));
+                const my = (e.clientY - rect.top) / (this.scale * this.zoom) + this.camY - (this.LOGIC_HEIGHT / (2 * this.zoom));
+                const gx = Math.floor(mx/60)*60, gy = Math.floor(my/60)*60;
+                const idx = this.platforms.findIndex(p => p.x === gx && p.y === gy);
+                if (idx !== -1) this.platforms.splice(idx, 1);
+                else this.platforms.push({x: gx, y: gy});
+            };
+
+            document.getElementById('exitBtn').onclick = () => { localStorage.setItem('playerLastX', this.x); localStorage.setItem('playerLastY', this.y); localStorage.setItem('gamePlatforms', JSON.stringify(this.platforms)); location.reload(); };
+            document.getElementById('clearBtn').onclick = () => { localStorage.removeItem('gamePlatforms'); location.reload(); };
+        }
+
+        update(dt) {
+            if (dt > 0.1) dt = 0.1; if (this.isDead) return;
+            let moveSpeed = this.isDashing ? 1200 : this.speed;
+            let effectiveDir = this.isDashing ? (this.facingRight ? 1 : -1) : this.moveDir;
+            let nx = this.x + (effectiveDir * moveSpeed) * dt;
+            let ny = this.y + this.velocityY * dt;
+            if (this.isDashing) this.velocityY = 0; else this.velocityY += this.gravity * dt;
+
+            this.platforms.forEach(p => {
+                const pL = p.x, pR = p.x + 60, pT = p.y, pB = p.y + 60;
+                if (nx + 45 > pL && nx - 45 < pR && ny + 45 > pT && ny - 45 < pB) {
+                    const oL = (nx + 45) - pL, oR = pR - (nx - 45), oT = (ny + 45) - pT, oB = pB - (ny - 45);
+                    const min = Math.min(oL, oR, oT, oB);
+                    if (min === oT && this.velocityY > 0) { ny = pT - 45; this.velocityY = 0; this.jumpCount = 0; }
+                    else if (min === oB && this.velocityY < 0) { ny = pB + 45; this.velocityY = 0; }
+                    else if (min === oL) nx = pL - 45; else if (min === oR) nx = pR + 45;
+                }
+            });
+
+            this.x = nx; this.y = ny;
+            if (this.x < -1550) this.x = -1550; if (this.x > 5500) this.x = 5500;
+            if (this.y >= this.groundY) { this.y = this.groundY; this.velocityY = 0; this.jumpCount = 0; }
+
+            const isMoving = this.moveDir !== 0 && !this.isDashing && !this.isAttacking;
+            this.updateAnimation(dt, isMoving);
+            if (this.isAttacking) { this.attackTime -= dt; if (this.attackTime <= 0) this.isAttacking = false; }
+
+            if (this.mode === 'survival') {
+                this.enemySpawnTimer += dt;
+                if (this.enemySpawnTimer > 4) { this.spawnEnemy(); this.enemySpawnTimer = 0; }
+                this.enemies.forEach((en, idx) => {
+                    const dx = this.x - en.x, dy = this.y - en.y, dist = Math.sqrt(dx*dx + dy*dy);
+                    en.x += (dx/dist) * en.speed * dt; en.y += (dy/dist) * en.speed * dt;
+                    if (dist < this.radius + en.radius) {
+                        this.playerHealth -= 20 * dt; document.getElementById('healthBar').style.width = (this.playerHealth/this.maxHealth)*100 + "%";
+                        if(this.playerHealth <= 0) { this.isDead = true; setTimeout(() => location.reload(), 1000); }
+                    }
+                    if (this.isAttacking && dist < 170) { en.health -= 100 * dt; if(en.health <= 0) { this.enemies.splice(idx, 1); storage.kills++; localStorage.setItem('totalKills', storage.kills); } }
+                });
+            }
+            this.camX += (this.x - this.camX) * 0.1; this.camY += (this.y - this.camY) * 0.1;
+        }
+
+        drawPlayer() {
+            if (this.isDead) return;
+            this.ctx.save(); this.ctx.translate(this.x, this.y);
+            if(!this.facingRight) this.ctx.scale(-1, 1);
+            if(playerImgObj.complete && playerImgObj.naturalWidth > 0) {
+                const frameW = playerImgObj.naturalWidth / 8;
+                this.ctx.drawImage(playerImgObj, this.currentFrame * frameW, 0, frameW, playerImgObj.naturalHeight, -75, -75, 150, 150);
+            } else {
+                this.ctx.fillStyle = "#f39c12"; this.ctx.beginPath(); this.ctx.arc(0, 0, 45, 0, Math.PI * 2); this.ctx.fill();
+            }
+            this.ctx.restore();
+        }
+
+        draw() {
+            const s = this.scale * this.zoom;
+            this.ctx.setTransform(s, 0, 0, s, 0, 0);
+            this.ctx.clearRect(0, 0, this.LOGIC_WIDTH, this.LOGIC_HEIGHT);
+            this.ctx.save();
+            this.ctx.translate(-this.camX + (this.LOGIC_WIDTH / (2 * this.zoom)), -this.camY + (this.LOGIC_HEIGHT / (2 * this.zoom)));
+
+            if(bgImgObj.complete && bgImgObj.naturalWidth > 0) { 
+                const drawW = 850, drawH = 1133;
+                let startX = this.camX - (this.LOGIC_WIDTH / (2 * this.zoom));
+                let startY = this.camY - (this.LOGIC_HEIGHT / (2 * this.zoom));
+                for(let i = 0; i < 3; i++) this.ctx.drawImage(bgImgObj, 0, 0, bgImgObj.width, bgImgObj.height / 2, startX + (i * drawW) - drawW, startY + 0, drawW, drawH / 2);
+                const drawW2 = 3240, drawH2 = 4320;
+                for(let i=-2000; i<6000; i+=(drawW2 - 1) ) this.ctx.drawImage(bgImgObj, 0, bgImgObj.height / 2, bgImgObj.width, bgImgObj.height / 2, i, -2600 + (drawH2 / 2), drawW2, drawH2 / 2);
+            }
+
+            this.ctx.fillStyle = "rgba(52, 152, 219, 0.6)";
+            this.platforms.forEach(p => this.ctx.fillRect(p.x, p.y, 60, 60));
+
+            this.enemies.forEach(en => {
+                this.ctx.save(); this.ctx.translate(en.x, en.y);
+                if (this.x < en.x) this.ctx.scale(-1, 1);
+                if(enemyImgObj.complete && enemyImgObj.naturalWidth > 0) this.ctx.drawImage(enemyImgObj, -en.radius, -en.radius, en.radius * 2, en.radius * 2);
+                else { this.ctx.fillStyle = "#e67e22"; this.ctx.beginPath(); this.ctx.arc(0, 0, en.radius, 0, Math.PI*2); this.ctx.fill(); }
+                this.ctx.restore();
+                const barWidth = 60; this.ctx.fillStyle = "#222"; this.ctx.fillRect(en.x - barWidth/2, en.y - en.radius - 15, barWidth, 6);
+                this.ctx.fillStyle = "#e74c3c"; this.ctx.fillRect(en.x - barWidth/2, en.y - en.radius - 15, (en.health / en.maxHealth) * barWidth, 6);
+            });
+
+            this.drawPlayer();
+            if (this.isAttacking && !this.isDead) { this.ctx.fillStyle = "rgba(231, 76, 60, 0.25)"; this.ctx.beginPath(); this.ctx.arc(this.x, this.y, 170, 0, Math.PI*2); this.ctx.fill(); }
+            this.ctx.restore();
+        }
+
+        loop(timestamp) {
+            if (!this.lastTimestamp) this.lastTimestamp = timestamp;
+            const dt = (timestamp - this.lastTimestamp) / 1000;
+            this.lastTimestamp = timestamp; this.update(dt); this.draw();
+            requestAnimationFrame((t) => this.loop(t));
+        }
+    }
+
+    document.getElementById('survivalBtn').onclick = () => { storage.kills = 0; localStorage.setItem('totalKills', 0); updateMenuDisplay(); new GameCore('survival'); };
+    document.getElementById('creativeBtn').onclick = () => new GameCore('creative');
+    document.getElementById('openCustomizer').onclick = () => document.getElementById('customizerOverlay').style.display = 'flex';
+    document.getElementById('closeCustomizer').onclick = () => document.getElementById('customizerOverlay').style.display = 'none';
+
+    function setupLoader(id, prev, key, imgObj) {
+        document.getElementById(id).onchange = (e) => {
+            const file = e.target.files[0]; if (!file) return;
+            const reader = new FileReader();
+            const pCont = document.getElementById('progCont'); const pBar = document.getElementById('progBar');
+            reader.onloadstart = () => { pCont.style.display = 'block'; pBar.style.width = '0%'; };
+            reader.onprogress = (ev) => { if (ev.lengthComputable) pBar.style.width = (ev.loaded / ev.total) * 100 + '%'; };
+            reader.onload = (ev) => {
+                localStorage.setItem(key, ev.target.result);
+                document.getElementById(prev).src = ev.target.result;
+                imgObj.src = ev.target.result;
+                storage[key.replace('Image','').toLowerCase()] = ev.target.result;
+                pBar.style.width = '100%'; setTimeout(() => pCont.style.display = 'none', 600);
+            };
+            reader.readAsDataURL(file);
+        };
+    }
+
+    setupLoader('playerLoader', 'playerPreview', 'playerImage', playerImgObj);
+    setupLoader('bgLoader', 'bgPreview', 'bgImage', bgImgObj);
+    setupLoader('enemyLoader', 'enemyPreview', 'enemyImage', enemyImgObj);
+</script>
+</body>
+</html>
 
     <canvas id="gameCanvas"></canvas>
 
