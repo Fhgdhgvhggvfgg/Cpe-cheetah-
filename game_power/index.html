@@ -45,6 +45,9 @@
 </head>
 <body>
 
+<div id="fileNameDisplay" style="position: fixed; top: 10px; left: 10px; background: rgba(0,0,0,0.7); padding: 5px 12px; border-radius: 5px; font-size: 14px; color: #3498db; z-index: 400; font-weight: bold; border-left: 3px solid #3498db; display: none;"></div>
+
+
     <div id="mainMenu">
         <h1 style="font-size: 40px; margin-bottom: 0;">Cheetah Engine</h1>
         <p style="font-size: 20px; color: #aaa; margin-top: 5px; margin-bottom: 6px;">العب وانتضر حتى تحميل صور الساحة! <p id="killCountDisplay"></p>
@@ -413,19 +416,20 @@ drawPlayer() {
     this.ctx.save(); 
     this.ctx.translate(this.x, this.y);
 
-    // --- رسم الاسم بدون .png ---
-    this.ctx.save();
-    this.ctx.scale(1, 1); 
-    this.ctx.fillStyle = "white";
-    this.ctx.font = "bold 22px Arial";
-    this.ctx.textAlign = "center";
-    
-    // هنا قمنا بحذف الـ .png يدوياً من النص
-
-
-
-    
-    this.ctx.restore();
+    // --- رسم اسم اللاعب فوق رأسه ---
+    const playerName = localStorage.getItem('playerName');
+    if (playerName) {
+        this.ctx.save();
+        this.ctx.scale(1, 1); // لضمان عدم انعكاس النص عند تغيير اتجاه اللاعب
+        this.ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+        this.ctx.font = "bold 18px Segoe UI";
+        this.ctx.textAlign = "center";
+        this.ctx.shadowBlur = 4;
+        this.ctx.shadowColor = "black";
+        // رسم الاسم فوق الشخصية بـ 85 بكسل
+        this.ctx.fillText(playerName, 0, -85); 
+        this.ctx.restore();
+    }
     // ---------------------------
 
     if(!this.facingRight) this.ctx.scale(-1, 1);
@@ -437,6 +441,7 @@ drawPlayer() {
     }
     this.ctx.restore();
 }
+
 
         draw() {
             const s = this.scale * this.zoom;
@@ -505,30 +510,74 @@ if(bgImgObj.complete && bgImgObj.naturalWidth > 0) {
     document.getElementById('openCustomizer').onclick = () => document.getElementById('customizerOverlay').style.display = 'flex';
     document.getElementById('closeCustomizer').onclick = () => document.getElementById('customizerOverlay').style.display = 'none';
 
-    function setupLoader(id, prev, key, imgObj) {
-        document.getElementById(id).onchange = (e) => {
-            const file = e.target.files[0]; if (!file) return;
-            const reader = new FileReader();
-            const pCont = document.getElementById('progCont'); const pBar = document.getElementById('progBar');
-            reader.onloadstart = () => { pCont.style.display = 'block'; pBar.style.width = '0%'; };
-            reader.onprogress = (ev) => { if (ev.lengthComputable) pBar.style.width = (ev.loaded / ev.total) * 100 + '%'; };
-            reader.onload = (ev) => {
-            localStorage.setItem('playerName', file.name.split('.')[0]);
+function setupLoader(id, prev, key, imgObj) {
+    document.getElementById(id).onchange = async (e) => {
+        const file = e.target.files[0]; 
+        if (!file) return;
 
+        // تحديث الاسم فوراً
+        if (key === 'playerImage') {
+            const newName = file.name.split('.')[0];
+            localStorage.setItem('playerName', newName);
+            lastUploadedName = newName;
+            updateFileNameDisplay();
+        }
 
-                localStorage.setItem(key, ev.target.result);
-                document.getElementById(prev).src = ev.target.result;
-                imgObj.src = ev.target.result;
-                storage[key.replace('Image','').toLowerCase()] = ev.target.result;
-                pBar.style.width = '100%'; setTimeout(() => pCont.style.display = 'none', 600);
-            };
-            reader.readAsDataURL(file);
+        const reader = new FileReader();
+        const pCont = document.getElementById('progCont');
+        const pBar = document.getElementById('progBar');
+
+        reader.onloadstart = () => { pCont.style.display = 'block'; pBar.style.width = '100%'; };
+        
+        reader.onload = (ev) => {
+            const dataUrl = ev.target.result;
+            try {
+                localStorage.setItem(key, dataUrl); 
+                document.getElementById(prev).src = dataUrl;
+                imgObj.src = dataUrl;
+                storage[key.replace('Image','').toLowerCase()] = dataUrl;
+            } catch(err) {
+                console.error("Storage Limit Hit!");
+                alert("الملف كبير جداً على ذاكرة LocalStorage المتصفح.");
+            }
+            setTimeout(() => pCont.style.display = 'none', 600);
         };
-    }
+
+        reader.readAsDataURL(file); 
+    };
+}
+
 
     setupLoader('playerLoader', 'playerPreview', 'playerImage', playerImgObj);
     setupLoader('bgLoader', 'bgPreview', 'bgImage', bgImgObj);
     setupLoader('enemyLoader', 'enemyPreview', 'enemyImage', enemyImgObj);
+    
+    // فنكشن تحديث اسم ملف صورة اللاعب
+function updateFileNameDisplay() {
+    const fileName = localStorage.getItem('playerName');
+    const displayElement = document.getElementById('fileNameDisplay');
+    
+    if (fileName) {
+        displayElement.innerText = "ملف اللاعب الحالي: " + fileName;
+        displayElement.style.display = 'block';
+    } else {
+        displayElement.style.display = 'none';
+    }
+}
+
+// تعديل حدث فتح قسم التخصيص لتشغيل الفنكشن
+document.getElementById('openCustomizer').addEventListener('click', () => {
+    updateFileNameDisplay(); // استدعاء الفنكشن عند الفتح
+    document.getElementById('customizerOverlay').style.display = 'flex';
+});
+
+// إخفاء الاسم عند إغلاق قسم التخصيص
+document.getElementById('closeCustomizer').addEventListener('click', () => {
+    document.getElementById('fileNameDisplay').style.display = 'none';
+    document.getElementById('customizerOverlay').style.display = 'none';
+});
+
+
 </script>
 </body>
 </html>
