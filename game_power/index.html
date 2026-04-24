@@ -408,18 +408,33 @@ class InputHandler {
             this.camX += (this.x - this.camX) * 0.1; this.camY += (this.y - this.camY) * 0.1;
         }
 
-        drawPlayer() {
-            if (this.isDead) return;
-            this.ctx.save(); this.ctx.translate(this.x, this.y);
-            if(!this.facingRight) this.ctx.scale(-1, 1);
-            if(playerImgObj.complete && playerImgObj.naturalWidth > 0) {
-                const frameW = playerImgObj.naturalWidth / 8;
-                this.ctx.drawImage(playerImgObj, this.currentFrame * frameW, 0, frameW, playerImgObj.naturalHeight, -75, -75, 150, 150);
-            } else {
-                this.ctx.fillStyle = "#f39c12"; this.ctx.beginPath(); this.ctx.arc(0, 0, 45, 0, Math.PI * 2); this.ctx.fill();
-            }
-            this.ctx.restore();
-        }
+drawPlayer() {
+    if (this.isDead) return;
+    this.ctx.save(); 
+    this.ctx.translate(this.x, this.y);
+
+    // --- رسم الاسم بدون .png ---
+    this.ctx.save();
+    this.ctx.scale(1, 1); 
+    this.ctx.fillStyle = "white";
+    this.ctx.font = "bold 22px Arial";
+    this.ctx.textAlign = "center";
+    
+    // هنا قمنا بحذف الـ .png يدوياً من النص
+    this.ctx.fillText("sandy", 0, -85); 
+    
+    this.ctx.restore();
+    // ---------------------------
+
+    if(!this.facingRight) this.ctx.scale(-1, 1);
+    if(playerImgObj.complete && playerImgObj.naturalWidth > 0) {
+        const frameW = playerImgObj.naturalWidth / 8;
+        this.ctx.drawImage(playerImgObj, this.currentFrame * frameW, 0, frameW, playerImgObj.naturalHeight, -75, -75, 150, 150);
+    } else {
+        this.ctx.fillStyle = "#f39c12"; this.ctx.beginPath(); this.ctx.arc(0, 0, 45, 0, Math.PI * 2); this.ctx.fill();
+    }
+    this.ctx.restore();
+}
 
         draw() {
             const s = this.scale * this.zoom;
