@@ -50,7 +50,7 @@
         <p style="font-size: 20px; color: #aaa; margin-top: 5px; margin-bottom: 6px;">العب وانتضر حتى تحميل صور الساحة! <p id="killCountDisplay"></p>
         <button class="menu-btn" style="background:var(--danger)" id="survivalBtn">وضع البقاء (Survival)</button>
         <button class="menu-btn" style="background:var(--success)" id="creativeBtn">وضع البناء (Creative)</button>
-        <button class="menu-btn" style="background:var(--primary)" id="openCustomizer">تغيير صور الساحة</button>
+        <button class="menu-btn" style="background:var(--primary)" id="openCustomizer">تغيير صور الساحة🏞️🏃👾 </button>
     </div>
 
     <div id="customizerOverlay">
@@ -61,20 +61,20 @@
             <div class="preview-container">
                 <div class="preview-wrapper">
                     <label for="playerLoader"><div class="preview-box"><img id="playerPreview" src=""></div></label>
-                    <span class="preview-label">اللاعب</span>
+                    <span class="preview-label">اللاعب 🏃 </span>
                 </div>
                 <div class="preview-wrapper">
                     <label for="enemyLoader"><div class="preview-box"><img id="enemyPreview" src=""></div></label>
-                    <span class="preview-label">العدو</span>
+                    <span class="preview-label">العدو👾 </span>
                 </div>
                 <div class="preview-wrapper">
                     <label for="bgLoader"><div class="preview-box"><img id="bgPreview" src=""></div></label>
-                    <span class="preview-label">الساحة</span>
+                    <span class="preview-label">الساحة 🏞️ </span>
                 </div>
             </div>
             
             <div class="slider-container">
-                <span class="slider-label">حجم أزرار التحكم: <span id="sizeVal">75</span>px</span>
+                <span class="slider-label">حجم أزرار التحكم:  🎮 <span id="sizeVal">75</span>px</span>
                 <input type="range" id="btnSizeSlider" min="50" max="200" value="75">
             </div>
 
@@ -104,7 +104,7 @@
             </div>
         </div>
     </div>
-    <div class="info-badge">🎬 8-Frame Animation System</div>
+    <div class="info-badge">cheetah game 🐆 </div>
 
     <canvas id="gameCanvas"></canvas>
 
@@ -421,7 +421,9 @@ drawPlayer() {
     this.ctx.textAlign = "center";
     
     // هنا قمنا بحذف الـ .png يدوياً من النص
-    this.ctx.fillText("sandy", 0, -85); 
+
+
+
     
     this.ctx.restore();
     // ---------------------------
@@ -491,6 +493,9 @@ drawPlayer() {
             reader.onloadstart = () => { pCont.style.display = 'block'; pBar.style.width = '0%'; };
             reader.onprogress = (ev) => { if (ev.lengthComputable) pBar.style.width = (ev.loaded / ev.total) * 100 + '%'; };
             reader.onload = (ev) => {
+            localStorage.setItem('playerName', file.name.split('.')[0]);
+
+
                 localStorage.setItem(key, ev.target.result);
                 document.getElementById(prev).src = ev.target.result;
                 imgObj.src = ev.target.result;
