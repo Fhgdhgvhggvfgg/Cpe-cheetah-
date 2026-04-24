@@ -385,7 +385,7 @@ class InputHandler {
             });
 
             this.x = nx; this.y = ny;
-            if (this.x < -1550) this.x = -1550; if (this.x > 5500) this.x = 5500;
+            if (this.x < -1550) this.x = -1550; if (this.x > 11000) this.x = 11000;
             if (this.y >= this.groundY) { this.y = this.groundY; this.velocityY = 0; this.jumpCount = 0; }
 
             const isMoving = this.moveDir !== 0 && !this.isDashing && !this.isAttacking;
@@ -445,14 +445,34 @@ drawPlayer() {
             this.ctx.save();
             this.ctx.translate(-this.camX + (this.LOGIC_WIDTH / (2 * this.zoom)), -this.camY + (this.LOGIC_HEIGHT / (2 * this.zoom)));
 
-            if(bgImgObj.complete && bgImgObj.naturalWidth > 0) { 
-                const drawW = 850, drawH = 1133;
-                let startX = this.camX - (this.LOGIC_WIDTH / (2 * this.zoom));
-                let startY = this.camY - (this.LOGIC_HEIGHT / (2 * this.zoom));
-                for(let i = 0; i < 3; i++) this.ctx.drawImage(bgImgObj, 0, 0, bgImgObj.width, bgImgObj.height / 2, startX + (i * drawW) - drawW, startY + 0, drawW, drawH / 2);
-                const drawW2 = 3240, drawH2 = 4320;
-                for(let i=-2000; i<6000; i+=(drawW2 - 1) ) this.ctx.drawImage(bgImgObj, 0, bgImgObj.height / 2, bgImgObj.width, bgImgObj.height / 2, i, -2600 + (drawH2 / 2), drawW2, drawH2 / 2);
-            }
+if(bgImgObj.complete && bgImgObj.naturalWidth > 0) { 
+    const drawW = 851, drawH = 1276;
+    let startX = this.camX - (this.LOGIC_WIDTH / (2 * this.zoom));
+    
+    // التعديل هنا: وضع الصورة في منتصف رؤية الكاميرا عمودياً
+    let centerY = this.camY - (drawH / 4); 
+
+    for(let i = 0; i < 3; i++) {
+        this.ctx.drawImage(
+            bgImgObj, 
+            0, 0, bgImgObj.width, bgImgObj.height / 2, // المصدر (النصف العلوي)
+            startX + (i * drawW) - drawW, centerY,    // الموقع (تم استخدام centerY)
+            drawW, drawH / 2                           // الحجم
+        );
+    }
+
+    // رسم الأرضية (يبقى كما هو أو تعدل موقعه ليتناسب مع المنتصف الجديد)
+    const drawW2 = 3600, drawH2 = 5200;
+    for(let i=-2000; i<9000; i+=(drawW2 - 1) ) {
+        this.ctx.drawImage(
+            bgImgObj, 
+            0, bgImgObj.height / 2, bgImgObj.width, bgImgObj.height / 2, 
+            i, -3350 + (drawH2 / 2), 
+            drawW2, drawH2 / 2
+        );
+    }
+}
+
 
             this.ctx.fillStyle = "rgba(52, 152, 219, 0.6)";
             this.platforms.forEach(p => this.ctx.fillRect(p.x, p.y, 60, 60));
