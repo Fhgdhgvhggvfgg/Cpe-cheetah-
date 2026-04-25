@@ -47,10 +47,9 @@
 
 <div id="fileNameDisplay" style="position: fixed; top: 10px; left: 10px; background: rgba(0,0,0,0.7); padding: 5px 12px; border-radius: 5px; font-size: 14px; color: #3498db; z-index: 400; font-weight: bold; border-left: 3px solid #3498db; display: none;"></div>
 
-
     <div id="mainMenu">
         <h1 style="font-size: 40px; margin-bottom: 0;">Cheetah Engine</h1>
-        <p style="font-size: 20px; color: #aaa; margin-top: 5px; margin-bottom: 6px;">العب وانتضر حتى تحميل صور الساحة! <p id="killCountDisplay"></p>
+        <p style="font-size: 20px; color: #aaa; margin-top: 5px; margin-bottom: 6px;">العب وانتظر حتى تحميل صور الساحة! <p id="killCountDisplay"></p>
         <button class="menu-btn" style="background:var(--danger)" id="survivalBtn">وضع البقاء (Survival)</button>
         <button class="menu-btn" style="background:var(--success)" id="creativeBtn">وضع البناء (Creative)</button>
         <button class="menu-btn" style="background:var(--primary)" id="openCustomizer">تغيير صور الساحة🏞️🏃👾 </button>
@@ -58,7 +57,7 @@
 
     <div id="customizerOverlay">
         <div class="config-card">
-            <h2 style="margin-top:0;">studeo cheetah</h2>
+            <h2 style="margin-top:0;">Studio Cheetah</h2>
             
             <a href="https://www.mediafire.com/folder/9o6p3cx5obacg/assets" target="_blank" class="repo-btn">تحميل الملحقات</a>
             <div class="preview-container">
@@ -112,6 +111,13 @@
     <canvas id="gameCanvas"></canvas>
 
 <script>
+    // --- حقنة المربع الوردي ---
+    const pinkSquare = {
+        sourceX: 770,  // (810 - 100)
+        sourceY: 1175, // (1215 - 100)
+        size: 40
+    };
+
     const playerImgObj = new Image(); 
     const bgImgObj = new Image(); 
     const enemyImgObj = new Image(); 
@@ -134,7 +140,6 @@
         const bData = await loadImageAsDataURL('screen.png');
         const eData = await loadImageAsDataURL('enemy.png');
         
-        // شرط الأولوية: لا يتم التخزين من ملفات الجذر إذا كانت هناك صورة مخزنة مسبقاً من اللاعب
         if (pData && !localStorage.getItem('playerImage')) localStorage.setItem('playerImage', pData);
         if (bData && !localStorage.getItem('bgImage')) localStorage.setItem('bgImage', bData);
         if (eData && !localStorage.getItem('enemyImage')) localStorage.setItem('enemyImage', eData);
@@ -199,82 +204,31 @@ class InputHandler {
     constructor(game) {
         this.game = game;
         this.keys = new Set();
-
         window.addEventListener('keydown', (e) => {
             const key = e.key.toLowerCase();
             if (this.keys.has(key)) return; 
             this.keys.add(key);
-
             if (this.game.isDead) return;
-
-            // محاكاة أزرار الحركة
-            if (key === 'a' || key === 'arrowleft') {
-                this.game.moveDir = -1;
-                this.game.facingRight = false;
-            }
-            if (key === 'd' || key === 'arrowright') {
-                this.game.moveDir = 1;
-                this.game.facingRight = true;
-            }
-
-            // القفز (W أو Space)
-            if (key === 'w' || key === ' ') {
-                if(this.game.jumpCount < 2) { 
-                    this.game.velocityY = this.game.jumpForce; 
-                    this.game.jumpCount++; 
-                }
-            }
-            
-            // الاندفاع (E)
-            if (key === 'e') {
-                if (this.game.canDash) {
-                    this.game.isDashing = true;
-                    this.game.canDash = false;
-                    setTimeout(() => this.game.isDashing = false, 200);
-                    setTimeout(() => this.game.canDash = true, 760);
-                }
-            }
-
-            // الهجوم (تم التغيير إلى S بناءً على طلبك)
-            if (key === 's') {
-                if (this.game.canAttack) {
-                    this.game.isAttacking = true;
-                    this.game.attackTime = 0.3;
-                    this.game.canAttack = false;
-                    document.getElementById('attackBtn').style.opacity = "0.3";
-                    setTimeout(() => { 
-                        this.game.canAttack = true; 
-                        document.getElementById('attackBtn').style.opacity = "1"; 
-                    }, 600);
-                }
-            }
+            if (key === 'a' || key === 'arrowleft') { this.game.moveDir = -1; this.game.facingRight = false; }
+            if (key === 'd' || key === 'arrowright') { this.game.moveDir = 1; this.game.facingRight = true; }
+            if (key === 'w' || key === ' ') { if(this.game.jumpCount < 2) { this.game.velocityY = this.game.jumpForce; this.game.jumpCount++; } }
+            if (key === 'e') { if (this.game.canDash) { this.game.isDashing = true; this.game.canDash = false; setTimeout(() => this.game.isDashing = false, 200); setTimeout(() => this.game.canDash = true, 760); } }
+            if (key === 's') { if (this.game.canAttack) { this.game.isAttacking = true; this.game.attackTime = 0.3; this.game.canAttack = false; document.getElementById('attackBtn').style.opacity = "0.3"; setTimeout(() => { this.game.canAttack = true; document.getElementById('attackBtn').style.opacity = "1"; }, 600); } }
         });
-
         window.addEventListener('keyup', (e) => {
             const key = e.key.toLowerCase();
             this.keys.delete(key);
-
             if (['a', 'd', 'arrowleft', 'arrowright'].includes(key)) {
                 const movingLeft = this.keys.has('a') || this.keys.has('arrowleft');
                 const movingRight = this.keys.has('d') || this.keys.has('arrowright');
-
-                if (movingLeft) {
-                    this.game.moveDir = -1;
-                    this.game.facingRight = false;
-                } else if (movingRight) {
-                    this.game.moveDir = 1;
-                    this.game.facingRight = true;
-                } else {
-                    this.game.moveDir = 0;
-                }
+                if (movingLeft) { this.game.moveDir = -1; this.game.facingRight = false; }
+                else if (movingRight) { this.game.moveDir = 1; this.game.facingRight = true; }
+                else { this.game.moveDir = 0; }
             }
         });
     }
-
     update() {}
 }
-
-
 
     class GameCore {
         constructor(mode) {
@@ -295,8 +249,6 @@ class InputHandler {
             this.platforms = storage.platforms;
             this.isDead = false; this.lastTimestamp = 0;
             this.currentFrame = 0; this.animTimer = 0; this.animSpeed = 0.12; this.walkFrame = 1;
-            
-            // ربط الكيبورد بالمحرك
             this.input = new InputHandler(this);
             this.init();
         }
@@ -366,16 +318,12 @@ class InputHandler {
 
         update(dt) {
             if (dt > 0.1) dt = 0.1; if (this.isDead) return;
-            
-            // تحديث الكيبورد
             this.input.update();
-
             let moveSpeed = this.isDashing ? 1200 : this.speed;
             let effectiveDir = this.isDashing ? (this.facingRight ? 1 : -1) : this.moveDir;
             let nx = this.x + (effectiveDir * moveSpeed) * dt;
             let ny = this.y + this.velocityY * dt;
             if (this.isDashing) this.velocityY = 0; else this.velocityY += this.gravity * dt;
-
             this.platforms.forEach(p => {
                 const pL = p.x, pR = p.x + 60, pT = p.y, pB = p.y + 60;
                 if (nx + 45 > pL && nx - 45 < pR && ny + 45 > pT && ny - 45 < pB) {
@@ -386,15 +334,12 @@ class InputHandler {
                     else if (min === oL) nx = pL - 45; else if (min === oR) nx = pR + 45;
                 }
             });
-
             this.x = nx; this.y = ny;
             if (this.x < -1550) this.x = -1550; if (this.x > 11000) this.x = 11000;
             if (this.y >= this.groundY) { this.y = this.groundY; this.velocityY = 0; this.jumpCount = 0; }
-
             const isMoving = this.moveDir !== 0 && !this.isDashing && !this.isAttacking;
             this.updateAnimation(dt, isMoving);
             if (this.isAttacking) { this.attackTime -= dt; if (this.attackTime <= 0) this.isAttacking = false; }
-
             if (this.mode === 'survival') {
                 this.enemySpawnTimer += dt;
                 if (this.enemySpawnTimer > 4) { this.spawnEnemy(); this.enemySpawnTimer = 0; }
@@ -411,37 +356,31 @@ class InputHandler {
             this.camX += (this.x - this.camX) * 0.1; this.camY += (this.y - this.camY) * 0.1;
         }
 
-drawPlayer() {
-    if (this.isDead) return;
-    this.ctx.save(); 
-    this.ctx.translate(this.x, this.y);
-
-    // --- رسم اسم اللاعب فوق رأسه ---
-    const playerName = localStorage.getItem('playerName');
-    if (playerName) {
-        this.ctx.save();
-        this.ctx.scale(1, 1); // لضمان عدم انعكاس النص عند تغيير اتجاه اللاعب
-        this.ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
-        this.ctx.font = "bold 18px Segoe UI";
-        this.ctx.textAlign = "center";
-        this.ctx.shadowBlur = 4;
-        this.ctx.shadowColor = "black";
-        // رسم الاسم فوق الشخصية بـ 85 بكسل
-        this.ctx.fillText(playerName, 0, -85); 
-        this.ctx.restore();
-    }
-    // ---------------------------
-
-    if(!this.facingRight) this.ctx.scale(-1, 1);
-    if(playerImgObj.complete && playerImgObj.naturalWidth > 0) {
-        const frameW = playerImgObj.naturalWidth / 8;
-        this.ctx.drawImage(playerImgObj, this.currentFrame * frameW, 0, frameW, playerImgObj.naturalHeight, -75, -75, 150, 150);
-    } else {
-        this.ctx.fillStyle = "#f39c12"; this.ctx.beginPath(); this.ctx.arc(0, 0, 45, 0, Math.PI * 2); this.ctx.fill();
-    }
-    this.ctx.restore();
-}
-
+        drawPlayer() {
+            if (this.isDead) return;
+            this.ctx.save(); 
+            this.ctx.translate(this.x, this.y);
+            const playerName = localStorage.getItem('playerName');
+            if (playerName) {
+                this.ctx.save();
+                this.ctx.scale(1, 1);
+                this.ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+                this.ctx.font = "bold 18px Segoe UI";
+                this.ctx.textAlign = "center";
+                this.ctx.shadowBlur = 4;
+                this.ctx.shadowColor = "black";
+                this.ctx.fillText(playerName, 0, -85); 
+                this.ctx.restore();
+            }
+            if(!this.facingRight) this.ctx.scale(-1, 1);
+            if(playerImgObj.complete && playerImgObj.naturalWidth > 0) {
+                const frameW = playerImgObj.naturalWidth / 8;
+                this.ctx.drawImage(playerImgObj, this.currentFrame * frameW, 0, frameW, playerImgObj.naturalHeight, -75, -75, 150, 150);
+            } else {
+                this.ctx.fillStyle = "#f39c12"; this.ctx.beginPath(); this.ctx.arc(0, 0, 45, 0, Math.PI * 2); this.ctx.fill();
+            }
+            this.ctx.restore();
+        }
 
         draw() {
             const s = this.scale * this.zoom;
@@ -450,37 +389,43 @@ drawPlayer() {
             this.ctx.save();
             this.ctx.translate(-this.camX + (this.LOGIC_WIDTH / (2 * this.zoom)), -this.camY + (this.LOGIC_HEIGHT / (2 * this.zoom)));
 
-if(bgImgObj.complete && bgImgObj.naturalWidth > 0) { 
-    const drawW = 851, drawH = 1276;
-    let startX = this.camX - (this.LOGIC_WIDTH / (2 * this.zoom));
-    
-    // التعديل هنا: وضع الصورة في منتصف رؤية الكاميرا عمودياً
-    let centerY = this.camY - (drawH / 4); 
+            if(bgImgObj.complete && bgImgObj.naturalWidth > 0) { 
+                const drawW = 851, drawH = 1276;
+                let startX = this.camX - (this.LOGIC_WIDTH / (2 * this.zoom));
+                let centerY = this.camY - (drawH / 4); 
+                for(let i = 0; i < 3; i++) {
+                    this.ctx.drawImage(bgImgObj, 0, 0, bgImgObj.width, bgImgObj.height / 2, startX + (i * drawW) - drawW, centerY, drawW, drawH / 2);
+                }
+                const drawW2 = 3600, drawH2 = 5200;
+                for(let i=-2000; i<9000; i+=(drawW2 - 1) ) {
+                    this.ctx.drawImage(bgImgObj, 0, bgImgObj.height / 2, bgImgObj.width, bgImgObj.height / 2, i, -3350 + (drawH2 / 2), drawW2, drawH2 / 2);
+                }
 
-    for(let i = 0; i < 3; i++) {
+                // --- حقنة رسم المربع الوردي للتأكد ---
+                this.ctx.save();
+                this.ctx.drawImage(
+                    bgImgObj, 
+                    pinkSquare.sourceX, pinkSquare.sourceY, pinkSquare.size, pinkSquare.size, 
+                    this.x + 30, this.y - 20, 20, 20 
+                );
+                this.ctx.restore();
+            }
+
+// رسم المربعات المبنية باستخدام "صورة المربع الوردي" المقصوصة
+this.platforms.forEach(p => {
+    if(bgImgObj.complete && bgImgObj.naturalWidth > 0) {
+        // رسم النسخة المقصوصة مكان البلوكة
         this.ctx.drawImage(
             bgImgObj, 
-            0, 0, bgImgObj.width, bgImgObj.height / 2, // المصدر (النصف العلوي)
-            startX + (i * drawW) - drawW, centerY,    // الموقع (تم استخدام centerY)
-            drawW, drawH / 2                           // الحجم
+            pinkSquare.sourceX, pinkSquare.sourceY, pinkSquare.size, pinkSquare.size, // القص من الساحة
+            p.x, p.y, 60, 60 // الرسم مكان البلوكة المبنية
         );
+    } else {
+        // حالة احتياطية إذا لم تتحمل الصورة
+        this.ctx.fillStyle = "rgba(52, 152, 219, 0.6)";
+        this.ctx.fillRect(p.x, p.y, 60, 60);
     }
-
-    // رسم الأرضية (يبقى كما هو أو تعدل موقعه ليتناسب مع المنتصف الجديد)
-    const drawW2 = 3600, drawH2 = 5200;
-    for(let i=-2000; i<9000; i+=(drawW2 - 1) ) {
-        this.ctx.drawImage(
-            bgImgObj, 
-            0, bgImgObj.height / 2, bgImgObj.width, bgImgObj.height / 2, 
-            i, -3350 + (drawH2 / 2), 
-            drawW2, drawH2 / 2
-        );
-    }
-}
-
-
-            this.ctx.fillStyle = "rgba(52, 152, 219, 0.6)";
-            this.platforms.forEach(p => this.ctx.fillRect(p.x, p.y, 60, 60));
+});
 
             this.enemies.forEach(en => {
                 this.ctx.save(); this.ctx.translate(en.x, en.y);
@@ -491,7 +436,6 @@ if(bgImgObj.complete && bgImgObj.naturalWidth > 0) {
                 const barWidth = 60; this.ctx.fillStyle = "#222"; this.ctx.fillRect(en.x - barWidth/2, en.y - en.radius - 15, barWidth, 6);
                 this.ctx.fillStyle = "#e74c3c"; this.ctx.fillRect(en.x - barWidth/2, en.y - en.radius - 15, (en.health / en.maxHealth) * barWidth, 6);
             });
-
             this.drawPlayer();
             if (this.isAttacking && !this.isDead) { this.ctx.fillStyle = "rgba(231, 76, 60, 0.25)"; this.ctx.beginPath(); this.ctx.arc(this.x, this.y, 170, 0, Math.PI*2); this.ctx.fill(); }
             this.ctx.restore();
@@ -514,21 +458,15 @@ function setupLoader(id, prev, key, imgObj) {
     document.getElementById(id).onchange = async (e) => {
         const file = e.target.files[0]; 
         if (!file) return;
-
-        // تحديث الاسم فوراً
         if (key === 'playerImage') {
             const newName = file.name.split('.')[0];
             localStorage.setItem('playerName', newName);
-            lastUploadedName = newName;
             updateFileNameDisplay();
         }
-
         const reader = new FileReader();
         const pCont = document.getElementById('progCont');
         const pBar = document.getElementById('progBar');
-
         reader.onloadstart = () => { pCont.style.display = 'block'; pBar.style.width = '100%'; };
-        
         reader.onload = (ev) => {
             const dataUrl = ev.target.result;
             try {
@@ -537,26 +475,20 @@ function setupLoader(id, prev, key, imgObj) {
                 imgObj.src = dataUrl;
                 storage[key.replace('Image','').toLowerCase()] = dataUrl;
             } catch(err) {
-                console.error("Storage Limit Hit!");
-                alert("الملف كبير جداً على ذاكرة LocalStorage المتصفح.");
+                alert("الملف كبير جداً على ذاكرة المتصفح.");
             }
             setTimeout(() => pCont.style.display = 'none', 600);
         };
-
         reader.readAsDataURL(file); 
     };
 }
-
-
     setupLoader('playerLoader', 'playerPreview', 'playerImage', playerImgObj);
     setupLoader('bgLoader', 'bgPreview', 'bgImage', bgImgObj);
     setupLoader('enemyLoader', 'enemyPreview', 'enemyImage', enemyImgObj);
     
-    // فنكشن تحديث اسم ملف صورة اللاعب
 function updateFileNameDisplay() {
     const fileName = localStorage.getItem('playerName');
     const displayElement = document.getElementById('fileNameDisplay');
-    
     if (fileName) {
         displayElement.innerText = "ملف اللاعب الحالي: " + fileName;
         displayElement.style.display = 'block';
@@ -564,20 +496,14 @@ function updateFileNameDisplay() {
         displayElement.style.display = 'none';
     }
 }
-
-// تعديل حدث فتح قسم التخصيص لتشغيل الفنكشن
 document.getElementById('openCustomizer').addEventListener('click', () => {
-    updateFileNameDisplay(); // استدعاء الفنكشن عند الفتح
+    updateFileNameDisplay();
     document.getElementById('customizerOverlay').style.display = 'flex';
 });
-
-// إخفاء الاسم عند إغلاق قسم التخصيص
 document.getElementById('closeCustomizer').addEventListener('click', () => {
     document.getElementById('fileNameDisplay').style.display = 'none';
     document.getElementById('customizerOverlay').style.display = 'none';
 });
-
-
 </script>
 </body>
 </html>
