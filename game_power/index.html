@@ -113,8 +113,8 @@
 <script>
     // --- حقنة المربع الوردي ---
     const pinkSquare = {
-        sourceX: 770,  // (810 - 100)
-        sourceY: 1175, // (1215 - 100)
+        sourceX: 770,  
+        sourceY: 1175, 
         size: 40
     };
 
@@ -267,6 +267,9 @@ class InputHandler {
             this.scale = Math.min(window.innerWidth / this.LOGIC_WIDTH, window.innerHeight / this.LOGIC_HEIGHT);
             this.canvas.width = this.LOGIC_WIDTH * this.scale;
             this.canvas.height = this.LOGIC_HEIGHT * this.scale;
+            // منع التنعيم عند تغيير الحجم
+            this.ctx.imageSmoothingEnabled = false;
+            this.ctx.webkitImageSmoothingEnabled = false;
         }
 
         spawnEnemy() {
@@ -385,6 +388,10 @@ class InputHandler {
         draw() {
             const s = this.scale * this.zoom;
             this.ctx.setTransform(s, 0, 0, s, 0, 0);
+            // تأكيد منع التنعيم في كل إطار رسم
+            this.ctx.imageSmoothingEnabled = false;
+            this.ctx.webkitImageSmoothingEnabled = false;
+
             this.ctx.clearRect(0, 0, this.LOGIC_WIDTH, this.LOGIC_HEIGHT);
             this.ctx.save();
             this.ctx.translate(-this.camX + (this.LOGIC_WIDTH / (2 * this.zoom)), -this.camY + (this.LOGIC_HEIGHT / (2 * this.zoom)));
@@ -401,7 +408,7 @@ class InputHandler {
                     this.ctx.drawImage(bgImgObj, 0, bgImgObj.height / 2, bgImgObj.width, bgImgObj.height / 2, i, -3350 + (drawH2 / 2), drawW2, drawH2 / 2);
                 }
 
-                // --- حقنة رسم المربع الوردي للتأكد ---
+                // حقنة المربع الوردي
                 this.ctx.save();
                 this.ctx.drawImage(
                     bgImgObj, 
@@ -411,21 +418,18 @@ class InputHandler {
                 this.ctx.restore();
             }
 
-// رسم المربعات المبنية باستخدام "صورة المربع الوردي" المقصوصة
-this.platforms.forEach(p => {
-    if(bgImgObj.complete && bgImgObj.naturalWidth > 0) {
-        // رسم النسخة المقصوصة مكان البلوكة
-        this.ctx.drawImage(
-            bgImgObj, 
-            pinkSquare.sourceX, pinkSquare.sourceY, pinkSquare.size, pinkSquare.size, // القص من الساحة
-            p.x, p.y, 60, 60 // الرسم مكان البلوكة المبنية
-        );
-    } else {
-        // حالة احتياطية إذا لم تتحمل الصورة
-        this.ctx.fillStyle = "rgba(52, 152, 219, 0.6)";
-        this.ctx.fillRect(p.x, p.y, 60, 60);
-    }
-});
+            this.platforms.forEach(p => {
+                if(bgImgObj.complete && bgImgObj.naturalWidth > 0) {
+                    this.ctx.drawImage(
+                        bgImgObj, 
+                        pinkSquare.sourceX, pinkSquare.sourceY, pinkSquare.size, pinkSquare.size, 
+                        p.x, p.y, 60, 60 
+                    );
+                } else {
+                    this.ctx.fillStyle = "rgba(52, 152, 219, 0.6)";
+                    this.ctx.fillRect(p.x, p.y, 60, 60);
+                }
+            });
 
             this.enemies.forEach(en => {
                 this.ctx.save(); this.ctx.translate(en.x, en.y);
@@ -436,6 +440,7 @@ this.platforms.forEach(p => {
                 const barWidth = 60; this.ctx.fillStyle = "#222"; this.ctx.fillRect(en.x - barWidth/2, en.y - en.radius - 15, barWidth, 6);
                 this.ctx.fillStyle = "#e74c3c"; this.ctx.fillRect(en.x - barWidth/2, en.y - en.radius - 15, (en.health / en.maxHealth) * barWidth, 6);
             });
+
             this.drawPlayer();
             if (this.isAttacking && !this.isDead) { this.ctx.fillStyle = "rgba(231, 76, 60, 0.25)"; this.ctx.beginPath(); this.ctx.arc(this.x, this.y, 170, 0, Math.PI*2); this.ctx.fill(); }
             this.ctx.restore();
