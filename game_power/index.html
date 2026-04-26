@@ -7,28 +7,143 @@
     <style>
         :root { --primary: #3498db; --success: #27ae60; --danger: #e74c3c; --warning: #f39c12; --dark: #1a1a1a; --repo-orange: #d38345; }
         body { margin: 0; padding: 0; background: #000; color: white; font-family: 'Segoe UI', sans-serif; height: 100vh; width: 100vw; overflow: hidden; touch-action: none; }
-        #mainMenu { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0a0a0a; z-index: 100; gap: 10px; }
-        #customizerOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 200; backdrop-filter: blur(10px); }
-        .config-card { background: var(--dark); padding: 30px; border-radius: 25px; border: 1px solid #333; width: 90%; max-width: 450px; text-align: center; }
+        
+        /* القائمة الرئيسية - قابلة للسحب عمودياً */
+        #mainMenu {
+            position: fixed;
+            inset: 0;
+            background: #0a0a0a;
+            z-index: 100;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            touch-action: pan-y;
+        }
+        
+        /* تخصيص شريط التمرير */
+        #mainMenu::-webkit-scrollbar {
+            width: 4px;
+        }
+        #mainMenu::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+        #mainMenu::-webkit-scrollbar-thumb {
+            background: #e74c3c;
+            border-radius: 10px;
+        }
+        
+        .menu-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100%;
+            padding: 40px 20px;
+            box-sizing: border-box;
+        }
+        
+        #customizerOverlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.95);
+            display: none;
+            z-index: 200;
+            backdrop-filter: blur(10px);
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            touch-action: pan-y;
+        }
+        
+        #customizerOverlay::-webkit-scrollbar {
+            width: 4px;
+        }
+        #customizerOverlay::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+        #customizerOverlay::-webkit-scrollbar-thumb {
+            background: #3498db;
+            border-radius: 10px;
+        }
+        
+        .config-card {
+            background: var(--dark);
+            padding: 30px;
+            border-radius: 25px;
+            border: 1px solid #333;
+            width: 90%;
+            max-width: 450px;
+            margin: 40px auto;
+            text-align: center;
+        }
+        
         .repo-btn { background: var(--repo-orange); color: white; padding: 15px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; font-weight: bold; margin-bottom: 20px; width: 100%; box-sizing: border-box; }
         .menu-btn { padding: 12px 25px; font-size: 16px; cursor: pointer; border: none; border-radius: 12px; color: white; font-weight: bold; width: 250px; transition: 0.3s; display: block; text-align: center; text-decoration: none; margin: 5px auto; }
+        .menu-btn:active { transform: scale(0.97); }
+        
         #gameCanvas { display: none; background: #000; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
         #uiLayer { position: fixed; inset: 0; z-index: 50; pointer-events: none; display: none; }
-        #exitBtn, #clearBtn { position: absolute; top: 15px; padding: 8px 15px; color: white; border: none; border-radius: 8px; font-weight: bold; pointer-events: auto; }
-        #exitBtn { right: 15px; background: var(--danger); }
-        #clearBtn { left: 15px; background: var(--warning); }
+        
+        .top-bar {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            right: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            pointer-events: none;
+        }
+        .top-btn-group {
+            display: flex;
+            gap: 10px;
+            pointer-events: auto;
+        }
+        #exitBtn, #clearBtn {
+            padding: 8px 15px;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            pointer-events: auto;
+            cursor: pointer;
+        }
+        #exitBtn { background: var(--danger); }
+        #clearBtn { background: var(--warning); }
+        
+        #killCounterGame {
+            background: rgba(0,0,0,0.75);
+            padding: 8px 18px;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #e74c3c;
+            border: 1px solid rgba(231,76,60,0.6);
+            backdrop-filter: blur(5px);
+            pointer-events: auto;
+            font-family: monospace;
+            letter-spacing: 1px;
+            box-shadow: 0 0 10px rgba(231,76,60,0.3);
+        }
+        #killCounterGame::before {
+            content: "⚔️ ";
+            font-size: 16px;
+        }
         
         .controls { position: absolute; bottom: 30px; width: 100%; display: flex; flex-direction: row-reverse; justify-content: space-between; padding: 0 20px; box-sizing: border-box; }
         .control-btn { width: 75px; height: 75px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255,255,255,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); pointer-events: auto; transition: opacity 0.2s; }
+        .control-btn:active { transform: scale(0.95); background: rgba(255,255,255,0.2); }
         
         #healthBarContainer { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); width: 200px; height: 10px; background: #222; border-radius: 5px; overflow: hidden; display: none; }
         #healthBar { height: 100%; background: var(--danger); width: 100%; transition: 0.2s; }
         
-        .preview-container { display: flex; gap: 15px; justify-content: center; margin-bottom: 20px; }
+        .preview-container { display: flex; gap: 15px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
         .preview-wrapper { display: flex; flex-direction: column; align-items: center; gap: 8px; }
         .preview-label { font-size: 14px; font-weight: bold; color: #bbb; }
         .preview-box { width: 80px; height: 80px; border: 2px dashed #444; border-radius: 15px; overflow: hidden; background: #000; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; }
         .preview-box img { max-width: 90%; max-height: 90%; object-fit: contain; }
+        .preview-box:active { transform: scale(0.95); }
 
         .progress-container { width: 100%; background-color: #333; border-radius: 10px; margin: 10px 0; display: none; }
         .progress-bar { width: 0%; height: 8px; background-color: var(--success); border-radius: 10px; transition: width 0.1s; box-shadow: 0 0 10px var(--success); }
@@ -42,7 +157,6 @@
         
         .info-badge { position: fixed; bottom: 10px; left: 10px; background: rgba(0,0,0,0.6); padding: 5px 10px; border-radius: 8px; font-size: 10px; color: #888; z-index: 300; pointer-events: none; }
         
-        /* اسم اللاعب داخل نافذة التخصيص فقط */
         .player-name-badge {
             background: rgba(52, 152, 219, 0.2);
             padding: 8px 12px;
@@ -54,61 +168,89 @@
             margin-bottom: 15px;
             text-align: right;
         }
+        
+        /* مؤشر السحب */
+        .scroll-hint {
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            direction: ltr;
+        }
+        .scroll-hint::before {
+            content: "👆 ";
+        }
     </style>
 </head>
 <body>
 
     <div id="mainMenu">
-        <h1 style="font-size: 40px; margin-bottom: 0;">Cheetah Engine</h1>
-        <p style="font-size: 20px; color: #aaa; margin-top: 5px; margin-bottom: 6px;">العب وانتظر حتى تحميل صور الساحة!</p>
-        <p id="killCountDisplay"></p>
-        <button class="menu-btn" style="background:var(--danger)" id="survivalBtn">وضع البقاء (Survival)</button>
-        <button class="menu-btn" style="background:var(--success)" id="creativeBtn">وضع البناء (Creative)</button>
-        <button class="menu-btn" style="background:var(--primary)" id="openCustomizer">تغيير صور الساحة🏞️🏃👾 </button>
+        <div class="menu-container">
+            <h1 style="font-size: 40px; margin-bottom: 0;">Cheetah Engine</h1>
+            <p style="font-size: 20px; color: #aaa; margin-top: 5px; margin-bottom: 6px;">العب وانتظر حتى تحميل صور الساحة!</p>
+            <p id="killCountDisplay"></p>
+            <button class="menu-btn" style="background:var(--danger)" id="survivalBtn">وضع البقاء (Survival)</button>
+            <button class="menu-btn" style="background:var(--success)" id="creativeBtn">وضع البناء (Creative)</button>
+            <button class="menu-btn" style="background:var(--primary)" id="openCustomizer">تغيير صور الساحة🏞️🏃👾</button>
+            <div class="scroll-hint">اسحب للأعلى والأسفل</div>
+        </div>
     </div>
 
     <div id="customizerOverlay">
         <div class="config-card">
             <h2 style="margin-top:0;">Studio Cheetah</h2>
             
-            <!-- اسم اللاعب يظهر هنا فقط -->
             <div id="playerNameDisplay" class="player-name-badge" style="display: none;"></div>
             
-            <a href="https://www.mediafire.com/folder/9o6p3cx5obacg/assets" target="_blank" class="repo-btn">تحميل الملحقات</a>
+            <a href="https://www.mediafire.com/folder/9o6p3cx5obacg/assets" target="_blank" class="repo-btn">📦 تحميل الملحقات</a>
+            
             <div class="preview-container">
                 <div class="preview-wrapper">
                     <label for="playerLoader"><div class="preview-box"><img id="playerPreview" src=""></div></label>
-                    <span class="preview-label">اللاعب 🏃 </span>
+                    <span class="preview-label">اللاعب 🏃</span>
                 </div>
                 <div class="preview-wrapper">
                     <label for="enemyLoader"><div class="preview-box"><img id="enemyPreview" src=""></div></label>
-                    <span class="preview-label">العدو👾 </span>
+                    <span class="preview-label">العدو 👾</span>
                 </div>
                 <div class="preview-wrapper">
                     <label for="bgLoader"><div class="preview-box"><img id="bgPreview" src=""></div></label>
-                    <span class="preview-label">الساحة 🏞️ </span>
+                    <span class="preview-label">الساحة 🏞️</span>
                 </div>
             </div>
             
             <div class="slider-container">
-                <span class="slider-label">حجم أزرار التحكم:  🎮 <span id="sizeVal">75</span>px</span>
+                <span class="slider-label">حجم أزرار التحكم: 🎮 <span id="sizeVal">75</span>px</span>
                 <input type="range" id="btnSizeSlider" min="50" max="200" value="75">
             </div>
 
-            <div class="progress-container" id="progCont"><div class="progress-bar" id="progBar"></div></div>
+            <div class="progress-container" id="progCont">
+                <div class="progress-bar" id="progBar"></div>
+            </div>
             
             <input type="file" id="playerLoader" accept="image/*">
             <input type="file" id="enemyLoader" accept="image/*">
             <input type="file" id="bgLoader" accept="image/*">
-            <button class="menu-btn" style="background:var(--success); width:100%;" id="saveAndReload">حفظ وتحديث</button>
-            <button class="menu-btn" style="background:var(--danger); width:100%;" id="closeCustomizer">إلغاء</button>
+            
+            <button class="menu-btn" style="background:var(--success); width:100%;" id="saveAndReload">💾 حفظ وتحديث</button>
+            <button class="menu-btn" style="background:var(--danger); width:100%;" id="closeCustomizer">❌ إلغاء</button>
+            
+            <div class="scroll-hint">اسحب للأعلى والأسفل</div>
         </div>
     </div>
 
     <div id="uiLayer">
         <div id="healthBarContainer"><div id="healthBar"></div></div>
-        <button id="exitBtn">خروج</button>
-        <button id="clearBtn">مسح</button>
+        
+        <div class="top-bar">
+            <div class="top-btn-group">
+                <button id="clearBtn">مسح</button>
+                <button id="exitBtn">خروج</button>
+            </div>
+            <div id="killCounterGame">0</div>
+        </div>
+        
         <div class="controls">
             <div style="display: flex; gap: 10px;">
                 <button class="control-btn" id="rightBtn"></button>
@@ -121,7 +263,7 @@
             </div>
         </div>
     </div>
-    <div class="info-badge">cheetah game 🐆 </div>
+    <div class="info-badge">🐆 cheetah game | اسحب القائمة للأعلى والأسفل</div>
 
     <canvas id="gameCanvas"></canvas>
 
