@@ -48,18 +48,27 @@ export class UIManager {
                 "آخر نتيجة قتال: " + this.storage.kills : 
                 "اضغط الشاشة تبني اضغط المربع تهدم. ";
         }
+        // تحديث عداد القتل في واجهة اللعب أيضاً
+        this.updateInGameKillCounter(this.storage.kills);
+    }
+
+    // دالة جديدة: تحديث عداد القتل داخل شاشة اللعب
+    updateInGameKillCounter(kills) {
+        const killCounter = document.getElementById('killCounterGame');
+        if (killCounter) {
+            killCounter.innerHTML = kills;
+        }
     }
 
     showCustomizer() {
         document.getElementById('customizerOverlay').style.display = 'flex';
-        this.updatePlayerNameDisplay(); // عرض اسم اللاعب داخل نافذة التخصيص
+        this.updatePlayerNameDisplay();
     }
 
     hideCustomizer() {
         document.getElementById('customizerOverlay').style.display = 'none';
     }
 
-    // تحديث عرض اسم اللاعب داخل نافذة التخصيص فقط
     updatePlayerNameDisplay() {
         const fileName = this.storage.playerName;
         const displayElement = document.getElementById('playerNameDisplay');
@@ -73,9 +82,6 @@ export class UIManager {
         }
     }
 
-    // تم إلغاء هذه الدالة لأننا لم نعد نستخدم fileNameDisplay العام
-    // updateFileNameDisplay() { ... }
-
     setupImageLoader(id, previewId, key, imgObj) {
         const loader = document.getElementById(id);
         if(!loader) return;
@@ -87,7 +93,7 @@ export class UIManager {
             if (key === 'playerImage') {
                 const newName = file.name.split('.')[0];
                 this.storage.savePlayerName(newName);
-                this.updatePlayerNameDisplay(); // تحديث اسم اللاعب داخل نافذة التخصيص
+                this.updatePlayerNameDisplay();
             }
             
             const reader = new FileReader();
