@@ -36,7 +36,10 @@ export class GameCore {
         this.zoom = 1.5;
         this.camX = this.x;
         this.camY = this.y;
-        
+        // في constructor، بعد تعريف this.camY = this.y; أضف:
+this.leftBoundX = -1550;
+this.rightBoundX = 11000;
+this.boundaryLineWidth = 5;  // عرض الخط
         // قدرات خاصة
         this.isDashing = false;
         this.canDash = true;
@@ -376,6 +379,45 @@ export class GameCore {
         this.ctx.restore();
     }
     
+    // أضف هذه الدالة في GameCore.js
+drawBoundaryLines() {
+    this.ctx.save();
+    
+    // تحديد موقع الخطوط بناءً على الكاميرا
+    const lineY = this.camY; // يتبع الكاميرا عمودياً
+    
+    // الخط الأيسر (عند x = -1550)
+    this.ctx.strokeStyle = "#ff3366";
+    this.ctx.lineWidth = this.boundaryLineWidth;
+    this.ctx.shadowBlur = 8;
+    this.ctx.shadowColor = "#ff3366";
+    this.ctx.beginPath();
+    this.ctx.moveTo(this.leftBoundX, lineY - 500);
+    this.ctx.lineTo(this.leftBoundX, lineY + 500);
+    this.ctx.stroke();
+    
+    // الخط الأيمن (عند x = 11000)
+    this.ctx.beginPath();
+    this.ctx.moveTo(this.rightBoundX, lineY - 500);
+    this.ctx.lineTo(this.rightBoundX, lineY + 500);
+    this.ctx.stroke();
+    
+    // تأثير توهج إضافي
+    this.ctx.strokeStyle = "rgba(255, 51, 102, 0.5)";
+    this.ctx.lineWidth = this.boundaryLineWidth + 2;
+    this.ctx.beginPath();
+    this.ctx.moveTo(this.leftBoundX, lineY - 500);
+    this.ctx.lineTo(this.leftBoundX, lineY + 500);
+    this.ctx.stroke();
+    
+    this.ctx.beginPath();
+    this.ctx.moveTo(this.rightBoundX, lineY - 500);
+    this.ctx.lineTo(this.rightBoundX, lineY + 500);
+    this.ctx.stroke();
+    
+    this.ctx.restore();
+}
+    
     draw() {
         const s = this.scale * this.zoom;
         this.ctx.setTransform(s, 0, 0, s, 0, 0);
@@ -402,6 +444,8 @@ export class GameCore {
                     i, -3350 + (drawH2 / 2), drawW2, drawH2 / 2);
             }
             
+            // في دالة draw()، بعد رسم الخلفية و قبل رسم المنصات، أضف:
+this.drawBoundaryLines();
             // رسم المربع الوردي
             this.ctx.save();
             this.ctx.drawImage(
