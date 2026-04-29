@@ -254,17 +254,32 @@
     <div id="uiLayer">
         <div id="healthBarContainer"><div id="healthBar"></div></div>
         
-        <div class="top-bar">
-            <div class="top-btn-group">
-    <button id="pauseBtn" style="background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; padding: 8px 15px;">إيقاف</button>
-    <button id="clearBtn">مسح</button>
-    <button id="exitBtn">خروج</button>
+<div class="top-bar" style="position: fixed; top: 10px; left: 10px; z-index: 1000;">
+    <div class="top-btn-group" style="display: flex; flex-direction: column; gap: 10px; width: fit-content; align-items: center;">
+        
+        <button id="pauseBtn" style="background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; padding: 10px 20px; width: 100%;">إيقاف</button>
+        <button id="clearBtn" style="width: 100%;">مسح</button>
+        <button id="exitBtn" style="width: 100%;">خروج</button>
+
+        <div id="killCounterGame" style="
+            width: 80px; 
+            text-align: center; 
+            background: rgba(0,0,0,0.5); 
+            padding: 8px; 
+            border-radius: 8px; 
+            color: white; 
+            font-weight: bold; 
+            font-size: 1.2rem;
+            border: 1px solid rgba(255,255,255,0.2);
+        ">0</div>
+        
+    </div>
 </div>
 
             <div id="killCounterGame">0</div>
         </div>
         
-        <div class="controls">
+        <div class="controls" style="z-index: 9999; position: fixed; bottom: 20px; left: 0; right: 0;">
             <div style="display: flex; gap: 10px;">
                 <button class="control-btn" id="rightBtn"></button>
                 <button class="control-btn" id="leftBtn"></button>
