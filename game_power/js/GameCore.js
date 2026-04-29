@@ -2,6 +2,7 @@ import { InputHandler } from './InputHandler.js';
 
 export class GameCore {
     constructor(mode, storage, uiManager) {
+        this.isPaused = false;
         this.mode = mode;
         this.storage = storage;
         this.uiManager = uiManager;
@@ -153,6 +154,18 @@ this.boundaryLineWidth = 5;  // عرض الخط
     }
     
     bindControls() {
+
+// أضف هذا الكود داخل دالة bindControls
+const pauseBtn = document.getElementById('pauseBtn');
+if (pauseBtn) {
+    pauseBtn.onclick = () => {
+        this.isPaused = !this.isPaused;
+        pauseBtn.innerText = this.isPaused ? "استئناف" : "إيقاف";
+        pauseBtn.style.background = this.isPaused ? "var(--success)" : "var(--primary)";
+    };
+}
+
+        
         const btn = (id, down, up) => {
             const el = document.getElementById(id);
             if(el) {
@@ -516,11 +529,22 @@ this.drawBoundaryLines();
     }
     
     loop(timestamp) {
-        if (!this.lastTimestamp) this.lastTimestamp = timestamp;
-        const dt = Math.min(0.033, (timestamp - this.lastTimestamp) / 1000);
-        this.lastTimestamp = timestamp;
+    // حساب فارق الوقت بين الإطارات (Delta Time)
+    if (!this.lastTimestamp) this.lastTimestamp = timestamp;
+    const dt = Math.min(0.033, (timestamp - this.lastTimestamp) / 1000);
+    this.lastTimestamp = timestamp;
+
+    // --- التعديل هنا ---
+    if (!this.isPaused) {
+        // إذا لم تكن اللعبة متوقفة، قم بتحديث المنطق (الحركة، الجاذبية، التصادم)
         this.update(dt);
-        this.draw();
-        requestAnimationFrame((t) => this.loop(t));
     }
+    
+    // عملية الرسم (Draw) تستمر دائماً لكي تظل اللعبة مرئية وهي متوقفة
+    this.draw();
+    
+    // طلب الإطار التالي
+    requestAnimationFrame((t) => this.loop(t));
+}
+
 }
