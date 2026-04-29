@@ -302,8 +302,17 @@ this.boundaryLineWidth = 5;  // عرض الخط
         // وضع البقاء (Survival)
         if (this.mode === 'survival') {
             this.enemySpawnTimer += dt;
-            if (this.enemySpawnTimer > 4) {
-                this.spawnEnemy();
+            if (this.enemySpawnTimer > 8) {
+                this.spawnEnemy(); // الأول يظهر فوراً
+
+setTimeout(() => {
+    this.spawnEnemy(); // الثاني يظهر بعد 500 ملي ثانية
+}, 500);
+
+setTimeout(() => {
+    this.spawnEnemy(); // الثالث يظهر بعد 1000 ملي ثانية
+}, 1000);
+
                 this.enemySpawnTimer = 0;
             }
             
