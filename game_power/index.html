@@ -9,16 +9,27 @@
         body { margin: 0; padding: 0; background: #000; color: white; font-family: 'Segoe UI', sans-serif; height: 100vh; width: 100vw; overflow: hidden; touch-action: none; }
         
         /* القائمة الرئيسية - قابلة للسحب عمودياً */
-        #mainMenu {
-            position: fixed;
-            inset: 0;
-            background: #0a0a0a;
-            z-index: 100;
-            overflow-y: auto;
-            overflow-x: hidden;
-            -webkit-overflow-scrolling: touch;
-            touch-action: pan-y;
-        }
+/* القائمة الرئيسية - إضافة الخلفية */
+/* القائمة الرئيسية - إزالة التنعيم وجعل البكسلات حادة */
+#mainMenu {
+    position: fixed;
+    inset: 0;
+    background: url('menu.png') no-repeat center center;
+    background-size: cover; 
+    z-index: 100;
+
+    /* --- السحر هنا لإزالة الضبابية --- */
+    image-rendering: pixelated;       /* للمتصفحات الحديثة */
+    image-rendering: crisp-edges;    /* لمتصفحات فايرفوكس */
+    -ms-interpolation-mode: nearest-neighbor; /* لمتصفحات IE القديمة */
+    
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+}
+
+
         
         /* تخصيص شريط التمرير */
         #mainMenu::-webkit-scrollbar {
@@ -188,7 +199,7 @@
     <div id="mainMenu">
         <div class="menu-container">
             <h1 style="font-size: 40px; margin-bottom: 0;">Cheetah Engine</h1>
-            <p style="font-size: 20px; color: #aaa; margin-top: 5px; margin-bottom: 6px;">قد يتاخر تحميل صور الساحة فانتضر او ادخل للعب واخرج عدة مرات!</p>
+            <p style="font-size: 20px; color: #aaa; margin-top: 5px; margin-bottom: 6px;">العب وانتظر حتى تحميل صور الساحة!</p>
             <p id="killCountDisplay"></p>
             <button class="menu-btn" style="background:var(--danger)" id="survivalBtn">وضع البقاء (Survival)</button>
             <button class="menu-btn" style="background:var(--success)" id="creativeBtn">وضع البناء (Creative)</button>
