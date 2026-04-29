@@ -199,7 +199,7 @@
     <div id="mainMenu">
         <div class="menu-container">
             <h1 style="font-size: 40px; margin-bottom: 0;">Cheetah Engine</h1>
-            <p style="font-size: 20px; color: #aaa; margin-top: 5px; margin-bottom: 6px;">قد يتأخر تحميل صور الساحة فالعب واخرج عدة مرات.ازرار الكيبورد. a و d للحركة يمين واليسار. w للقفز s للضرب. e للاندفاع!</p>
+            <p style="font-size: 20px; color: #aaa; margin-top: 5px; margin-bottom: 6px;">العب وانتظر حتى تحميل صور الساحة!</p>
             <p id="killCountDisplay"></p>
             <button class="menu-btn" style="background:var(--danger)" id="survivalBtn">وضع البقاء (Survival)</button>
             <button class="menu-btn" style="background:var(--success)" id="creativeBtn">وضع البناء (Creative)</button>
@@ -252,36 +252,17 @@
     </div>
 
     <div id="uiLayer">
-              <div id="healthBarContainer" style="z-index: 10000; position: fixed;">
-    <div id="healthBar"></div>
-              </div>
+        <div id="healthBarContainer"><div id="healthBar"></div></div>
         
-<div class="top-bar" style="position: fixed; top: 10px; left: 10px; z-index: 1000;">
-    <div class="top-btn-group" style="display: flex; flex-direction: column; gap: 10px; width: fit-content; align-items: center;">
-        
-        <button id="pauseBtn" style="background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; padding: 10px 20px; width: 100%;">إيقاف</button>
-        <button id="clearBtn" style="width: 100%;">مسح</button>
-        <button id="exitBtn" style="width: 100%;">خروج</button>
-
-        <div id="killCounterGame" style="
-            width: 80px; 
-            text-align: center; 
-            background: rgba(0,0,0,0.5); 
-            padding: 8px; 
-            border-radius: 8px; 
-            color: white; 
-            font-weight: bold; 
-            font-size: 1.2rem;
-            border: 1px solid rgba(255,255,255,0.2);
-        ">0</div>
-        
-    </div>
-</div>
-
+        <div class="top-bar">
+            <div class="top-btn-group">
+                <button id="clearBtn">مسح</button>
+                <button id="exitBtn">خروج</button>
+            </div>
             <div id="killCounterGame">0</div>
         </div>
         
-        <div class="controls" style="z-index: 9999; position: fixed; bottom: 20px; left: 0; right: 0;">
+        <div class="controls">
             <div style="display: flex; gap: 10px;">
                 <button class="control-btn" id="rightBtn"></button>
                 <button class="control-btn" id="leftBtn"></button>
