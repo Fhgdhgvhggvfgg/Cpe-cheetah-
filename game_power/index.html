@@ -53,18 +53,23 @@
             box-sizing: border-box;
         }
         
-        #customizerOverlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.95);
-            display: none;
-            z-index: 200;
-            backdrop-filter: blur(10px);
-            overflow-y: auto;
-            overflow-x: hidden;
-            -webkit-overflow-scrolling: touch;
-            touch-action: pan-y;
-        }
+#customizerOverlay {
+    position: fixed;
+    inset: 0;
+    /* دمج صورة المنيو مع طبقة تعتيم خفيفة جداً لضمان رؤية الأزرار */
+    background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('menu.png') no-repeat center center;
+    background-size: cover; 
+    
+    display: none;
+    z-index: 200;
+    backdrop-filter: blur(8px); /* تنعيم خلفية القائمة */
+    image-rendering: pixelated;
+    
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+}
         
         #customizerOverlay::-webkit-scrollbar {
             width: 4px;
