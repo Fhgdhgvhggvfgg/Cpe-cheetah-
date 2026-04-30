@@ -2,282 +2,284 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>دمج 8 صور أفقية</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-select=none">
+    <title>Cheetah Engine - 8帧动画系统</title>
     <style>
-        * { box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px 0;
+        :root { --primary: #3498db; --success: #27ae60; --danger: #e74c3c; --warning: #f39c12; --dark: #1a1a1a; --repo-orange: #d38345; }
+        body { margin: 0; padding: 0; background: #000; color: white; font-family: 'Segoe UI', sans-serif; height: 100vh; width: 100vw; overflow: hidden; touch-action: none; }
+        
+        /* القائمة الرئيسية - قابلة للسحب عمودياً */
+/* القائمة الرئيسية - إضافة الخلفية */
+/* القائمة الرئيسية - إزالة التنعيم وجعل البكسلات حادة */
+#mainMenu {
+    position: fixed;
+    inset: 0;
+    background: url('menu.png') no-repeat center center;
+    background-size: cover; 
+    z-index: 100;
+
+    /* --- السحر هنا لإزالة الضبابية --- */
+    image-rendering: pixelated;       /* للمتصفحات الحديثة */
+    image-rendering: crisp-edges;    /* لمتصفحات فايرفوكس */
+    -ms-interpolation-mode: nearest-neighbor; /* لمتصفحات IE القديمة */
+    
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+}
+
+
+        
+        /* تخصيص شريط التمرير */
+        #mainMenu::-webkit-scrollbar {
+            width: 4px;
         }
-        .container {
-            background: #fff;
-            padding: 2rem;
-            border-radius: 16px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-            width: 95%;
-            max-width: 650px;
+        #mainMenu::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+        #mainMenu::-webkit-scrollbar-thumb {
+            background: #e74c3c;
+            border-radius: 10px;
+        }
+        
+        .menu-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100%;
+            padding: 40px 20px;
+            box-sizing: border-box;
+        }
+        
+        #customizerOverlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.95);
+            display: none;
+            z-index: 200;
+            backdrop-filter: blur(10px);
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            touch-action: pan-y;
+        }
+        
+        #customizerOverlay::-webkit-scrollbar {
+            width: 4px;
+        }
+        #customizerOverlay::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+        #customizerOverlay::-webkit-scrollbar-thumb {
+            background: #3498db;
+            border-radius: 10px;
+        }
+        
+        .config-card {
+            background: var(--dark);
+            padding: 30px;
+            border-radius: 25px;
+            border: 1px solid #333;
+            width: 90%;
+            max-width: 450px;
+            margin: 40px auto;
             text-align: center;
         }
-        h2 { margin: 0 0 5px; color: #2d3748; }
-        p { color: #718096; margin: 0 0 20px; font-size: 14px; }
         
-        /* شبكة الخانات */
-        .slots-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        .slot {
-            position: relative;
-            border: 2px dashed #cbd5e0;
-            border-radius: 12px;
-            padding: 12px;
-            background: #f8fafc;
-            transition: all 0.2s ease;
-            height: 150px;
-        }
-        .slot:hover { border-color: #4299e1; background: #ebf8ff; }
-        .slot.filled { border-color: #48bb78; background: #f0fff4; }
+        .repo-btn { background: var(--repo-orange); color: white; padding: 15px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; font-weight: bold; margin-bottom: 20px; width: 100%; box-sizing: border-box; }
+        .menu-btn { padding: 12px 25px; font-size: 16px; cursor: pointer; border: none; border-radius: 12px; color: white; font-weight: bold; width: 250px; transition: 0.3s; display: block; text-align: center; text-decoration: none; margin: 5px auto; }
+        .menu-btn:active { transform: scale(0.97); }
         
-        .slot label {            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #4a5568;
-            font-size: 14px;
-        }
-        .file-input {
+        #gameCanvas { display: none; background: #000; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        #uiLayer { position: fixed; inset: 0; z-index: 50; pointer-events: none; display: none; }
+        
+        .top-bar {
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            opacity: 0;
-            cursor: pointer;
-        }
-        .preview {
-            width: 100%;
-            height: 90px;
-            background: #e2e8f0;
-            border-radius: 8px;
+            top: 15px;
+            left: 15px;
+            right: 15px;
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            color: #a0aec0;
-            font-size: 13px;
+            gap: 10px;
             pointer-events: none;
         }
-        .preview img { width: 100%; height: 100%; object-fit: cover; }
-
-        /* الأزرار */
-        button {
-            background: #3182ce;
+        .top-btn-group {
+            display: flex;
+            gap: 10px;
+            pointer-events: auto;
+        }
+        #exitBtn, #clearBtn {
+            padding: 8px 15px;
             color: white;
             border: none;
-            padding: 14px;
-            font-size: 16px;
             border-radius: 8px;
-            cursor: pointer;
-            width: 100%;
-            font-weight: 600;
-            transition: background 0.2s;
-        }
-        button:hover:not(:disabled) { background: #2b6cb0; }
-        button:disabled { background: #a0aec0; cursor: not-allowed; }
-        
-        #status {
-            margin-top: 15px;
-            font-size: 14px;
-            min-height: 20px;
-            font-weight: 500;
-        }
-        .success { color: #38a169; }        .error { color: #e53e3e; }
-        .info { color: #3182ce; }
-        
-        /* منطقة عرض النتيجة */
-        #resultArea {
-            display: none; /* مخفي افتراضياً */
-            margin-top: 25px;
-            border-top: 2px solid #edf2f7;
-            padding-top: 20px;
-            animation: fadeIn 0.5s ease;
-        }
-        #finalImage {
-            width: 100%;
-            height: auto;
-            border: 1px solid #cbd5e0;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            cursor: pointer;
-        }
-        .download-hint {
-            margin-top: 10px;
-            font-size: 13px;
-            color: #718096;
-        }
-        .download-btn {
-            display: inline-block;
-            margin-top: 10px;
-            padding: 10px 20px;
-            background: #38a169;
-            color: white;
-            text-decoration: none;
-            border-radius: 6px;
             font-weight: bold;
+            pointer-events: auto;
+            cursor: pointer;
         }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        #exitBtn { background: var(--danger); }
+        #clearBtn { background: var(--warning); }
+        
+        #killCounterGame {
+            background: rgba(0,0,0,0.75);
+            padding: 8px 18px;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #e74c3c;
+            border: 1px solid rgba(231,76,60,0.6);
+            backdrop-filter: blur(5px);
+            pointer-events: auto;
+            font-family: monospace;
+            letter-spacing: 1px;
+            box-shadow: 0 0 10px rgba(231,76,60,0.3);
         }
+        #killCounterGame::before {
+            content: "⚔️ ";
+            font-size: 16px;
+        }
+        
+        .controls { position: absolute; bottom: 30px; width: 100%; display: flex; flex-direction: row-reverse; justify-content: space-between; padding: 0 20px; box-sizing: border-box; }
+        .control-btn { width: 75px; height: 75px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255,255,255,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); pointer-events: auto; transition: opacity 0.2s; }
+        .control-btn:active { transform: scale(0.95); background: rgba(255,255,255,0.2); }
+        
+        #healthBarContainer { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); width: 200px; height: 10px; background: #222; border-radius: 5px; overflow: hidden; display: none; }
+        #healthBar { height: 100%; background: var(--danger); width: 100%; transition: 0.2s; }
+        
+        .preview-container { display: flex; gap: 15px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
+        .preview-wrapper { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .preview-label { font-size: 14px; font-weight: bold; color: #bbb; }
+        .preview-box { width: 80px; height: 80px; border: 2px dashed #444; border-radius: 15px; overflow: hidden; background: #000; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; }
+        .preview-box img { max-width: 90%; max-height: 90%; object-fit: contain; }
+        .preview-box:active { transform: scale(0.95); }
 
-        @media (max-width: 480px) {
-            .slots-grid { grid-template-columns: 1fr; }
-            .container { padding: 1.5rem; }
+        .progress-container { width: 100%; background-color: #333; border-radius: 10px; margin: 10px 0; display: none; }
+        .progress-bar { width: 0%; height: 8px; background-color: var(--success); border-radius: 10px; transition: width 0.1s; box-shadow: 0 0 10px var(--success); }
+        
+        .slider-container { margin: 20px 0; text-align: right; }
+        .slider-label { font-size: 14px; color: #bbb; display: block; margin-bottom: 8px; }
+        input[type="range"] { width: 100%; cursor: pointer; accent-color: var(--primary); }
+
+        input[type="file"] { display: none; }
+        #killCountDisplay { color: #e74c3c; font-weight: bold; font-size: 18px; margin-bottom: 15px; white-space: pre-wrap; text-align: center; }
+        
+        .info-badge { position: fixed; bottom: 10px; left: 10px; background: rgba(0,0,0,0.6); padding: 5px 10px; border-radius: 8px; font-size: 10px; color: #888; z-index: 300; pointer-events: none; }
+        
+        .player-name-badge {
+            background: rgba(52, 152, 219, 0.2);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #3498db;
+            font-weight: bold;
+            border-right: 3px solid #3498db;
+            margin-bottom: 15px;
+            text-align: right;
+        }
+        
+        /* مؤشر السحب */
+        .scroll-hint {
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            direction: ltr;
+        }
+        .scroll-hint::before {
+            content: "👆 ";
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>🖼️ دمج 8 صور في صورة واحدة</h2>    <p>ارفع صورة واحدة في كل خانة ليتم ترتيبها جنبًا إلى جنب تلقائيًا</p>
-    
-    <div class="slots-grid" id="slotsGrid">
-        <!-- سيتم إنشاء الخانات برمجياً -->
+    <div id="mainMenu">
+        <div class="menu-container">
+            <h1 style="font-size: 40px; margin-bottom: 0;">Cheetah Engine</h1>
+            <p style="font-size: 20px; color: #aaa; margin-top: 5px; margin-bottom: 6px;">العب وانتظر حتى تحميل صور الساحة!</p>
+            <p id="killCountDisplay"></p>
+            <button class="menu-btn" style="background:var(--danger)" id="survivalBtn">وضع البقاء (Survival)</button>
+            <button class="menu-btn" style="background:var(--success)" id="creativeBtn">وضع البناء (Creative)</button>
+            <button class="menu-btn" style="background:var(--primary)" id="openCustomizer">تغيير صور الساحة🏞️🏃👾</button>
+            <div class="scroll-hint">اسحب للأعلى والأسفل</div>
+        </div>
     </div>
 
-    <button id="convertBtn" disabled>تحويل ودمج الصور</button>
-    <div id="status"></div>
+    <div id="customizerOverlay">
+        <div class="config-card">
+            <h2 style="margin-top:0;">Studio Cheetah</h2>
+            
+            <div id="playerNameDisplay" class="player-name-badge" style="display: none;"></div>
+            
+            <a href="https://www.mediafire.com/folder/9o6p3cx5obacg/assets" target="_blank" class="repo-btn">📦 تحميل الملحقات</a>
+            
+            <div class="preview-container">
+                <div class="preview-wrapper">
+                    <label for="playerLoader"><div class="preview-box"><img id="playerPreview" src=""></div></label>
+                    <span class="preview-label">اللاعب 🏃</span>
+                </div>
+                <div class="preview-wrapper">
+                    <label for="enemyLoader"><div class="preview-box"><img id="enemyPreview" src=""></div></label>
+                    <span class="preview-label">العدو 👾</span>
+                </div>
+                <div class="preview-wrapper">
+                    <label for="bgLoader"><div class="preview-box"><img id="bgPreview" src=""></div></label>
+                    <span class="preview-label">الساحة 🏞️</span>
+                </div>
+            </div>
+            
+            <div class="slider-container">
+                <span class="slider-label">حجم أزرار التحكم: 🎮 <span id="sizeVal">75</span>px</span>
+                <input type="range" id="btnSizeSlider" min="50" max="200" value="75">
+            </div>
 
-    <!-- منطقة ظهور الصورة النهائية -->
-    <div id="resultArea">
-        <h3 style="margin:0 0 10px; color:#2d3748;">✅ النتيجة النهائية:</h3>
-        <!-- هنا ستظهر الصورة -->
-        <img id="finalImage" alt="الصورة المدمجة">
-        <div class="download-hint">اضغط مطولاً على الصورة لحفظها، أو استخدم الزر أدناه</div>
-        <a id="downloadLink" class="download-btn" download="merged_images.png">⬇️ حفظ الصورة للجهاز</a>
+            <div class="progress-container" id="progCont">
+                <div class="progress-bar" id="progBar"></div>
+            </div>
+            
+            <input type="file" id="playerLoader" accept="image/*">
+            <input type="file" id="enemyLoader" accept="image/*">
+            <input type="file" id="bgLoader" accept="image/*">
+            
+            <button class="menu-btn" style="background:var(--success); width:100%;" id="saveAndReload">💾 حفظ وتحديث</button>
+            <button class="menu-btn" style="background:var(--danger); width:100%;" id="closeCustomizer">❌ إلغاء</button>
+            
+            <div class="scroll-hint">اسحب للأعلى والأسفل</div>
+        </div>
     </div>
+
+    <div id="uiLayer">
+        <div id="healthBarContainer"><div id="healthBar"></div></div>
+        
+        <div class="top-bar">
+            <div class="top-btn-group">
+    <button id="pauseBtn" style="background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; padding: 8px 15px;">إيقاف</button>
+    <button id="clearBtn">مسح</button>
+    <button id="exitBtn">خروج</button>
 </div>
 
-<script>
-    const grid = document.getElementById('slotsGrid');
-    const convertBtn = document.getElementById('convertBtn');
-    const status = document.getElementById('status');
-    const resultArea = document.getElementById('resultArea');
-    const finalImage = document.getElementById('finalImage');
-    const downloadLink = document.getElementById('downloadLink');
-
-    // إنشاء 8 خانات برمجياً
-    for (let i = 0; i < 8; i++) {
-        const slot = document.createElement('div');
-        slot.className = 'slot';
-        slot.dataset.index = i;
-        slot.innerHTML = `
-            <label>صورة ${i + 1}</label>
-            <input type="file" accept="image/*" class="file-input">
-            <div class="preview">اختر صورة</div>
-        `;
-        grid.appendChild(slot);
-    }
-
-    const slots = document.querySelectorAll('.slot');
-
-    // التحقق من اكتمال جميع الخانات
-    function checkAllFilled() {
-        const filledCount = Array.from(slots).filter(s => s.querySelector('.file-input').files.length > 0).length;
-        const allFilled = filledCount === 8;
+            <div id="killCounterGame">0</div>
+        </div>
         
-        convertBtn.disabled = !allFilled;
-        status.textContent = allFilled 
-            ? '✅ جميع الخانات ممتلئة. اضغط تحويل.'             : `تم ملء ${filledCount} من 8 خانات`;
-        status.className = allFilled ? 'success' : 'info';
-    }
+        <div class="controls">
+            <div style="display: flex; gap: 10px;">
+                <button class="control-btn" id="rightBtn"></button>
+                <button class="control-btn" id="leftBtn"></button>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="control-btn" id="attackBtn" style="background:rgba(231,76,60,0.4)"></button>
+                <button class="control-btn" id="dashBtn" style="background:rgba(243,156,18,0.4)"></button>
+                <button class="control-btn" id="jumpBtn" style="background:rgba(39,174,96,0.4)"></button>
+            </div>
+        </div>
+    </div>
+    <div class="info-badge">🐆 cheetah game | اسحب القائمة للأعلى والأسفل</div>
 
-    // معالجة اختيار الملفات
-    slots.forEach((slot) => {
-        const input = slot.querySelector('.file-input');
-        const preview = slot.querySelector('.preview');
+    <canvas id="gameCanvas"></canvas>
 
-        input.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (ev) => {
-                    preview.innerHTML = `<img src="${ev.target.result}" alt="معاينة">`;
-                    slot.classList.add('filled');
-                };
-                reader.readAsDataURL(file);
-            } else {
-                preview.innerHTML = 'اختر صورة';
-                slot.classList.remove('filled');
-            }
-            checkAllFilled();
-        });
-    });
-
-    // زر التحويل
-    convertBtn.addEventListener('click', async () => {
-        convertBtn.disabled = true;
-        status.textContent = '⏳ جاري المعالجة...';
-        status.className = 'info';
-        resultArea.style.display = 'none'; // إخفاء النتيجة القديمة إن وجدت
-
-        try {
-            const images = [];
-            const fileInputs = Array.from(slots).map(s => s.querySelector('.file-input'));
-
-            // تحميل الصور بالترتيب
-            for (const input of fileInputs) {
-                const file = input.files[0];
-                const img = new Image();
-                img.src = URL.createObjectURL(file);
-                
-                await new Promise((resolve, reject) => {
-                    img.onload = resolve;
-                    img.onerror = () => reject(new Error('فشل تحميل إحدى الصور'));
-                });
-                images.push(img);
-            }
-            // إنشاء اللوحة القماشية بالأبعاد المطلوبة
-            const canvas = document.createElement('canvas');
-            canvas.width = 4000;
-            canvas.height = 500;
-            const ctx = canvas.getContext('2d');
-
-            // رسم الصور بجانب بعضها
-            images.forEach((img, index) => {
-                ctx.drawImage(img, index * 500, 0, 500, 500);
-                URL.revokeObjectURL(img.src); // تنظيف الذاكرة
-            });
-
-            // تحويل النتيجة لعرضها
-            const dataUrl = canvas.toDataURL('image/png');
-            
-            // عرض الصورة للمستخدم
-            finalImage.src = dataUrl;
-            downloadLink.href = dataUrl;
-            resultArea.style.display = 'block';
-            
-            status.textContent = '✅ تم الدمج بنجاح! الصورة ظهرت في الأسفل.';
-            status.className = 'success';
-
-            // تمرير الشاشة للأسفل لرؤية النتيجة
-            resultArea.scrollIntoView({ behavior: 'smooth' });
-
-        } catch (err) {
-            status.textContent = '❌ حدث خطأ: ' + err.message;
-            status.className = 'error';
-            console.error(err);
-        } finally {
-            convertBtn.disabled = false;
-        }
-    });
-</script>
-
+    <script type="module" src="js/main.js"></script>
 </body>
 </html>
