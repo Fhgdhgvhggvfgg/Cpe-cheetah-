@@ -28,6 +28,7 @@
         h2 { margin: 0 0 5px; color: #2d3748; }
         p { color: #718096; margin: 0 0 20px; font-size: 14px; }
         
+        /* شبكة الخانات */
         .slots-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -46,8 +47,7 @@
         .slot:hover { border-color: #4299e1; background: #ebf8ff; }
         .slot.filled { border-color: #48bb78; background: #f0fff4; }
         
-        .slot label {
-            display: block;
+        .slot label {            display: block;
             margin-bottom: 8px;
             font-weight: 600;
             color: #4a5568;
@@ -74,6 +74,7 @@
         }
         .preview img { width: 100%; height: 100%; object-fit: cover; }
 
+        /* الأزرار */
         button {
             background: #3182ce;
             color: white;
@@ -95,22 +96,45 @@
             min-height: 20px;
             font-weight: 500;
         }
-        .success { color: #38a169; }
-        .error { color: #e53e3e; }
+        .success { color: #38a169; }        .error { color: #e53e3e; }
         .info { color: #3182ce; }
         
-        #downloadLink {
-            display: none;
-            margin-top: 15px;
-            padding: 14px;
+        /* منطقة عرض النتيجة */
+        #resultArea {
+            display: none; /* مخفي افتراضياً */
+            margin-top: 25px;
+            border-top: 2px solid #edf2f7;
+            padding-top: 20px;
+            animation: fadeIn 0.5s ease;
+        }
+        #finalImage {
+            width: 100%;
+            height: auto;
+            border: 1px solid #cbd5e0;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            cursor: pointer;
+        }
+        .download-hint {
+            margin-top: 10px;
+            font-size: 13px;
+            color: #718096;
+        }
+        .download-btn {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 10px 20px;
             background: #38a169;
             color: white;
             text-decoration: none;
-            border-radius: 8px;
+            border-radius: 6px;
             font-weight: bold;
-            font-size: 15px;
         }
-        #downloadLink:hover { background: #2f855a; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
         @media (max-width: 480px) {
             .slots-grid { grid-template-columns: 1fr; }
@@ -121,22 +145,31 @@
 <body>
 
 <div class="container">
-    <h2>🖼️ دمج 8 صور في صورة واحدة</h2>
-    <p>ارفع صورة واحدة في كل خانة ليتم ترتيبها جنبًا إلى جنب تلقائيًا</p>
+    <h2>🖼️ دمج 8 صور في صورة واحدة</h2>    <p>ارفع صورة واحدة في كل خانة ليتم ترتيبها جنبًا إلى جنب تلقائيًا</p>
     
     <div class="slots-grid" id="slotsGrid">
-        <!-- سيتم إنشاء الخانات برمجياً لضمان الترتيب الصحيح -->
+        <!-- سيتم إنشاء الخانات برمجياً -->
     </div>
 
-    <button id="convertBtn" disabled>تحويل</button>
+    <button id="convertBtn" disabled>تحويل ودمج الصور</button>
     <div id="status"></div>
-    <a id="downloadLink" download="merged_images.png">⬇️ تحميل الصورة النهائية</a>
+
+    <!-- منطقة ظهور الصورة النهائية -->
+    <div id="resultArea">
+        <h3 style="margin:0 0 10px; color:#2d3748;">✅ النتيجة النهائية:</h3>
+        <!-- هنا ستظهر الصورة -->
+        <img id="finalImage" alt="الصورة المدمجة">
+        <div class="download-hint">اضغط مطولاً على الصورة لحفظها، أو استخدم الزر أدناه</div>
+        <a id="downloadLink" class="download-btn" download="merged_images.png">⬇️ حفظ الصورة للجهاز</a>
+    </div>
 </div>
 
 <script>
     const grid = document.getElementById('slotsGrid');
     const convertBtn = document.getElementById('convertBtn');
     const status = document.getElementById('status');
+    const resultArea = document.getElementById('resultArea');
+    const finalImage = document.getElementById('finalImage');
     const downloadLink = document.getElementById('downloadLink');
 
     // إنشاء 8 خانات برمجياً
@@ -161,8 +194,7 @@
         
         convertBtn.disabled = !allFilled;
         status.textContent = allFilled 
-            ? '✅ جميع الخانات ممتلئة. جاهز للتحويل.' 
-            : `تم ملء ${filledCount} من 8 خانات`;
+            ? '✅ جميع الخانات ممتلئة. اضغط تحويل.'             : `تم ملء ${filledCount} من 8 خانات`;
         status.className = allFilled ? 'success' : 'info';
     }
 
@@ -191,9 +223,9 @@
     // زر التحويل
     convertBtn.addEventListener('click', async () => {
         convertBtn.disabled = true;
-        status.textContent = '⏳ جاري قراءة ومعالجة الصور...';
+        status.textContent = '⏳ جاري المعالجة...';
         status.className = 'info';
-        downloadLink.style.display = 'none';
+        resultArea.style.display = 'none'; // إخفاء النتيجة القديمة إن وجدت
 
         try {
             const images = [];
@@ -211,37 +243,41 @@
                 });
                 images.push(img);
             }
-
             // إنشاء اللوحة القماشية بالأبعاد المطلوبة
             const canvas = document.createElement('canvas');
             canvas.width = 4000;
             canvas.height = 500;
             const ctx = canvas.getContext('2d');
 
-            // رسم الصور بجانب بعضها (كل صورة بعرض 500px)
+            // رسم الصور بجانب بعضها
             images.forEach((img, index) => {
                 ctx.drawImage(img, index * 500, 0, 500, 500);
                 URL.revokeObjectURL(img.src); // تنظيف الذاكرة
             });
 
-            // إنشاء رابط التحميل
-            downloadLink.href = canvas.toDataURL('image/png');
-            downloadLink.style.display = 'inline-block';
-            status.textContent = '✅ تم التحويل بنجاح! اضغط على الزر أدناه للتحميل.';
+            // تحويل النتيجة لعرضها
+            const dataUrl = canvas.toDataURL('image/png');
+            
+            // عرض الصورة للمستخدم
+            finalImage.src = dataUrl;
+            downloadLink.href = dataUrl;
+            resultArea.style.display = 'block';
+            
+            status.textContent = '✅ تم الدمج بنجاح! الصورة ظهرت في الأسفل.';
             status.className = 'success';
 
+            // تمرير الشاشة للأسفل لرؤية النتيجة
+            resultArea.scrollIntoView({ behavior: 'smooth' });
+
         } catch (err) {
-            status.textContent = '❌ حدث خطأ أثناء المعالجة: ' + err.message;
+            status.textContent = '❌ حدث خطأ: ' + err.message;
             status.className = 'error';
             console.error(err);
         } finally {
-            if (!downloadLink.style.display || downloadLink.style.display === 'none') {
-                convertBtn.disabled = false;
-            }
+            convertBtn.disabled = false;
         }
     });
 </script>
 
 </body>
 </html>
-
