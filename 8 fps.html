@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دمج 8 صور أفقية</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px 0;
+        }
+        .container {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            width: 95%;
+            max-width: 650px;
+            text-align: center;
+        }
+        h2 { margin: 0 0 5px; color: #2d3748; }
+        p { color: #718096; margin: 0 0 20px; font-size: 14px; }
+        
+        .slots-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .slot {
+            position: relative;
+            border: 2px dashed #cbd5e0;
+            border-radius: 12px;
+            padding: 12px;
+            background: #f8fafc;
+            transition: all 0.2s ease;
+            height: 150px;
+        }
+        .slot:hover { border-color: #4299e1; background: #ebf8ff; }
+        .slot.filled { border-color: #48bb78; background: #f0fff4; }
+        
+        .slot label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 14px;
+        }
+        .file-input {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+        .preview {
+            width: 100%;
+            height: 90px;
+            background: #e2e8f0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            color: #a0aec0;
+            font-size: 13px;
+            pointer-events: none;
+        }
+        .preview img { width: 100%; height: 100%; object-fit: cover; }
+
+        button {
+            background: #3182ce;
+            color: white;
+            border: none;
+            padding: 14px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        button:hover:not(:disabled) { background: #2b6cb0; }
+        button:disabled { background: #a0aec0; cursor: not-allowed; }
+        
+        #status {
+            margin-top: 15px;
+            font-size: 14px;
+            min-height: 20px;
+            font-weight: 500;
+        }
+        .success { color: #38a169; }
+        .error { color: #e53e3e; }
+        .info { color: #3182ce; }
+        
+        #downloadLink {
+            display: none;
+            margin-top: 15px;
+            padding: 14px;
+            background: #38a169;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 15px;
+        }
+        #downloadLink:hover { background: #2f855a; }
+
+        @media (max-width: 480px) {
+            .slots-grid { grid-template-columns: 1fr; }
+            .container { padding: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🖼️ دمج 8 صور في صورة واحدة</h2>
+    <p>ارفع صورة واحدة في كل خانة ليتم ترتيبها جنبًا إلى جنب تلقائيًا</p>
+    
+    <div class="slots-grid" id="slotsGrid">
+        <!-- سيتم إنشاء الخانات برمجياً لضمان الترتيب الصحيح -->
+    </div>
+
+    <button id="convertBtn" disabled>تحويل</button>
+    <div id="status"></div>
+    <a id="downloadLink" download="merged_images.png">⬇️ تحميل الصورة النهائية</a>
+</div>
+
+<script>
+    const grid = document.getElementById('slotsGrid');
+    const convertBtn = document.getElementById('convertBtn');
+    const status = document.getElementById('status');
+    const downloadLink = document.getElementById('downloadLink');
+
+    // إنشاء 8 خانات برمجياً
+    for (let i = 0; i < 8; i++) {
+        const slot = document.createElement('div');
+        slot.className = 'slot';
+        slot.dataset.index = i;
+        slot.innerHTML = `
+            <label>صورة ${i + 1}</label>
+            <input type="file" accept="image/*" class="file-input">
+            <div class="preview">اختر صورة</div>
+        `;
+        grid.appendChild(slot);
+    }
+
+    const slots = document.querySelectorAll('.slot');
+
+    // التحقق من اكتمال جميع الخانات
+    function checkAllFilled() {
+        const filledCount = Array.from(slots).filter(s => s.querySelector('.file-input').files.length > 0).length;
+        const allFilled = filledCount === 8;
+        
+        convertBtn.disabled = !allFilled;
+        status.textContent = allFilled 
+            ? '✅ جميع الخانات ممتلئة. جاهز للتحويل.' 
+            : `تم ملء ${filledCount} من 8 خانات`;
+        status.className = allFilled ? 'success' : 'info';
+    }
+
+    // معالجة اختيار الملفات
+    slots.forEach((slot) => {
+        const input = slot.querySelector('.file-input');
+        const preview = slot.querySelector('.preview');
+
+        input.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    preview.innerHTML = `<img src="${ev.target.result}" alt="معاينة">`;
+                    slot.classList.add('filled');
+                };
+                reader.readAsDataURL(file);
+            } else {
+                preview.innerHTML = 'اختر صورة';
+                slot.classList.remove('filled');
+            }
+            checkAllFilled();
+        });
+    });
+
+    // زر التحويل
+    convertBtn.addEventListener('click', async () => {
+        convertBtn.disabled = true;
+        status.textContent = '⏳ جاري قراءة ومعالجة الصور...';
+        status.className = 'info';
+        downloadLink.style.display = 'none';
+
+        try {
+            const images = [];
+            const fileInputs = Array.from(slots).map(s => s.querySelector('.file-input'));
+
+            // تحميل الصور بالترتيب
+            for (const input of fileInputs) {
+                const file = input.files[0];
+                const img = new Image();
+                img.src = URL.createObjectURL(file);
+                
+                await new Promise((resolve, reject) => {
+                    img.onload = resolve;
+                    img.onerror = () => reject(new Error('فشل تحميل إحدى الصور'));
+                });
+                images.push(img);
+            }
+
+            // إنشاء اللوحة القماشية بالأبعاد المطلوبة
+            const canvas = document.createElement('canvas');
+            canvas.width = 4000;
+            canvas.height = 500;
+            const ctx = canvas.getContext('2d');
+
+            // رسم الصور بجانب بعضها (كل صورة بعرض 500px)
+            images.forEach((img, index) => {
+                ctx.drawImage(img, index * 500, 0, 500, 500);
+                URL.revokeObjectURL(img.src); // تنظيف الذاكرة
+            });
+
+            // إنشاء رابط التحميل
+            downloadLink.href = canvas.toDataURL('image/png');
+            downloadLink.style.display = 'inline-block';
+            status.textContent = '✅ تم التحويل بنجاح! اضغط على الزر أدناه للتحميل.';
+            status.className = 'success';
+
+        } catch (err) {
+            status.textContent = '❌ حدث خطأ أثناء المعالجة: ' + err.message;
+            status.className = 'error';
+            console.error(err);
+        } finally {
+            if (!downloadLink.style.display || downloadLink.style.display === 'none') {
+                convertBtn.disabled = false;
+            }
+        }
+    });
+</script>
+
+</body>
+</html>
+
