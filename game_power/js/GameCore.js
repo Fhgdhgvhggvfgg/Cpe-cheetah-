@@ -132,9 +132,9 @@ this.boundaryLineWidth = 5;  // عرض الخط
         this.enemies.push({ 
             x: this.x + (side * 500), 
             y: this.y - 100, 
-            health: 50, 
-            maxHealth: 50, 
-            radius: 45, 
+            health: 50  + this.storage.kills, 
+            maxHealth: 50  + this.storage.kills, 
+            radius: 50, 
             speed: 200 
         });
     }
@@ -368,6 +368,18 @@ setTimeout(() => {
                     if(en.health <= 0) {
                         this.enemies.splice(i, 1);
                         this.storage.kills++;
+                        
+                        if (this.storage.kills > 0 && this.storage.kills % 10 === 0) {
+    if (this.playerHealth + 15 > this.maxHealth) {
+        this.playerHealth = 100;
+    } else {
+        this.playerHealth += 15;
+    }
+    
+    // تحديث واجهة المستخدم لتعكس الزيادة في الصحة
+    this.uiManager.updateHealth(this.playerHealth, this.maxHealth);
+}
+                        
                         this.storage.saveKills(this.storage.kills);
                         this.uiManager.updateMenuDisplay();
                         i--;
