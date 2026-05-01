@@ -2,6 +2,10 @@ import { InputHandler } from './InputHandler.js';
 
 export class GameCore {
     constructor(mode, storage, uiManager) {
+
+this.bgMusic = new Audio();
+this.bgMusic.loop = true; // لجعل الموسيقى تتكرر
+
         this.isPaused = false;
         this.mode = mode;
         this.storage = storage;
@@ -79,6 +83,15 @@ this.boundaryLineWidth = 5;  // عرض الخط
     
     init() {
         this.loadImages();
+        
+            if (this.mode === 'survival') {
+        this.bgMusic.src = 'sounds/survival_bg.mp3'; // تأكد من المسار الصحيح للملف
+    } else if (this.mode === 'creative') {
+        this.bgMusic.src = 'sounds/creative_bg.mp3'; // تأكد من المسار الصحيح للملف
+    }
+        
+            this.bgMusic.play().catch(err => console.log("بانتظار تفاعل المستخدم لتشغيل الصوت"));
+            
         document.getElementById('mainMenu').style.display = 'none';
         this.canvas.style.display = 'block';
         document.getElementById('uiLayer').style.display = 'block';

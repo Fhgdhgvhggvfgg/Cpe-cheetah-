@@ -68,6 +68,7 @@ const uiManager = new UIManager(storage);
     
     // تحديث عرض اسم اللاعب
     uiManager.updateFileNameDisplay();
+
 })();
 
 // تحديث عرض القائمة

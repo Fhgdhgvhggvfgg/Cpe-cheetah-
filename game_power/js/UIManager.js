@@ -1,4 +1,14 @@
 export class UIManager {
+	
+	updateFileNameDisplay() {
+    const display = document.getElementById('playerNameDisplay');
+    if (display) {
+        // عرض اسم اللاعب المخزن في الذاكرة
+        display.innerText = this.storage.playerName || "لاعب الفهد";
+        display.style.display = 'block'; // إظهاره إذا كان مخفياً
+    }
+}
+
     constructor(storage) {
         this.storage = storage;
         this.initEventListeners();
