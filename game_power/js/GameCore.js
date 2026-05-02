@@ -363,28 +363,30 @@ setTimeout(() => {
                     }
                 }
                 
-                if (this.isAttacking && dist < 170) {
-                    en.health -= 100 * dt;
-                    if(en.health <= 0) {
-                        this.enemies.splice(i, 1);
-                        this.storage.kills++;
-                        
-                        if (this.storage.kills > 0 && this.storage.kills % 10 === 0) {
-    if (this.playerHealth + 15 > this.maxHealth) {
-        this.playerHealth = 100;
-    } else {
-        this.playerHealth += 15;
+       // احسب المسافة من موقع الهجوم (أمام اللاعب)
+let attackX = this.facingRight ? this.x + 80 : this.x - 80;
+let attackDist = Math.sqrt((attackX - en.x)**2 + (this.y - en.y)**2);
+
+if (this.isAttacking && attackDist < 170) {
+    en.health -= 100 * dt;
+    if(en.health <= 0) {
+        this.enemies.splice(i, 1);
+        this.storage.kills++;
+        
+        if (this.storage.kills > 0 && this.storage.kills % 10 === 0) {
+            if (this.playerHealth + 15 > this.maxHealth) {
+                this.playerHealth = 100;
+            } else {
+                this.playerHealth += 15;
+            }
+            this.uiManager.updateHealth(this.playerHealth, this.maxHealth);
+        }
+        
+        this.storage.saveKills(this.storage.kills);
+        this.uiManager.updateMenuDisplay();
+        i--;
     }
-    
-    // تحديث واجهة المستخدم لتعكس الزيادة في الصحة
-    this.uiManager.updateHealth(this.playerHealth, this.maxHealth);
 }
-                        
-                        this.storage.saveKills(this.storage.kills);
-                        this.uiManager.updateMenuDisplay();
-                        i--;
-                    }
-                }
             }
         }
         
@@ -542,13 +544,15 @@ this.drawBoundaryLines();
         
         this.drawPlayer();
         
-        // رسم دائرة الهجوم
-        if (this.isAttacking && !this.isDead) {
-            this.ctx.fillStyle = "rgba(231, 76, 60, 0.25)";
-            this.ctx.beginPath();
-            this.ctx.arc(this.x, this.y, 170, 0, Math.PI * 2);
-            this.ctx.fill();
-        }
+
+// رسم دائرة الهجوم المتقدمة
+if (this.isAttacking && !this.isDead) {
+    this.ctx.fillStyle = "rgba(231, 76, 60, 0.25)";
+    this.ctx.beginPath();
+    let offsetX = this.facingRight ? 80 : -80;
+    this.ctx.arc(this.x + offsetX, this.y, 170, 0, Math.PI * 2);
+    this.ctx.fill();
+}
         
         this.ctx.restore();
     }
