@@ -134,7 +134,7 @@ this.boundaryLineWidth = 5;  // عرض الخط
             y: this.y - 100, 
             health: 50  + this.storage.kills, 
             maxHealth: 50  + this.storage.kills, 
-            radius: 50, 
+            radius: 30, 
             speed: 200 
         });
     }
