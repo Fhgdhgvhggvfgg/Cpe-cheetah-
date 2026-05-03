@@ -8,6 +8,37 @@
         :root { --primary: #3498db; --success: #27ae60; --danger: #e74c3c; --warning: #f39c12; --dark: #1a1a1a; --repo-orange: #d38345; }
         body { margin: 0; padding: 0; background: #000; color: white; font-family: 'Segoe UI', sans-serif; height: 100vh; width: 100vw; overflow: hidden; touch-action: none; }
         
+        .custom-img-btn {
+    /* تطبيق الصورة كخلفية */
+    background: url('button.png') no-repeat center center !important;
+    background-size: 100% 100% !important;
+    
+    /* إزالة الخلفيات السابقة والحدود */
+    background-color: transparent !important;
+    border: none !important;
+    
+    /* تنسيق النص */
+    color: white !important;
+    font-weight: bold;
+    padding: 8px 20px;
+    cursor: pointer;
+    
+    /* أبعاد الأزرار (يمكنك تعديلها لتناسب صورتك) */
+    min-width: 80px;
+    height: 40px;
+    
+    /* لضمان دقة الصورة إذا كانت بكسل آرت */
+    image-rendering: pixelated;
+    
+    /* تأثير عند الضغط */
+    transition: transform 0.1s;
+}
+
+.custom-img-btn:active {
+    transform: scale(0.9);
+    filter: brightness(0.8);
+}
+
         /* القائمة الرئيسية - قابلة للسحب عمودياً */
 /* القائمة الرئيسية - إضافة الخلفية */
 /* القائمة الرئيسية - إزالة التنعيم وجعل البكسلات حادة */
@@ -95,7 +126,28 @@
         }
         
         .repo-btn { background: var(--repo-orange); color: white; padding: 15px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; font-weight: bold; margin-bottom: 20px; width: 100%; box-sizing: border-box; }
-        .menu-btn { padding: 12px 25px; font-size: 16px; cursor: pointer; border: none; border-radius: 12px; color: white; font-weight: bold; width: 250px; transition: 0.3s; display: block; text-align: center; text-decoration: none; margin: 5px auto; }
+.menu-btn {
+    /* وضع الصورة وتجبر المتصفح عليها */
+    background: url('button.png') no-repeat center center !important;
+    background-size: 100% 100% !important;
+    
+    /* إزالة الحدود والألوان */
+    border: none !important;
+    background-color: transparent !important;
+    
+    /* تنسيق النص ليظهر فوق الصورة */
+    color: white !important;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px black;
+    
+    width: 200px; /* يمكنك تعديل العرض حسب حجم صورتك */
+    height: 60px;  /* يمكنك تعديل الطول حسب حجم صورتك */
+    display: block;
+    margin: 10px auto;
+    cursor: pointer;
+    image-rendering: pixelated; /* للحفاظ على جودة البكسل */
+}
+
         .menu-btn:active { transform: scale(0.97); }
         
         #gameCanvas { display: none; background: #000; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
@@ -112,11 +164,18 @@
             gap: 10px;
             pointer-events: none;
         }
-        .top-btn-group {
-            display: flex;
-            gap: 10px;
-            pointer-events: auto;
-        }
+        
+.top-btn-group {
+    display: flex;
+    flex-direction: column; /* هذا السطر هو المسؤول عن جعلها عمودية */
+    gap: 10px;              /* المسافة بين الأزرار */
+    align-items: center;    /* محاذاة الأزرار في المنتصف */
+    position: fixed;        /* لجعلها ثابتة في مكانها */
+    top: 20px;              /* المسافة من الأعلى */
+    right: 20px;            /* المسافة من اليمين (يمكنك تغييرها لـ left إذا أردت) */
+    z-index: 1000;          /* لضمان ظهورها فوق كل شيء */
+}
+
         #exitBtn, #clearBtn {
             padding: 8px 15px;
             color: white;
@@ -129,24 +188,33 @@
         #exitBtn { background: var(--danger); }
         #clearBtn { background: var(--warning); }
         
-        #killCounterGame {
-            background: rgba(0,0,0,0.75);
-            padding: 8px 18px;
-            border-radius: 30px;
-            font-size: 18px;
-            font-weight: bold;
-            color: #e74c3c;
-            border: 1px solid rgba(231,76,60,0.6);
-            backdrop-filter: blur(5px);
-            pointer-events: auto;
-            font-family: monospace;
-            letter-spacing: 1px;
-            box-shadow: 0 0 10px rgba(231,76,60,0.3);
-        }
-        #killCounterGame::before {
-            content: "⚔️ ";
-            font-size: 16px;
-        }
+#killCounterGame {
+    position: fixed;         /* تثبيت مكانه على الشاشة */
+    top: 20px;               /* المسافة من الأعلى */
+    left: 20px;              /* المسافة من اليسار */
+    z-index: 1000;           /* ليكون فوق كل طبقات اللعبة */
+    
+    background: rgba(0,0,0,0.75);
+    padding: 8px 18px;
+    border-radius: 30px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #e74c3c;
+    border: 1px solid rgba(231,76,60,0.6);
+    backdrop-filter: blur(5px);
+    pointer-events: auto;
+    font-family: monospace;
+    letter-spacing: 1px;
+    box-shadow: 0 0 10px rgba(231,76,60,0.3);
+    
+    display: block !important; /* إجبار الظهور */
+}
+
+#killCounterGame::before {
+    content: "⚔️ ";
+    font-size: 16px;
+}
+
         
         .controls { position: absolute; bottom: 30px; width: 100%; display: flex; flex-direction: row-reverse; justify-content: space-between; padding: 0 20px; box-sizing: border-box; }
         .control-btn { width: 75px; height: 75px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255,255,255,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); pointer-events: auto; transition: opacity 0.2s; }
@@ -261,11 +329,12 @@
         <div id="healthBarContainer"><div id="healthBar"></div></div>
         
         <div class="top-bar">
-            <div class="top-btn-group">
-    <button id="pauseBtn" style="background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; padding: 8px 15px;">إيقاف</button>
-    <button id="clearBtn">مسح</button>
-    <button id="exitBtn">خروج</button>
+<div class="top-btn-group">
+    <button id="pauseBtn" class="custom-img-btn">إيقاف</button>
+    <button id="clearBtn" class="custom-img-btn">مسح</button>
+    <button id="exitBtn" class="custom-img-btn">خروج</button>
 </div>
+
 
             <div id="killCounterGame">0</div>
         </div>
