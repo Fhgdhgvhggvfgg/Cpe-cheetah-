@@ -312,7 +312,7 @@ window.addEventListener('load', function() {
         if (!document.getElementById('killCountDisplay')) {
             const killText = document.createElement('div');
             killText.id = 'killCountDisplay';
-            killText.innerText = "اضغط الشاشة تبني اضغط المربع تهدم" ;
+            killText.innerText = "عدد القتل: " + totalKills;
             killText.style.fontSize = '20px';
             killText.style.color = '#e74c3c';
             killText.style.textAlign = 'center';
@@ -339,7 +339,7 @@ window.addEventListener('load', function() {
             const naturalW = imgTag.naturalWidth;
             const unitX = naturalW / 8; 
             if (textTag) {
-                textTag.innerText = "عدد القتل: " + totalKills;
+                textTag.innerText = "اضغط الشاشة تبني اضغط المربع تهدم";
                 textTag.style.textAlign = 'center';
             }
         }
