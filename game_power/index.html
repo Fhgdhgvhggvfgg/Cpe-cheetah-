@@ -284,11 +284,9 @@ window.addEventListener('load', function() {
     const imgTag = document.getElementById('quickShowPlayer');
     const textTag = document.getElementById('frameValDisplay');
     
-    // جلب عداد القتل من التخزين المحلي (بناءً على StorageManager.js يتم حفظه باسم 'totalKills')
     const totalKills = localStorage.getItem('totalKills') || 0;
 
     if (imgData && imgTag) {
-        // --- إضافة نص Cheetah Engine قبل الصورة ---
         if (!document.getElementById('engineTitle')) {
             const title = document.createElement('h1');
             title.id = 'engineTitle';
@@ -298,13 +296,10 @@ window.addEventListener('load', function() {
             title.style.marginBottom = '15px';
             title.style.color = '#f39c12'; 
             title.style.textAlign = 'center';
-            
             imgTag.parentNode.insertBefore(title, imgTag);
         }
 
-        // --- إعدادات النافذة العارضة (The Viewport) ---
         const boxSize = 150; 
-        
         imgTag.style.display = 'block'; 
         imgTag.style.margin = '0 auto'; 
         imgTag.style.width = boxSize + 'px';  
@@ -312,30 +307,39 @@ window.addEventListener('load', function() {
         imgTag.style.objectFit = 'cover'; 
         imgTag.style.objectPosition = 'left center'; 
         imgTag.style.transform = 'none'; 
-        
         imgTag.src = imgData;
 
-        // --- إضافة عداد القتل تحت الصورة ---
         if (!document.getElementById('killCountDisplay')) {
             const killText = document.createElement('div');
             killText.id = 'killCountDisplay';
             killText.innerText = "اضغط الشاشة تبني اضغط المربع تهدم" ;
             killText.style.fontSize = '20px';
-            killText.style.color = '#e74c3c'; // لون أحمر ليناسب طابع القتل
+            killText.style.color = '#e74c3c';
             killText.style.textAlign = 'center';
             killText.style.marginTop = '10px';
             killText.style.fontWeight = 'bold';
-            
-            // إدراج العداد بعد الصورة مباشرة
             imgTag.parentNode.insertBefore(killText, imgTag.nextSibling);
+        }
+
+        // --- إضافة نص الانتظار الجديد تحت كل شيء ---
+        if (!document.getElementById('loadingNotice')) {
+            const loadingText = document.createElement('div');
+            loadingText.id = 'loadingNotice';
+            loadingText.innerText = "قد يتأخر تحميل صور الساحة فادخل للعب واخرج عدة مرات. ازرار التحكم في كومبيوتر: a و d للحركة يمينا ويسارا. w للقفز و s للضرب و e للاندفاع. ";
+            loadingText.style.textAlign = 'center';
+            loadingText.style.color = '#ffffff';
+            loadingText.style.marginTop = '20px';
+            loadingText.style.fontSize = '14px';
+            
+            // هذا السطر يضعه في نهاية الحاوية (تحت كل شيء)
+            imgTag.parentNode.appendChild(loadingText);
         }
 
         imgTag.onload = function() {
             const naturalW = imgTag.naturalWidth;
             const unitX = naturalW / 8; 
-
             if (textTag) {
-                textTag.innerText = "عدد القتل" + totalKills;
+                textTag.innerText = "عدد القتل: " + totalKills;
                 textTag.style.textAlign = 'center';
             }
         }
