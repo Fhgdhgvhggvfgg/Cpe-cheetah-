@@ -272,12 +272,61 @@
 </head>
 <body>
 
-    <div id="mainMenu">
-        <div class="menu-container">
-            <h1 style="font-size: 40px; margin-bottom: 0;">Cheetah Engine</h1>
-            <p style="font-size: 20px; color: #aaa; margin-top: 5px; margin-bottom: 6px;">قد يتاخر تحميل صور الساحة فادخل للعب واخرج عدة مرات. ازرار كومبيوتر. a و d للحركة يمين ويسار. w للقفز و s للضرب و e للاندفاع. !</p>
-            <p id="killCountDisplay"></p>
-            <button class="menu-btn" style="background:var(--danger)" id="survivalBtn">وضع البقاء (Survival)</button>
+<div id="mainMenu">
+    <div style="text-align: center; margin-bottom: 15px;">
+        <img id="quickShowPlayer" style="max-width: 150px; border: 2px solid #f39c12; border-radius: 8px; display: none;">
+        <div id="frameValDisplay" style="color: #f39c12; font-size: 14px; margin-top: 5px; font-weight: bold;"></div>
+    </div>
+
+    <script>
+window.addEventListener('load', function() {
+    const imgData = localStorage.getItem('playerImage');
+    const imgTag = document.getElementById('quickShowPlayer');
+    const textTag = document.getElementById('frameValDisplay');
+    
+    if (imgData && imgTag) {
+        // --- إضافة نص Cheetah Engine قبل الصورة ---
+        if (!document.getElementById('engineTitle')) {
+            const title = document.createElement('h1');
+            title.id = 'engineTitle';
+            title.innerText = 'Cheetah Engine';
+            title.style.fontSize = '32px'; // حجم الخط
+            title.style.fontWeight = 'bold'; // خط عريض
+            title.style.marginBottom = '15px'; // مسافة بين النص والصورة
+            title.style.color = '#f39c12'; // لون برتقالي مميز (مثل سمة اللعبة)
+            title.style.textAlign = 'center';
+            
+            imgTag.parentNode.insertBefore(title, imgTag);
+        }
+
+        // --- إعدادات النافذة العارضة (The Viewport) ---
+        const boxSize = 150; 
+        
+        imgTag.style.display = 'block'; // تغيير لـ block لضمان نزولها تحت العنوان
+        imgTag.style.margin = '0 auto'; // لتوسيط الصورة
+        imgTag.style.width = boxSize + 'px';  
+        imgTag.style.height = boxSize + 'px'; 
+        imgTag.style.objectFit = 'cover'; 
+        imgTag.style.objectPosition = 'left center'; 
+        imgTag.style.transform = 'none'; 
+        
+        imgTag.src = imgData;
+
+        imgTag.onload = function() {
+            const naturalW = imgTag.naturalWidth;
+            const unitX = naturalW / 8; 
+
+            if (textTag) {
+                textTag.innerText = "عرض الإطار (1x): " + Math.round(unitX) + "px";
+                textTag.style.textAlign = 'center';
+            }
+        }
+    }
+});
+
+    </script>
+
+    <button id="survivalBtn" class="menu-btn">طور البقاء (survival) </button>
             <button class="menu-btn" style="background:var(--success)" id="creativeBtn">وضع البناء (Creative)</button>
             <button class="menu-btn" style="background:var(--primary)" id="openCustomizer">تغيير صور الساحة🏞️🏃👾</button>
             <div class="scroll-hint">اسحب للأعلى والأسفل</div>
