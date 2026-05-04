@@ -284,16 +284,19 @@ window.addEventListener('load', function() {
     const imgTag = document.getElementById('quickShowPlayer');
     const textTag = document.getElementById('frameValDisplay');
     
+    // جلب عداد القتل من التخزين المحلي (بناءً على StorageManager.js يتم حفظه باسم 'totalKills')
+    const totalKills = localStorage.getItem('totalKills') || 0;
+
     if (imgData && imgTag) {
         // --- إضافة نص Cheetah Engine قبل الصورة ---
         if (!document.getElementById('engineTitle')) {
             const title = document.createElement('h1');
             title.id = 'engineTitle';
             title.innerText = 'Cheetah Engine';
-            title.style.fontSize = '32px'; // حجم الخط
-            title.style.fontWeight = 'bold'; // خط عريض
-            title.style.marginBottom = '15px'; // مسافة بين النص والصورة
-            title.style.color = '#f39c12'; // لون برتقالي مميز (مثل سمة اللعبة)
+            title.style.fontSize = '32px';
+            title.style.fontWeight = 'bold';
+            title.style.marginBottom = '15px';
+            title.style.color = '#f39c12'; 
             title.style.textAlign = 'center';
             
             imgTag.parentNode.insertBefore(title, imgTag);
@@ -302,8 +305,8 @@ window.addEventListener('load', function() {
         // --- إعدادات النافذة العارضة (The Viewport) ---
         const boxSize = 150; 
         
-        imgTag.style.display = 'block'; // تغيير لـ block لضمان نزولها تحت العنوان
-        imgTag.style.margin = '0 auto'; // لتوسيط الصورة
+        imgTag.style.display = 'block'; 
+        imgTag.style.margin = '0 auto'; 
         imgTag.style.width = boxSize + 'px';  
         imgTag.style.height = boxSize + 'px'; 
         imgTag.style.objectFit = 'cover'; 
@@ -312,12 +315,27 @@ window.addEventListener('load', function() {
         
         imgTag.src = imgData;
 
+        // --- إضافة عداد القتل تحت الصورة ---
+        if (!document.getElementById('killCountDisplay')) {
+            const killText = document.createElement('div');
+            killText.id = 'killCountDisplay';
+            killText.innerText = "اضغط الشاشة تبني اضغط المربع تهدم" ;
+            killText.style.fontSize = '20px';
+            killText.style.color = '#e74c3c'; // لون أحمر ليناسب طابع القتل
+            killText.style.textAlign = 'center';
+            killText.style.marginTop = '10px';
+            killText.style.fontWeight = 'bold';
+            
+            // إدراج العداد بعد الصورة مباشرة
+            imgTag.parentNode.insertBefore(killText, imgTag.nextSibling);
+        }
+
         imgTag.onload = function() {
             const naturalW = imgTag.naturalWidth;
             const unitX = naturalW / 8; 
 
             if (textTag) {
-                textTag.innerText = "عرض الإطار (1x): " + Math.round(unitX) + "px";
+                textTag.innerText = "عدد القتل" + totalKills;
                 textTag.style.textAlign = 'center';
             }
         }
