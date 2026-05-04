@@ -325,7 +325,7 @@ window.addEventListener('load', function() {
         if (!document.getElementById('loadingNotice')) {
             const loadingText = document.createElement('div');
             loadingText.id = 'loadingNotice';
-            loadingText.innerText = "قد يتأخر تحميل صور الساحة فادخل للعب واخرج عدة مرات. ازرار التحكم في كومبيوتر: a و d للحركة يمينا ويسارا. w للقفز و s للضرب و e للاندفاع. ";
+            loadingText.innerText = "ازرار التحكم في كومبيوتر: a و d للحركة يمينا ويسارا. w للقفز و s للضرب و e للاندفاع.  ";
             loadingText.style.textAlign = 'center';
             loadingText.style.color = '#ffffff';
             loadingText.style.marginTop = '20px';
@@ -347,6 +347,8 @@ window.addEventListener('load', function() {
 });
 
     </script>
+
+<div style="color: white; text-align: center; font-weight: bold; margin-top: 10px;">قد يتأخر تحميل صور الساحة وواجهة شخصية اللاعب لذا ادخل للعب واخرج عدة مرات. </div>
 
     <button id="survivalBtn" class="menu-btn">طور البقاء (survival) </button>
             <button class="menu-btn" style="background:var(--success)" id="creativeBtn">وضع البناء (Creative)</button>
