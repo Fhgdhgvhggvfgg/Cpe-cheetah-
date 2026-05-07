@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>عارض صور PNG</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+            background: #f0f2f5;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .card {
+            background: #fff;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+        }
+        h2 { color: #1a1a1a; margin-bottom: 20px; font-size: 22px; }
+        .input-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            outline: none;
+            transition: border 0.2s;
+        }
+        input:focus { border-color: #007bff; }
+        button {
+            padding: 12px 20px;
+            background: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 15px;            font-weight: bold;
+            transition: background 0.2s;
+        }
+        button:hover { background: #0056b3; }
+        .result {
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .result img {
+            max-width: 100%;
+            max-height: 250px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .msg { margin-top: 10px; font-size: 16px; font-weight: bold; }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .loading { color: #666; }
+        
+        /* 🟢 زر التحميل */
+        .download-btn {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 10px 22px;
+            background: #28a745;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: bold;
+            transition: background 0.2s, transform 0.1s;
+            cursor: pointer;
+            border: none;
+        }
+        .download-btn:hover { background: #218838; transform: translateY(-1px); }
+        .download-btn:active { transform: translateY(0); }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>🖼️ عارض صور PNG</h2>
+        <div class="input-group">
+            <input type="text" id="imgName" placeholder="اكتب اسم الصورة (بدون .png)">
+            <button onclick="loadImage()">عرض</button>
+        </div>        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        function loadImage() {
+            const input = document.getElementById('imgName');
+            const resultDiv = document.getElementById('result');
+            let name = input.value.trim();
+
+            if (!name) {
+                resultDiv.innerHTML = '<p class="msg loading">الرجاء كتابة اسم الصورة</p>';
+                return;
+            }
+
+            // إضافة الامتداد تلقائياً إذا لم يكن موجوداً
+            const fileName = name.toLowerCase().endsWith('.png') ? name : name + '.png';
+
+            resultDiv.innerHTML = '<p class="msg loading">جاري التحقق...</p>';
+
+            const img = new Image();
+
+            img.onload = function() {
+                resultDiv.innerHTML = '';
+                img.alt = fileName;
+                resultDiv.appendChild(img);
+
+                const msg = document.createElement('p');
+                msg.className = 'msg success';
+                msg.textContent = `✅ تم العثور على: ${fileName}`;
+                resultDiv.appendChild(msg);
+
+                // 🔽 إنشاء زر التحميل ديناميكياً
+                const dlBtn = document.createElement('a');
+                dlBtn.href = fileName;
+                dlBtn.download = fileName; // يجبر المتصفح على التحميل بدلاً من الفتح
+                dlBtn.className = 'download-btn';
+                dlBtn.textContent = '⬇️ تحميل الصورة';
+                resultDiv.appendChild(dlBtn);
+            };
+
+            img.onerror = function() {
+                resultDiv.innerHTML = `<p class="msg error">❌ الصورة غير موجودة: ${fileName}</p>`;
+            };
+
+            // تعيين المصدر بعد ربط الأحداث
+            img.src = fileName;
+        }
+
+        // السماح بالضغط على Enter
+        document.getElementById('imgName').addEventListener('keypress', function(e) {            if (e.key === 'Enter') loadImage();
+        });
+    </script>
+
+</body>
+</html>
