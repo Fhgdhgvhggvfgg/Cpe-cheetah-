@@ -8,7 +8,17 @@
     <style>
         :root { --primary: #3498db; --success: #27ae60; --danger: #e74c3c; --warning: #f39c12; --dark: #1a1a1a; --repo-orange: #d38345; }
         body { margin: 0; padding: 0; background: #000; color: white; font-family: 'Segoe UI', sans-serif; height: 100vh; width: 100vw; overflow: hidden; touch-action: none; }
-        
+#mainMenu div, #customizerOverlay div { 
+    background: #007bff66; 
+    padding: 3px 10px; 
+    border-radius: 10px; 
+    border: 2px solid #ffffff; 
+    margin: 10px auto; 
+    width: fit-content; /* يرتكز على عرض النص */
+    display: block;    /* لضمان عمل fit-content */
+}
+
+
         .custom-img-btn {
     /* تطبيق الصورة كخلفية */
     pointer-events: auto !important;
