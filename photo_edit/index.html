@@ -17,7 +17,9 @@
             padding: 20px 0;
         }
         .container {
-            background: #fff;
+            /* استدعاء خلفية المنيو من المجلد المجاور */
+            background: linear-gradient(rgba(255,255,255,0.9), rgba(255,255,255,0.9)), url('../game_power/menu.png');
+            background-size: cover;
             padding: 2rem;
             border-radius: 16px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.12);
@@ -25,6 +27,7 @@
             max-width: 650px;
             text-align: center;
         }
+
         h2 { margin: 0 0 5px; color: #2d3748; }
         p { color: #718096; margin: 0 0 20px; font-size: 14px; }
         
@@ -37,13 +40,41 @@
         }
         .slot {
             position: relative;
-            border: 2px dashed #cbd5e0;
+            border: 2px solid #cbd5e0;
             border-radius: 12px;
             padding: 12px;
-            background: #f8fafc;
+            /* استدعاء الصورة من المجلد المجاور */
+            background: url('../game_power/player_f.png') no-repeat center center;
+            background-size: 100% 100%;
             transition: all 0.2s ease;
             height: 150px;
+            overflow: hidden;
+            image-rendering: pixelated; /* للحفاظ على جودة البكسل إذا كانت الصورة صغيرة */
         }
+        
+        .slot:hover { 
+            filter: brightness(1.2); 
+            border-color: #4299e1; 
+        }
+
+        /* عندما تمتلئ الخانة بصورة المستخدم، نجعل الخلفية تختفي أو تبهت */
+        .slot.filled { 
+            border-color: #48bb78; 
+            background-image: none; /* إزالة صورة الخلفية عند وضع صورة المعاينة */
+            background-color: #f0fff4;
+        }
+
+        .slot label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: white; /* تغيير اللون للأبيض ليظهر فوق صورة الزر */
+            text-shadow: 1px 1px 2px black;
+            font-size: 14px;
+            position: relative;
+            z-index: 2;
+        }
+
         .slot:hover { border-color: #4299e1; background: #ebf8ff; }
         .slot.filled { border-color: #48bb78; background: #f0fff4; }
         
@@ -145,7 +176,7 @@
 <body>
 
 <div class="container">
-    <h2>اصنع صورة اللاعب مكونة من 8 فريمات</h2>    <p>الصورة 1 للوقوف والصور 2.3.4.5 للجري والصورة 6 للقفز و 7 للاندفاع و8 للضرب </p>
+    <h2>🖼️ دمج 8 صور في صورة واحدة</h2>    <p>ارفع صورة واحدة في كل خانة ليتم ترتيبها جنبًا إلى جنب تلقائيًا</p>
     
     <div class="slots-grid" id="slotsGrid">
         <!-- سيتم إنشاء الخانات برمجياً -->
