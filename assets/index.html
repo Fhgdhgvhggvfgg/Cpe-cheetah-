@@ -43,16 +43,63 @@
         .search-result.show { display: block; }
         .search-result img { width: 100%; border-radius: 10px; margin-bottom: 10px; }
         
+        /* شريط المجموعات الأفقي */
+        .category-bar {
+            padding: 15px;
+            background: #fff;
+            border-bottom: 2px solid #e9ecef;            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            flex-wrap: wrap;
+        }
+        .category-bar::-webkit-scrollbar { height: 6px; }
+        .category-bar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 3px; }
+        .category-bar::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+        
+        .category-btn {
+            padding: 10px 20px;
+            background: #e9ecef;
+            color: #495057;
+            border: 2px solid #dee2e6;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            white-space: nowrap;
+            transition: all 0.3s;
+        }
+        .category-btn:hover {
+            background: #dee2e6;
+            transform: translateY(-2px);
+        }
+        .category-btn.active {
+            background: #007bff;
+            color: #fff;
+            border-color: #007bff;
+        }
+        .category-btn .count {
+            background: rgba(0,0,0,0.2);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            margin-right: 5px;
+        }
+        
         .gallery {
             max-height: 600px; overflow-y: auto; padding: 15px;
         }
         .gallery::-webkit-scrollbar { width: 8px; }
-        .gallery::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }        .gallery::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+        .gallery::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        .gallery::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
         .gallery::-webkit-scrollbar-thumb:hover { background: #aaa; }
         
         .image-card {
             background: #fff; border: 2px solid #e0e0e0; border-radius: 12px;
             margin-bottom: 15px; overflow: hidden;
+            animation: fadeIn 0.3s ease;        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         .image-container {
             width: 100%; min-height: 200px; background: #f8f9fa;
@@ -79,7 +126,6 @@
         .status-success { background: #d4edda; color: #155724; }
         .status-error { background: #f8d7da; color: #721c24; }
         
-        /* زر التحميل للمعرض */
         .download-btn {
             padding: 6px 14px; background: #28a745; color: #fff;
             text-decoration: none; border-radius: 8px; font-size: 13px;
@@ -92,19 +138,24 @@
             color: #0056b3; border-bottom: 1px solid #e0e0e0;
         }
         .empty-msg { text-align: center; padding: 40px; color: #666; }
+        .no-items { text-align: center; padding: 40px; color: #6c757d; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">            <h1>️ معرض الصور</h1>
-            <p>ابحث عن شخصيتك انلم تضهر</p>
-        </div>
+        <div class="header">
+            <h1>🖼️ معرض صور الشخصيات والساحات</h1>
+            <p>اختر المجموعة لعرض الصور</p>        </div>
         
         <div class="search-box">
-            <input type="text" id="searchInput" placeholder="🔍 اكتب اسم الصورة واضغط Enter...">
+            <input type="text" id="searchInput" placeholder="🔍 ابحث عن صورة...">
         </div>
         
         <div class="search-result" id="searchResult"></div>
+        
+        <!-- شريط المجموعات -->
+        <div class="category-bar" id="categoryBar"></div>
+        
         <div class="stats" id="stats" style="display:none;"></div>
         
         <div class="gallery" id="gallery">
@@ -120,10 +171,14 @@
         const statsDiv = document.getElementById('stats');
         const searchInput = document.getElementById('searchInput');
         const searchResult = document.getElementById('searchResult');
+        const categoryBar = document.getElementById('categoryBar');
         
         let totalImages = 0, loadedImages = 0, failedImages = 0;
+        let categories = {};
+        let currentCategory = '';
+        let allItems = [];
 
-        async function loadFromDataFile() {
+        async function loadDataFile() {
             try {
                 const response = await fetch('data.txt');
                 if (!response.ok) throw new Error('data.txt غير موجود');
@@ -131,25 +186,96 @@
                 const text = await response.text();
                 const lines = text.split('\n').filter(line => line.trim() !== '');
                 
-                if (lines.length === 0) {
-                    gallery.innerHTML = '<div class="empty-msg">📄 الملف فارغ</div>';
+                // قراءة المجموعات والعناصر
+                let currentCat = null;
+                categories = {};
+                
+                for (const line of lines) {
+                    const trimmed = line.trim();
+                    if (trimmed.startsWith('#')) {
+                        // مجموعة جديدة
+                        currentCat = trimmed.substring(1).trim();                        categories[currentCat] = [];
+                    } else if (currentCat) {
+                        // عنصر ينتمي للمجموعة الحالية
+                        const fileName = trimmed.endsWith('.png') ? trimmed : trimmed + '.png';
+                        const item = {
+                            name: trimmed,
+                            fileName: fileName,
+                            category: currentCat
+                        };
+                        categories[currentCat].push(item);
+                        allItems.push(item);
+                    }
+                }
+                
+                if (allItems.length === 0) {
+                    gallery.innerHTML = '<div class="empty-msg">📄 الملف فارغ أو لا يحتوي على مجموعات صحيحة</div>';
                     return;
                 }
                 
-                totalImages = lines.length;
-                gallery.innerHTML = '';
-                statsDiv.style.display = 'block';
-                statsDiv.textContent = `الإجمالي: ${totalImages} صورة`;
+                // إنشاء أزرار المجموعات
+                createCategoryButtons();
                 
-                for (const line of lines) {
-                    const imageName = line.trim();
-                    const fileName = imageName.endsWith('.png') ? imageName : imageName + '.png';
-                    createImageCard(fileName, imageName);
-                }                
-                loadAllImages();
+                // عرض أول مجموعة تلقائياً
+                const firstCategory = Object.keys(categories)[0];
+                if (firstCategory) {
+                    showCategory(firstCategory);
+                }
+                
             } catch (error) {
+                console.error(error);
                 gallery.innerHTML = '<div class="empty-msg" style="color:#dc3545">⚠️ خطأ في قراءة data.txt</div>';
             }
+        }
+
+        function createCategoryButtons() {
+            categoryBar.innerHTML = '';
+            
+            for (const [catName, items] of Object.entries(categories)) {
+                const btn = document.createElement('button');
+                btn.className = 'category-btn';
+                btn.dataset.category = catName;
+                btn.innerHTML = `<span class="count">${items.length}</span> ${catName}`;
+                btn.onclick = () => showCategory(catName);
+                
+                categoryBar.appendChild(btn);
+            }
+        }
+
+        function showCategory(categoryName) {
+            currentCategory = categoryName;            
+            // تحديث الأزرار النشطة
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.category === categoryName) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            // عرض العناصر
+            gallery.innerHTML = '';
+            loadedImages = 0;
+            failedImages = 0;
+            
+            const items = categories[categoryName] || [];
+            totalImages = items.length;
+            
+            if (items.length === 0) {
+                gallery.innerHTML = '<div class="no-items">📭 لا توجد عناصر في هذه المجموعة</div>';
+                statsDiv.style.display = 'none';
+                return;
+            }
+            
+            statsDiv.style.display = 'block';
+            statsDiv.textContent = `المجموعة: ${categoryName} | ${totalImages} عنصر`;
+            
+            // إنشاء البطاقات
+            for (const item of items) {
+                createImageCard(item.fileName, item.name);
+            }
+            
+            // تحميل الصور
+            loadAllImages();
         }
 
         function createImageCard(fileName, displayName) {
@@ -166,8 +292,7 @@
                     <span class="status-badge" id="status-${safeId}">⏳</span>
                 </div>
             `;
-            gallery.appendChild(card);
-        }
+            gallery.appendChild(card);        }
 
         async function loadAllImages() {
             const cards = document.querySelectorAll('.image-card');
@@ -188,13 +313,13 @@
                     statusBadge.className = 'status-badge status-success';
                     statusBadge.textContent = '✅';
                     
-                    // 🔽 زر التحميل للمعرض (مُعاد الآن)
                     const dlBtn = document.createElement('a');
                     dlBtn.href = fileName;
                     dlBtn.download = fileName;
                     dlBtn.className = 'download-btn';
                     dlBtn.textContent = '⬇️ تحميل';
-                    infoDiv.appendChild(dlBtn);                    
+                    infoDiv.appendChild(dlBtn);
+                    
                     loadedImages++;
                     updateStats();
                 };
@@ -202,7 +327,7 @@
                 img.onerror = function() {
                     container.innerHTML = '<div class="error-state">❌ غير موجودة</div>';
                     statusBadge.className = 'status-badge status-error';
-                    statusBadge.textContent = '';
+                    statusBadge.textContent = '❌';
                     failedImages++;
                     updateStats();
                 };
@@ -216,8 +341,7 @@
             const name = searchInput.value.trim();
             if (!name) return;
             const fileName = name.endsWith('.png') ? name : name + '.png';
-            
-            searchResult.className = 'search-result show';
+                        searchResult.className = 'search-result show';
             searchResult.innerHTML = '<div class="loading-spinner"></div><p style="text-align:center">جاري البحث...</p>';
             
             const img = new Image();
@@ -238,12 +362,13 @@
 
         function updateStats() {
             const total = loadedImages + failedImages;
-            if (total === totalImages) {
-                statsDiv.textContent = `✅ ${loadedImages} | ❌ ${failedImages} |  ${totalImages}`;
+            if (total === totalImages && totalImages > 0) {
+                statsDiv.textContent += ` | ✅ ${loadedImages} | ❌ ${failedImages}`;
             }
         }
 
-        searchInput.addEventListener('keypress', e => { if (e.key === 'Enter') searchImage(); });        window.addEventListener('DOMContentLoaded', loadFromDataFile);
+        searchInput.addEventListener('keypress', e => { if (e.key === 'Enter') searchImage(); });
+        window.addEventListener('DOMContentLoaded', loadDataFile);
     </script>
 </body>
 </html>

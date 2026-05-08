@@ -1,8 +1,10 @@
+#player
 razan
 daiana
 keven_01
 steve
 sandy
+#stadium
 daiana_temple
 minecraft
 sandy_city
