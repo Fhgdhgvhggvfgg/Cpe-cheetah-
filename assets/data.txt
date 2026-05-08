@@ -9,4 +9,4 @@ sandy_city
 baghdad
 steve_city
 keven_city
-kingdom
+kingdom_shoto
