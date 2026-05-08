@@ -12,3 +12,8 @@ baghdad
 steve_city
 keven_city
 kingdom_shoto
+#enemys
+ghost
+vex
+dron
+eyes
