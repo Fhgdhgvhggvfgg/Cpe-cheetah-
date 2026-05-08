@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>معرض الشخصيات والساحات</title>
+    <title>معرض الصور السريع</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -33,9 +33,11 @@
             padding: 15px;
             background: #f8f9fa;
             border-bottom: 2px solid #e9ecef;
+            display: flex;
+            gap: 10px;
         }
         .search-box input {
-            width: 100%;
+            flex: 1;
             padding: 12px;
             border: 2px solid #e0e0e0;
             border-radius: 10px;
@@ -43,11 +45,21 @@
             outline: none;
         }
         .search-box input:focus { border-color: #007bff; }
+        .search-btn {
+            padding: 12px 20px;
+            background: #007bff;            color: #fff;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .search-btn:hover { background: #0056b3; }
         
         .gallery {
             max-height: 600px;
             overflow-y: auto;
-            padding: 15px;        }
+            padding: 15px;
+        }
         .gallery::-webkit-scrollbar { width: 8px; }
         .gallery::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
         .gallery::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
@@ -55,28 +67,73 @@
         
         .image-card {
             background: #fff;
-            border: 1px solid #e0e0e0;
+            border: 2px solid #e0e0e0;
             border-radius: 12px;
             margin-bottom: 15px;
             overflow: hidden;
-            transition: transform 0.2s, box-shadow 0.2s;
+            animation: slideIn 0.3s ease;
         }
-        .image-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        .image-card img {
+        
+        .image-container {
+            width: 100%;
+            min-height: 200px;
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .loading-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+        .loading-spinner {
+            border: 3px solid #e0e0e0;
+            border-top: 3px solid #007bff;            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .image-container img {
             width: 100%;
             height: auto;
             display: block;
-            background: #f8f9fa;
+            animation: fadeIn 0.5s ease;
         }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        .error-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #dc3545;
+            background: #fff5f5;
+        }
+        .error-state .icon { font-size: 40px; margin-bottom: 10px; }
+        
         .image-info {
             padding: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             gap: 10px;
+            background: #fff;
+            border-top: 1px solid #e0e0e0;
         }
         .image-name {
             font-size: 14px;
@@ -87,6 +144,15 @@
             text-overflow: ellipsis;
             white-space: nowrap;
         }
+        .status-badge {
+            padding: 4px 10px;            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        .status-loading { background: #fff3cd; color: #856404; }
+        .status-success { background: #d4edda; color: #155724; }
+        .status-error { background: #f8d7da; color: #721c24; }
+        
         .download-btn {
             padding: 8px 16px;
             background: #28a745;
@@ -96,36 +162,9 @@
             font-size: 13px;
             font-weight: bold;
             white-space: nowrap;
-            transition: background 0.2s;        }
+            transition: background 0.2s;
+        }
         .download-btn:hover { background: #218838; }
-        
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #666;
-        }
-        .spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #007bff;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .not-found {
-            text-align: center;
-            padding: 30px;
-            color: #dc3545;
-            background: #fff5f5;
-            border-radius: 10px;
-            margin: 10px 0;
-        }
         
         .stats {
             background: #e7f3ff;
@@ -133,34 +172,66 @@
             font-size: 13px;
             color: #0056b3;
             border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .progress-bar {
+            flex: 1;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            margin-right: 15px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #007bff, #00d2ff);
+            transition: width 0.3s ease;
         }
         
-        .error-msg {
+        .empty-msg {
             text-align: center;
-            padding: 20px;
-            color: #dc3545;
-            background: #fff5f5;
-            margin: 15px;
-            border-radius: 10px;
+            padding: 40px;
+            color: #666;
+            background: #f8f9fa;            border-radius: 10px;
+            margin: 15px 0;
+        }
+        
+        .batch-loading {
+            text-align: center;
+            padding: 10px;
+            background: #fff3cd;
+            color: #856404;
+            font-size: 13px;
+            border-radius: 8px;
+            margin-bottom: 10px;
         }
     </style>
 </head>
-<body>    <div class="container">
+<body>
+    <div class="container">
         <div class="header">
-            <h1>معرض الشخصيات والساحات  </h1>
-            <p>فيه كل ما يلزم اللاعب الرائع مثلك</p>
+            <h1>🖼️ معرض الصور السريع</h1>
+            <p>تحميل فوري للصور الجديدة</p>
         </div>
         
         <div class="search-box">
-            <input type="text" id="searchInput" placeholder="اكتب اسم الصورة التي لم تحمل بعد">
+            <input type="text" id="searchInput" placeholder="🔍 ابحث عن صورة...">
+            <button class="search-btn" onclick="addSearchImage()">إضافة</button>
         </div>
         
-        <div class="stats" id="stats" style="display:none;"></div>
+        <div class="stats" id="stats" style="display:none;">
+            <span id="statsText">0/0</span>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+            </div>
+        </div>
         
         <div class="gallery" id="gallery">
-            <div class="loading">
-                <div class="spinner"></div>
-                <p>جاري قراءة البيانات وتحميل الصور...</p>
+            <div class="empty-msg">
+                <div class="loading-spinner"></div>
+                <p>جاري قراءة data.txt...</p>
             </div>
         </div>
     </div>
@@ -168,13 +239,16 @@
     <script>
         const gallery = document.getElementById('gallery');
         const statsDiv = document.getElementById('stats');
+        const statsText = document.getElementById('statsText');
+        const progressFill = document.getElementById('progressFill');
         const searchInput = document.getElementById('searchInput');
-        let allImages = [];
-        let foundCount = 0;
-        let notFoundCount = 0;
+        
+        let totalImages = 0;        let loadedImages = 0;
+        let failedImages = 0;
+        let loadedFiles = new Set(); // تتبع الصور المحملة بالفعل
 
-        // قراءة ملف data.txt والبحث عن الصور
-        async function loadImagesFromData() {
+        // تحميل data.txt وإنشاء الخانات
+        async function loadFromDataFile() {
             try {
                 const response = await fetch('data.txt');
                 if (!response.ok) throw new Error('ملف data.txt غير موجود');
@@ -183,50 +257,92 @@
                 const lines = text.split('\n').filter(line => line.trim() !== '');
                 
                 if (lines.length === 0) {
-                    gallery.innerHTML = '<div class="not-found">📄 ملف data.txt فارغ</div>';
+                    gallery.innerHTML = '<div class="empty-msg">📄 ملف data.txt فارغ</div>';
                     return;
                 }
                 
+                totalImages = lines.length;
                 gallery.innerHTML = '';
-                statsDiv.style.display = 'block';
+                statsDiv.style.display = 'flex';
                 
-                // معالجة كل سطر
+                // إنشاء جميع الخانات
                 for (const line of lines) {
                     const imageName = line.trim();
                     const fileName = imageName.endsWith('.png') ? imageName : imageName + '.png';
-                                        await loadImageCard(fileName, imageName);
+                    createImageCard(fileName, imageName);
                 }
                 
-                updateStats();
+                // تحميل الصور بشكل متوازي (5 في نفس الوقت)
+                loadImagesInBatches(5);
                 
             } catch (error) {
                 console.error(error);
-                gallery.innerHTML = '<div class="error-msg">⚠️ تعذر قراءة data.txt<br><small>' + error.message + '</small></div>';
+                gallery.innerHTML = '<div class="empty-msg" style="color:#dc3545">⚠️ تعذر قراءة data.txt<br><small>' + error.message + '</small></div>';
             }
         }
 
-        // تحميل بطاقة صورة واحدة
-        function loadImageCard(fileName, displayName) {
+        // إنشاء خانة صورة
+        function createImageCard(fileName, displayName) {
+            const card = document.createElement('div');
+            card.className = 'image-card';
+            card.dataset.fileName = fileName;
+            card.dataset.displayName = displayName;
+            
+            const safeId = fileName.replace(/[^a-z0-9]/gi, '-');
+            
+            card.innerHTML = `
+                <div class="image-container" id="container-${safeId}">
+                    <div class="loading-state">                        <div class="loading-spinner"></div>
+                        <p>جاري التحميل...</p>
+                    </div>
+                </div>
+                <div class="image-info">
+                    <span class="image-name">${displayName}</span>
+                    <span class="status-badge status-loading" id="status-${safeId}">⏳ تحميل</span>
+                </div>
+            `;
+            
+            gallery.appendChild(card);
+        }
+
+        // تحميل الصور في مجموعات (Batch Loading) - أسرع بكثير!
+        async function loadImagesInBatches(batchSize = 5) {
+            const cards = Array.from(document.querySelectorAll('.image-card'));
+            const unloadedCards = cards.filter(card => !loadedFiles.has(card.dataset.fileName));
+            
+            for (let i = 0; i < unloadedCards.length; i += batchSize) {
+                const batch = unloadedCards.slice(i, i + batchSize);
+                
+                // تحميل المجموعة الحالية بشكل متوازي
+                const promises = batch.map(card => loadSingleImage(card));
+                await Promise.all(promises);
+                
+                updateStats();
+            }
+        }
+
+        // تحميل صورة واحدة
+        function loadSingleImage(card) {
             return new Promise((resolve) => {
-                const card = document.createElement('div');
-                card.className = 'image-card';
-                card.id = 'card-' + fileName.replace(/[^a-z0-9]/gi, '-');
+                const fileName = card.dataset.fileName;
+                const safeId = fileName.replace(/[^a-z0-9]/gi, '-');
+                
+                if (loadedFiles.has(fileName)) {
+                    resolve();
+                    return;
+                }
+                
+                const container = document.getElementById(`container-${safeId}`);
+                const statusBadge = document.getElementById(`status-${safeId}`);
+                const infoDiv = card.querySelector('.image-info');
                 
                 const img = new Image();
                 
                 img.onload = function() {
-                    card.innerHTML = '';
-                    
-                    const imgElement = document.createElement('img');
-                    imgElement.src = fileName;
-                    imgElement.alt = displayName;
-                    
-                    const infoDiv = document.createElement('div');
-                    infoDiv.className = 'image-info';
-                    
-                    const nameSpan = document.createElement('span');
-                    nameSpan.className = 'image-name';
-                    nameSpan.textContent = displayName;
+                    container.innerHTML = '';
+                    container.appendChild(img);
+                                        statusBadge.className = 'status-badge status-success';
+                    statusBadge.textContent = '✅ تم';
                     
                     const dlBtn = document.createElement('a');
                     dlBtn.href = fileName;
@@ -234,24 +350,27 @@
                     dlBtn.className = 'download-btn';
                     dlBtn.textContent = '⬇️ تحميل';
                     
-                    infoDiv.appendChild(nameSpan);
+                    statusBadge.remove();
                     infoDiv.appendChild(dlBtn);
-                    card.appendChild(imgElement);
-                    card.appendChild(infoDiv);
-                    gallery.appendChild(card);
                     
-                    allImages.push({name: displayName, found: true});
-                    foundCount++;
+                    loadedFiles.add(fileName);
+                    loadedImages++;
                     resolve();
-                };                
+                };
+                
                 img.onerror = function() {
-                    card.innerHTML = '';
-                    card.className = 'not-found';
-                    card.innerHTML = '❌ <strong>' + displayName + '</strong><br><small>الصورة غير موجودة</small>';
-                    gallery.appendChild(card);
+                    container.innerHTML = `
+                        <div class="error-state">
+                            <div class="icon">❌</div>
+                            <p>غير موجودة</p>
+                        </div>
+                    `;
                     
-                    allImages.push({name: displayName, found: false});
-                    notFoundCount++;
+                    statusBadge.className = 'status-badge status-error';
+                    statusBadge.textContent = '❌ خطأ';
+                    
+                    loadedFiles.add(fileName);
+                    failedImages++;
                     resolve();
                 };
                 
@@ -259,27 +378,41 @@
             });
         }
 
-        // تحديث الإحصائيات
-        function updateStats() {
-            const total = foundCount + notFoundCount;
-            statsDiv.innerHTML = '📊 الإجمالي: ' + total + ' | ✅ موجود: ' + foundCount + ' | ❌ غير موجود: ' + notFoundCount;
+        // إضافة صورة من البحث - تحميل فوري!
+        function addSearchImage() {
+            const name = searchInput.value.trim();
+            if (!name) return;
+            
+            const fileName = name.endsWith('.png') ? name : name + '.png';
+            
+            // إنشاء خانة جديدة فقط
+            createImageCard(fileName, name);
+            totalImages++;
+            
+            // تحميل الصورة الجديدة فوراً (بدون إعادة تحميل الكل!)
+            const newCard = document.querySelector(`[data-file-name="${fileName}"]`);            loadSingleImage(newCard).then(() => {
+                updateStats();
+            });
+            
+            searchInput.value = '';
         }
 
-        // البحث عن صورة إضافية
+        // تحديث الإحصائيات
+        function updateStats() {
+            const total = loadedImages + failedImages;
+            const percentage = totalImages > 0 ? Math.round((total / totalImages) * 100) : 0;
+            
+            statsText.textContent = `${loadedImages}✅ / ${failedImages}❌ / ${totalImages}📦`;
+            progressFill.style.width = percentage + '%';
+        }
+
+        // البحث عند ضغط Enter
         searchInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                const name = this.value.trim();
-                if (name) {
-                    const fileName = name.endsWith('.png') ? name : name + '.png';
-                    loadImageCard(fileName, name);
-                    this.value = '';
-                    updateStats();
-                }
-            }
+            if (e.key === 'Enter') addSearchImage();
         });
 
-        // البدء عند تحميل الصفحة
-        window.addEventListener('DOMContentLoaded', loadImagesFromData);
+        // البدء
+        window.addEventListener('DOMContentLoaded', loadFromDataFile);
     </script>
 </body>
 </html>
