@@ -5,3 +5,7 @@ steve
 sandy
 daiana_temple
 minecraft
+sandy_city
+baghdad
+steve_city
+keven_city
