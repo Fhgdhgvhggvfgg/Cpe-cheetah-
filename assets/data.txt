@@ -3,3 +3,5 @@ daiana
 keven_01
 steve
 sandy
+daiana_temple
+minecraft
