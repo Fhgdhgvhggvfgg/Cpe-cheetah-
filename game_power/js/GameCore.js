@@ -4,8 +4,8 @@ export class GameCore {
     constructor(mode, storage, uiManager) {
 
 this.bgMusic = new Audio();
-this.bgMusic.loop = true; // لجعل الموسيقى تتكرر
-
+this.bgMusic.loop = true;
+this.blockCG = storage.blockCG; // ربط مع التخزين
         this.isPaused = false;
         this.mode = mode;
         this.storage = storage;
@@ -81,30 +81,33 @@ this.boundaryLineWidth = 5;  // عرض الخط
         this.init();
     }
     
-    init() {
-        this.loadImages();
-        
-            if (this.mode === 'survival') {
-        this.bgMusic.src = 'sounds/survival_bg.mp3'; // تأكد من المسار الصحيح للملف
+init() {
+    this.loadImages();
+    
+    if (this.mode === 'survival') {
+        this.bgMusic.src = 'sounds/survival_bg.mp3';
     } else if (this.mode === 'creative') {
-        this.bgMusic.src = 'sounds/creative_bg.mp3'; // تأكد من المسار الصحيح للملف
+        this.bgMusic.src = 'sounds/creative_bg.mp3';
     }
-        
-            this.bgMusic.play().catch(err => console.log("بانتظار تفاعل المستخدم لتشغيل الصوت"));
-            
-        document.getElementById('mainMenu').style.display = 'none';
-        this.canvas.style.display = 'block';
-        document.getElementById('uiLayer').style.display = 'block';
-        
-        if(this.mode === 'survival') {
-            document.getElementById('healthBarContainer').style.display = 'block';
-        }
-        
-        window.addEventListener('resize', () => this.resize());
-        this.resize();
-        this.bindControls();
-        requestAnimationFrame((t) => this.loop(t));
+    
+    this.bgMusic.play().catch(err => console.log("بانتظار تفاعل المستخدم لتشغيل الصوت"));
+    
+    document.getElementById('mainMenu').style.display = 'none';
+    this.canvas.style.display = 'block';
+    document.getElementById('uiLayer').style.display = 'block';
+    
+    if(this.mode === 'survival') {
+        document.getElementById('healthBarContainer').style.display = 'block';
     }
+    
+    // تحديث عداد البلوكات عبر UIManager
+    this.uiManager.updateBlockCounter(this.blockCG);
+    
+    window.addEventListener('resize', () => this.resize());
+    this.resize();
+    this.bindControls();
+    requestAnimationFrame((t) => this.loop(t));
+}
     
     loadImages() {
         if(this.storage.player) {
@@ -233,21 +236,38 @@ if (pauseBtn) {
             } 
         });
         
-        this.canvas.onpointerdown = (e) => {
-            if(this.isDead) return;
-            const rect = this.canvas.getBoundingClientRect();
-            const mx = (e.clientX - rect.left) / (this.scale * this.zoom) + this.camX - (this.LOGIC_WIDTH / (2 * this.zoom));
-            const my = (e.clientY - rect.top) / (this.scale * this.zoom) + this.camY - (this.LOGIC_HEIGHT / (2 * this.zoom));
-            const gx = Math.floor(mx/60)*60;
-            const gy = Math.floor(my/60)*60;
-            const idx = this.platforms.findIndex(p => p.x === gx && p.y === gy);
-            
-            if (idx !== -1) {
-                this.platforms.splice(idx, 1);
-            } else {
-                this.platforms.push({x: gx, y: gy});
-            }
-        };
+this.canvas.onpointerdown = (e) => {
+    if(this.isDead) return;
+    const rect = this.canvas.getBoundingClientRect();
+    const mx = (e.clientX - rect.left) / (this.scale * this.zoom) + this.camX - (this.LOGIC_WIDTH / (2 * this.zoom));
+    const my = (e.clientY - rect.top) / (this.scale * this.zoom) + this.camY - (this.LOGIC_HEIGHT / (2 * this.zoom));
+    const gx = Math.floor(mx/60)*60;
+    const gy = Math.floor(my/60)*60;
+    const idx = this.platforms.findIndex(p => p.x === gx && p.y === gy);
+    
+    if (idx !== -1) {
+        // حذف منصة - زيادة العداد
+        this.platforms.splice(idx, 1);
+        this.blockCG++;
+        this.storage.saveBlockCG(this.blockCG);
+        this.uiManager.updateBlockCounter(this.blockCG);
+    } else {
+        // محاولة إضافة منصة - تحقق من وجود رصيد كافٍ
+        if (this.blockCG <= 0) {
+            // لا يمكن البناء - رصيد غير كافٍ
+            console.log("لا يمكن البناء! رصيد البلوكات صفر");
+            // يمكن إضافة تأثير بصري للمستخدم
+            this.showNoBlocksWarning();
+            return;
+        }
+        
+        // إضافة منصة - نقص العداد
+        this.platforms.push({x: gx, y: gy});
+        this.blockCG--;
+        this.storage.saveBlockCG(this.blockCG);
+        this.uiManager.updateBlockCounter(this.blockCG);
+    }
+};
         
         document.getElementById('exitBtn').onclick = () => {
             this.storage.savePlayerPosition(this.x, this.y);
@@ -373,6 +393,12 @@ if (this.isAttacking && attackDist < 170) {
         this.enemies.splice(i, 1);
         this.storage.kills++;
         
+        // إضافة بلوك جديد مع كل قتل
+        this.blockCG++;
+        this.storage.saveBlockCG(this.blockCG);
+        this.uiManager.updateBlockCounter(this.blockCG);
+        
+        // مكافأة كل 10 قتلات: شفاء 15 نقطة
         if (this.storage.kills > 0 && this.storage.kills % 10 === 0) {
             if (this.playerHealth + 15 > this.maxHealth) {
                 this.playerHealth = 100;

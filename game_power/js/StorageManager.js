@@ -1,5 +1,7 @@
 export class StorageManager {
     constructor() {
+    	
+    this.blockCG = parseInt(localStorage.getItem('blockCG')) || 0; // تغيير من 20 إلى القيمة المحفوظة أو 20
         this.player = localStorage.getItem('playerImage');
         this.bg = localStorage.getItem('bgImage');
         this.enemy = localStorage.getItem('enemyImage');
@@ -10,6 +12,11 @@ export class StorageManager {
         this.btnSize = localStorage.getItem('controlsSize') || 75;
         this.playerName = localStorage.getItem('playerName') || '';
     }
+    
+    saveBlockCG(count) {
+    localStorage.setItem('blockCG', count);
+    this.blockCG = count;
+}
 
     savePlayerPosition(x, y) {
         localStorage.setItem('playerLastX', x);
@@ -47,6 +54,12 @@ export class StorageManager {
     clearPlatforms() {
         localStorage.removeItem('gamePlatforms');
         this.platforms = [];
+    }
+    
+    // دالة جديدة لحفظ عدد البلوكات
+    saveBlockCG(count) {
+        localStorage.setItem('blockCG', count);
+        this.blockCG = count;
     }
 
     async loadImageAsDataURL(path) {

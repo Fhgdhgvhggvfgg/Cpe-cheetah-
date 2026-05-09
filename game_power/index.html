@@ -222,6 +222,35 @@
     display: block !important; /* إجبار الظهور */
 }
 
+#blockCounterGame {
+    position: fixed;
+    top: 64px;
+    left: 20px;
+    z-index: 1000;
+    
+    background: rgba(0,0,0,0.75);
+    padding: 8px 18px 8px 40px;
+    border-radius: 30px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #e74c3c;
+    border: 1px solid rgba(231,76,60,0.6);
+    backdrop-filter: blur(5px);
+    pointer-events: auto;
+    font-family: monospace;
+    letter-spacing: 1px;
+    box-shadow: 0 0 10px rgba(231,76,60,0.3);
+    
+    display: block !important;
+}
+
+#blockCounterGame::before {
+    content: ""; /* مربع أبيض مؤقت حتى تحمل الصورة */
+    font-size: 16px;
+}
+
+
+
 #killCounterGame::before {
     content: "⚔️ ";
     font-size: 16px;
@@ -423,6 +452,7 @@ window.addEventListener('load', function() {
 
 
             <div id="killCounterGame">0</div>
+            <div id="blockCounterGame">0</div>
         </div>
         
         <div class="controls">

@@ -14,6 +14,12 @@ const uiManager = new UIManager(storage);
     const bData = await storage.loadImageAsDataURL('screen.png');
     const eData = await storage.loadImageAsDataURL('enemy.png');
     
+    
+    // بعد الكود الموجود، أضف:
+// إنشاء قيمة افتراضية لـ blockCG إذا لم تكن موجودة
+if (!localStorage.getItem('blockCG')) {
+    localStorage.setItem('blockCG', '0');
+}
     if (pData && !localStorage.getItem('playerImage')) {
         storage.saveImage('playerImage', pData);
     }

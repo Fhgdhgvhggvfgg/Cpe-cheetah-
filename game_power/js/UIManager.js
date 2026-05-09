@@ -50,6 +50,29 @@ export class UIManager {
             btn.style.height = size + 'px';
         });
     }
+    
+updateBlockCounter(blockCount) {
+    const blockCounter = document.getElementById('blockCounterGame');
+    if (blockCounter) {
+        // استخدام نفس صورة الكتلة من اللعبة
+        if (this.storage.bg) {
+            const img = new Image();
+            img.onload = () => {
+                // إنشاء canvas لرسم الصورة
+                const canvas = document.createElement('canvas');
+                canvas.width = 20;
+                canvas.height = 20;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 770, 1175, 40, 40, 0, 0, 20, 20);
+                const blockImgSrc = canvas.toDataURL();
+                blockCounter.innerHTML = `<img src="${blockImgSrc}" style="width: 30px; height: 30px; vertical-align: middle; margin-left: 0px;"> ${blockCount}`;
+            };
+            img.src = this.storage.bg;
+        } else {
+            blockCounter.innerHTML = `🧱 ${blockCount}`;
+        }
+    }
+}
 
     updateMenuDisplay() {
         const killDisplay = document.getElementById('killCountDisplay');
