@@ -8,20 +8,20 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
-            background: #f0f2f5;
+            background: url('../game_power/menu.png') no-repeat center center; background-size: 1000px 1000px; padding: 10px 15px; font-size: 13px;
             min-height: 100vh;
             padding: 20px;
         }
         .container {
             max-width: 600px;
             margin: 0 auto;
-            background: #fff;
+            background: url('../game_power/player_f.png') no-repeat center center; background-size: 1000px 1000px; padding: 10px 15px; font-size: 13px;
             border-radius: 16px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.08);
             overflow: hidden;
         }
         .header {
-            background: linear-gradient(135deg, #007bff, #0056b3);
+            background: url('../game_power/button.png') no-repeat center center; background-size: 470px 140px; padding: 10px 15px; font-size: 13px;
             color: #fff;
             padding: 20px;
             text-align: center;
@@ -29,7 +29,7 @@
         .header h1 { font-size: 22px; margin-bottom: 5px; }
         .header p { font-size: 14px; opacity: 0.9; }
         
-        .search-box { padding: 15px; background: #f8f9fa; border-bottom: 2px solid #e9ecef; }
+        .search-box { padding: 15px; background: url('../game_power/button.png') no-repeat center center; background-size: 460px 80px; padding: 10px 15px; font-size: 13px; border-bottom: 2px solid #e9ecef; }
         .search-box input {
             width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 10px;
             font-size: 15px; outline: none;
@@ -37,7 +37,7 @@
         .search-box input:focus { border-color: #007bff; }
         
         .search-result {
-            padding: 15px; background: #e7f3ff; border-bottom: 2px solid #e9ecef;
+            padding: 15px; background: url('../game_power/button.png') no-repeat center center; background-size: 500px 40px; padding: 10px 15px; font-size: 13px; border-bottom: 2px solid #e9ecef;
             display: none; text-align: center;
         }
         .search-result.show { display: block; }
@@ -46,7 +46,7 @@
         /* شريط المجموعات الأفقي */
         .category-bar {
             padding: 15px;
-            background: #fff;
+            background: url('../game_power/button.png') no-repeat center center; background-size: 460px 40px; padding: 10px 15px; font-size: 13px;
             border-bottom: 2px solid #e9ecef;            display: flex;
             gap: 10px;
             overflow-x: auto;
@@ -58,10 +58,10 @@
         
         .category-btn {
             padding: 10px 20px;
-            background: #e9ecef;
+            background: url('../game_power/player_f.png') no-repeat center center; background-size: 500px 200px; padding: 10px 15px; font-size: 13px;
             color: #495057;
             border: 2px solid #dee2e6;
-            border-radius: 25px;
+            border-radius: 10px;
             cursor: pointer;
             font-size: 14px;
             font-weight: bold;
@@ -78,7 +78,7 @@
             border-color: #007bff;
         }
         .category-btn .count {
-            background: rgba(0,0,0,0.2);
+            background: url('../game_power/button.png') no-repeat center center; background-size: 500px 40px; padding: 10px 15px; font-size: 13px;
             padding: 2px 8px;
             border-radius: 10px;
             font-size: 12px;
@@ -94,7 +94,7 @@
         .gallery::-webkit-scrollbar-thumb:hover { background: #aaa; }
         
         .image-card {
-            background: #fff; border: 2px solid #e0e0e0; border-radius: 12px;
+            background: url('../game_power/player_f.png') no-repeat center center; background-size: 1000px 1000px; 
             margin-bottom: 15px; overflow: hidden;
             animation: fadeIn 0.3s ease;        }
         @keyframes fadeIn {
@@ -102,7 +102,7 @@
             to { opacity: 1; transform: translateY(0); }
         }
         .image-container {
-            width: 100%; min-height: 200px; background: #f8f9fa;
+            width: 100%; min-height: 200px; background: url('../game_power/item_background.png') no-repeat center center; background-size: 500px 500px; padding: 10px 15px; font-size: 13px;
             display: flex; align-items: center; justify-content: center;
         }
         .image-container img { width: 100%; height: auto; display: block; }
@@ -116,7 +116,7 @@
         
         .image-info {
             padding: 12px; display: flex; justify-content: space-between;
-            align-items: center; background: #fff; border-top: 1px solid #e0e0e0;
+            align-items: center; background: #ffffff00; border-top: 1px solid #e0e0e0;
             flex-wrap: wrap; gap: 8px;
         }
         .image-name { font-size: 14px; font-weight: bold; color: #333; }
@@ -127,14 +127,14 @@
         .status-error { background: #f8d7da; color: #721c24; }
         
         .download-btn {
-            padding: 6px 14px; background: #28a745; color: #fff;
+            padding: 6px 14px; background: url('../game_power/button.png') no-repeat center center; background-size: 80px 40px; color: #fff;
             text-decoration: none; border-radius: 8px; font-size: 13px;
             font-weight: bold; transition: background 0.2s;
         }
         .download-btn:hover { background: #218838; }
         
         .stats {
-            background: #e7f3ff; padding: 10px 15px; font-size: 13px;
+            background: url('../game_power/player_f.png') no-repeat center center; background-size: 450px 60px; 
             color: #0056b3; border-bottom: 1px solid #e0e0e0;
         }
         .empty-msg { text-align: center; padding: 40px; color: #666; }

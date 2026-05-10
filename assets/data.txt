@@ -4,7 +4,6 @@ daiana
 keven_01
 steve
 sandy
-mario
 #stadium
 daiana_temple
 minecraft
