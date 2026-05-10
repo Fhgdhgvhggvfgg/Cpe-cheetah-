@@ -258,7 +258,41 @@
 
         
         .controls { position: absolute; bottom: 30px; width: 100%; display: flex; flex-direction: row-reverse; justify-content: space-between; padding: 0 20px; box-sizing: border-box; }
-        .control-btn { width: 75px; height: 75px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255,255,255,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); pointer-events: auto; transition: opacity 0.2s; }
+.control-btn {
+    width: 75px;
+    height: 75px;
+    background: rgba(0,0,0,0.0);
+    border: 2px solid rgba(0,0,0,0.0);
+    border-radius: 15px;
+    cursor: pointer;
+    padding: 1px;
+    pointer-events: auto;
+}
+
+.control-btn img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    image-rendering: pixelated;
+    pointer-events: none;
+}
+
+.control-btn:active {
+    transform: scale(0.95);
+    border-color: #f39c12;
+}
+
+#uiLayer {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    pointer-events: none;  /* هذا يمنع الأزرار من العمل إذا لم تكن محددة */
+    display: none;
+}
+
+.controls {
+    pointer-events: auto !important;  /* تأكد أن منطقة الأزرار تستقبل الأحداث */
+}
         .control-btn:active { transform: scale(0.95); background: rgba(255,255,255,0.2); }
         
         #healthBarContainer { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); width: 200px; height: 10px; background: #222; border-radius: 5px; overflow: hidden; display: none; }
@@ -455,17 +489,98 @@ window.addEventListener('load', function() {
             <div id="blockCounterGame">0</div>
         </div>
         
-        <div class="controls">
-            <div style="display: flex; gap: 10px;">
-                <button class="control-btn" id="rightBtn"></button>
-                <button class="control-btn" id="leftBtn"></button>
-            </div>
-            <div style="display: flex; gap: 10px;">
-                <button class="control-btn" id="attackBtn" style="background:rgba(231,76,60,0.4)"></button>
-                <button class="control-btn" id="dashBtn" style="background:rgba(243,156,18,0.4)"></button>
-                <button class="control-btn" id="jumpBtn" style="background:rgba(39,174,96,0.4)"></button>
-            </div>
-        </div>
+<script>
+// دالة لتقسيم الصورة وتحديث الأزرار
+function loadButtonImagesFromBg() {
+    const savedBg = localStorage.getItem('bgImage');
+    
+    if (!savedBg) {
+        console.log('لا توجد صورة خلفية محفوظة');
+        return;
+    }
+    
+    const bgImage = new Image();
+    bgImage.crossOrigin = 'Anonymous';
+    
+    bgImage.onload = function() {
+        console.log('تم تحميل صورة الخلفية بنجاح');
+        
+        // الأجزاء المطلوبة
+        const parts = [
+            { x: 0,   y: 1175, id: 'leftBtnImg' },
+            { x: 40,  y: 1175, id: 'rightBtnImg' },
+            { x: 80,  y: 1175, id: 'jumpBtnImg' },
+            { x: 120, y: 1175, id: 'dashBtnImg' },
+            { x: 160, y: 1175, id: 'attackBtnImg' }
+        ];
+        
+        // إنشاء canvas لقص الصور
+        const canvas = document.createElement('canvas');
+        canvas.width = 40;
+        canvas.height = 40;
+        const ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = false;
+        
+        // قص كل جزء وتطبيقه على العنصر المناسب
+        parts.forEach(part => {
+            ctx.clearRect(0, 0, 40, 40);
+            ctx.drawImage(bgImage, part.x, part.y, 40, 40, 0, 0, 40, 40);
+            
+            const imgElement = document.getElementById(part.id);
+            if (imgElement) {
+                imgElement.src = canvas.toDataURL();
+                console.log('تم تحديث الزر:', part.id);
+            } else {
+                console.log('عنصر غير موجود:', part.id);
+            }
+        });
+    };
+    
+    bgImage.onerror = function() {
+        console.log('خطأ في تحميل صورة الخلفية');
+    };
+    
+    bgImage.src = savedBg;
+}
+
+// تشغيل الدالة عند تحميل الصفحة وبعد تحميل جميع العناصر
+window.addEventListener('load', function() {
+    setTimeout(loadButtonImagesFromBg, 100);
+});
+
+// أيضاً عند تغيير الصورة من القائمة، تحديث الأزرار
+window.addEventListener('storage', function(e) {
+    if (e.key === 'bgImage') {
+        console.log('تم تغيير صورة الخلفية، جاري تحديث الأزرار');
+        setTimeout(loadButtonImagesFromBg, 200);
+    }
+});
+</script>
+
+<!-- أزرار تحتوي على img -->
+<div class="controls">
+    <div style="display: flex; gap: 10px;">
+          <button class="control-btn" id="rightBtn">
+            <img id="rightBtnImg" style="width: 100%; height: 100%; object-fit: contain;">
+        </button>
+<button class="control-btn" id="leftBtn">
+            <img id="leftBtnImg" style="width: 100%; height: 100%; object-fit: contain;">
+        </button>
+    </div>
+    <div style="display: flex; gap: 10px;">
+  <button class="control-btn" id="attackBtn">
+            <img id="attackBtnImg" style="width: 100%; height: 100%; object-fit: contain;">
+        </button>
+        <button class="control-btn" id="dashBtn">
+            <img id="dashBtnImg" style="width: 100%; height: 100%; object-fit: contain;">
+        </button>       
+                <button class="control-btn" id="jumpBtn">
+            <img id="jumpBtnImg" style="width: 100%; height: 100%; object-fit: contain;">
+        </button>
+    </div>
+</div>
+
+        
     </div>
     
 
