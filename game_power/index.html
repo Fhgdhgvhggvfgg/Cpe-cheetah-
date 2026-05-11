@@ -163,7 +163,7 @@
         .menu-btn:active { transform: scale(0.97); }
         
         #gameCanvas { display: none; background: #000; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
-        #uiLayer { position: fixed; inset: 0; z-index: 50; pointer-events: none; display: none; }
+
         
         .top-bar {
             position: absolute;
@@ -203,7 +203,7 @@
 #killCounterGame {
     position: fixed;         /* تثبيت مكانه على الشاشة */
     top: 20px;               /* المسافة من الأعلى */
-    left: 20px;              /* المسافة من اليسار */
+    left: 50px;              /* المسافة من اليسار */
     z-index: 1000;           /* ليكون فوق كل طبقات اللعبة */
     
     background: rgba(0,0,0,0.75);
@@ -225,7 +225,7 @@
 #blockCounterGame {
     position: fixed;
     top: 64px;
-    left: 20px;
+    left: 50px;
     z-index: 1000;
     
     background: rgba(0,0,0,0.75);
@@ -257,7 +257,31 @@
 }
 
         
-        .controls { position: absolute; bottom: 30px; width: 100%; display: flex; flex-direction: row-reverse; justify-content: space-between; padding: 0 20px; box-sizing: border-box; }
+/* مجموعة الحركة (يمين + يسار) - في منتصف أسفل الشاشة */
+.controls-move {
+    position: absolute;
+    bottom: 10px;
+    left: 20%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    pointer-events: auto;
+    z-index: 100;
+}
+
+/* مجموعة الأزرار الثلاثة (هجوم، اندفاع، قفز) - في أسفل يمين الشاشة */
+.controls-actions {
+    position: absolute;
+    bottom: 10px;
+    right: 20px;
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    pointer-events: auto;
+    z-index: 100;
+}
+
 .control-btn {
     width: 75px;
     height: 75px;
@@ -285,7 +309,7 @@
 #uiLayer {
     position: fixed;
     inset: 0;
-    z-index: 50;
+    z-index: 10;
     pointer-events: none;  /* هذا يمنع الأزرار من العمل إذا لم تكن محددة */
     display: none;
 }
@@ -558,26 +582,25 @@ window.addEventListener('storage', function(e) {
 </script>
 
 <!-- أزرار تحتوي على img -->
-<div class="controls">
-    <div style="display: flex; gap: 10px;">
-          <button class="control-btn" id="rightBtn">
-            <img id="rightBtnImg" style="width: 100%; height: 100%; object-fit: contain;">
-        </button>
-<button class="control-btn" id="leftBtn">
-            <img id="leftBtnImg" style="width: 100%; height: 100%; object-fit: contain;">
-        </button>
-    </div>
-    <div style="display: flex; gap: 10px;">
-  <button class="control-btn" id="attackBtn">
-            <img id="attackBtnImg" style="width: 100%; height: 100%; object-fit: contain;">
-        </button>
-        <button class="control-btn" id="dashBtn">
-            <img id="dashBtnImg" style="width: 100%; height: 100%; object-fit: contain;">
-        </button>       
-                <button class="control-btn" id="jumpBtn">
-            <img id="jumpBtnImg" style="width: 100%; height: 100%; object-fit: contain;">
-        </button>
-    </div>
+<div class="controls-move">
+    <button class="control-btn" id="rightBtn">
+        <img id="rightBtnImg" style="width: 100%; height: 100%; object-fit: contain;">
+    </button>
+    <button class="control-btn" id="leftBtn">
+        <img id="leftBtnImg" style="width: 100%; height: 100%; object-fit: contain;">
+    </button>
+</div>
+
+<div class="controls-actions">
+    <button class="control-btn" id="attackBtn">
+        <img id="attackBtnImg" style="width: 100%; height: 100%; object-fit: contain;">
+    </button>
+    <button class="control-btn" id="dashBtn">
+        <img id="dashBtnImg" style="width: 100%; height: 100%; object-fit: contain;">
+    </button>
+    <button class="control-btn" id="jumpBtn">
+        <img id="jumpBtnImg" style="width: 100%; height: 100%; object-fit: contain;">
+    </button>
 </div>
 
         
