@@ -371,7 +371,7 @@
 
 <div id="mainMenu">
     <div style="text-align: center; margin-bottom: 15px;">
-<img id="quickShowPlayer" style="max-width: 150px; border: 5px solid #ffffff; border-radius: 8px; display: none; background: url('player_f.png') no-repeat center center; background-size: cover;">
+<img id="quickShowPlayer" style="max-width: none; border: 5px solid #ffffff; border-radius: 8px; display: none; background: url('player_f.png') no-repeat center center; background-size: cover;">
         <div id="frameValDisplay" style="color: #f39c12; font-size: 14px; margin-top: 5px; font-weight: bold;"></div>
     </div>
 
@@ -396,7 +396,7 @@ window.addEventListener('load', function() {
             imgTag.parentNode.insertBefore(title, imgTag);
         }
 
-        const boxSize = 150; 
+        const boxSize = 250; 
         imgTag.style.display = 'block'; 
         imgTag.style.margin = '0 auto'; 
         imgTag.style.width = boxSize + 'px';  
