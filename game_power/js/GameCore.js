@@ -129,18 +129,22 @@ init() {
         this.ctx.webkitImageSmoothingEnabled = false;
     }
     
-    spawnEnemy() {
-        if (this.mode !== 'survival' || this.isDead) return;
-        const side = Math.random() > 0.5 ? 1 : -1;
-        this.enemies.push({ 
-            x: this.x + (side * 500), 
-            y: this.y - 100, 
-            health: 50  + this.storage.kills, 
-            maxHealth: 50  + this.storage.kills, 
-            radius: 30, 
-            speed: 200 
-        });
-    }
+spawnEnemy() {
+    if (this.mode !== 'survival' || this.isDead) return;
+    const side = Math.random() > 0.5 ? 1 : -1;
+    this.enemies.push({ 
+        x: this.x + (side * 500), 
+        y: this.y - 100, 
+        health: 50 + this.storage.kills, 
+        maxHealth: 50 + this.storage.kills, 
+        radius: 30, 
+        speed: 200,
+        damageCircleActive: false,  // خاصية جديدة
+        damageCircleTimer: 0,       // خاصية جديدة
+        damageCircleRadius: 120,    // خاصية جديدة
+        damageCirclePosition: null  // خاصية جديدة
+    });
+}
     
     updateAnimation(dt, isMoving) {
         if (this.isAttacking) { 
@@ -255,7 +259,7 @@ this.canvas.onpointerdown = (e) => {
         // محاولة إضافة منصة - تحقق من وجود رصيد كافٍ
         if (this.blockCG <= 0) {
             // لا يمكن البناء - رصيد غير كافٍ
-            console.log("لا يمكن البناء! رصيد البلوكات صفر");
+            
             // يمكن إضافة تأثير بصري للمستخدم
             this.showNoBlocksWarning();
             return;
@@ -282,6 +286,103 @@ this.canvas.onpointerdown = (e) => {
     }
     
     update(dt) {
+    	
+// التحقق من تصادم الأعداء مع الكتل (المنصات)
+for (let i = 0; i < this.enemies.length; i++) {
+    const enemy = this.enemies[i];
+    
+    // تخزين مؤقت للمنصات التي سيتم حذفها
+    let platformsToRemove = [];
+    
+    for (let pIndex = 0; pIndex < this.platforms.length; pIndex++) {
+        const platform = this.platforms[pIndex];
+        
+        // حساب التصادم بين العدو والكتلة
+        const enemyLeft = enemy.x - enemy.radius;
+        const enemyRight = enemy.x + enemy.radius;
+        const enemyTop = enemy.y - enemy.radius;
+        const enemyBottom = enemy.y + enemy.radius;
+        
+        const platformLeft = platform.x;
+        const platformRight = platform.x + 60;
+        const platformTop = platform.y;
+        const platformBottom = platform.y + 60;
+        
+        // التحقق من التصادم
+        if (enemyRight > platformLeft && enemyLeft < platformRight &&
+            enemyBottom > platformTop && enemyTop < platformBottom) {
+            
+            // تسجيل الكتلة للحذف
+            platformsToRemove.push(pIndex);
+            
+            // تفعيل دائرة الضرر إذا لم تكن مفعلة بالفعل
+            if (!enemy.damageCircleActive) {
+                enemy.damageCircleActive = true;
+                enemy.damageCircleTimer = 0.5; // نصف ثانية
+                enemy.damageCircleRadius = 70;
+                enemy.damageCirclePosition = { x: enemy.x, y: enemy.y };
+            }
+        }
+    }
+    
+    // حذف الكتل المتصادمة (من الخلف إلى الأمام لتجنب مشاكل المؤشر)
+    for (let r = platformsToRemove.length - 1; r >= 0; r--) {
+        const pIndex = platformsToRemove[r];
+        this.platforms.splice(pIndex, 1);
+        this.storage.saveBlockCG(this.blockCG);
+        this.uiManager.updateBlockCounter(this.blockCG);
+    }
+}
+
+// ✅ إضافة هذا القسم الجديد: إصابة الأعداء بدائرة الضرر طوال فترة وجودها
+// ✅ إصابة جميع الأعداء بدائرة الضرر طوال فترة وجودها (بما فيهم العدو نفسه)
+for (let i = 0; i < this.enemies.length; i++) {
+    const enemy = this.enemies[i];
+    
+    if (enemy.damageCircleActive) {
+        // إصابة جميع الأعداء (بما فيهم العدو نفسه)
+        for (let j = 0; j < this.enemies.length; j++) {
+            const otherEnemy = this.enemies[j];
+            
+            // ❗ إزالة شرط if (otherEnemy !== enemy) ليشمل العدو نفسه
+            const dx = otherEnemy.x - enemy.x;
+            const dy = otherEnemy.y - enemy.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            
+            if (dist < (enemy.damageCircleRadius || 120)) {
+                // إحداث ضرر مستمر (30 ضرر في الثانية)
+                otherEnemy.health -= 34 * dt;
+                
+                if (otherEnemy.health <= 0) {
+                    // قتل العدو
+                    this.storage.kills++;
+                    this.blockCG++;
+                    this.enemies.splice(j, 1);
+                    this.storage.saveBlockCG(this.blockCG);
+                    this.uiManager.updateBlockCounter(this.blockCG);
+                    this.storage.saveKills(this.storage.kills);
+                    this.uiManager.updateMenuDisplay();
+                    j--; // تعديل المؤشر بعد الحذف
+                }
+            }
+        }
+    }
+}
+
+// تحديث مؤقت دائرة الضرر للأعداء
+for (let i = 0; i < this.enemies.length; i++) {
+    const enemy = this.enemies[i];
+    if (enemy.damageCircleActive) {
+        enemy.damageCircleTimer -= dt;
+        if (enemy.damageCircleTimer <= 0) {
+            enemy.damageCircleActive = false;
+        } else {
+            // تحديث موقع دائرة الضرر لتتبع العدو
+            enemy.damageCirclePosition = { x: enemy.x, y: enemy.y };
+        }
+    }
+}
+    
         if (dt > 0.1) dt = 0.1;
         if (this.isDead) return;
         
@@ -386,15 +487,22 @@ setTimeout(() => {
        // احسب المسافة من موقع الهجوم (أمام اللاعب)
 let attackX = this.facingRight ? this.x + 80 : this.x - 80;
 let attackDist = Math.sqrt((attackX - en.x)**2 + (this.y - en.y)**2);
-
+let cc = 0;
 if (this.isAttacking && attackDist < 170) {
     en.health -= 100 * dt;
     if(en.health <= 0) {
         this.enemies.splice(i, 1);
         this.storage.kills++;
-        
+        cc++;
         // إضافة بلوك جديد مع كل قتل
-        this.blockCG++;
+if (this.storage.kills > 0 && this.storage.kills % 3 === 0) {
+	this.blockCG++;
+
+                    cc = 0;
+        }
+        
+
+       
         this.storage.saveBlockCG(this.blockCG);
         this.uiManager.updateBlockCounter(this.blockCG);
         
@@ -567,6 +675,36 @@ this.drawBoundaryLines();
             this.ctx.fillStyle = "#e74c3c";
             this.ctx.fillRect(en.x - barWidth/2, en.y - en.radius - 15, (en.health / en.maxHealth) * barWidth, 6);
         });
+        
+        // رسم دوائر الضرر للأعداء
+this.enemies.forEach(en => {
+    if (en.damageCircleActive) {
+        this.ctx.save();
+        this.ctx.shadowBlur = 15;
+        this.ctx.shadowColor = "#ff0000";
+        
+        // دائرة خارجية حمراء
+        this.ctx.beginPath();
+        this.ctx.arc(en.x, en.y, en.damageCircleRadius || 120, 0, Math.PI * 2);
+        this.ctx.fillStyle = "rgba(255, 0, 0, 0.3)";
+        this.ctx.fill();
+        
+        // دائرة داخلية برتقالية
+        this.ctx.beginPath();
+        this.ctx.arc(en.x, en.y, (en.damageCircleRadius || 120) * 0.6, 0, Math.PI * 2);
+        this.ctx.fillStyle = "rgba(255, 100, 0, 0.5)";
+        this.ctx.fill();
+        
+        // حدود الدائرة
+        this.ctx.beginPath();
+        this.ctx.arc(en.x, en.y, en.damageCircleRadius || 120, 0, Math.PI * 2);
+        this.ctx.strokeStyle = "#ff3300";
+        this.ctx.lineWidth = 3;
+        this.ctx.stroke();
+        
+        this.ctx.restore();
+    }
+});
         
         this.drawPlayer();
         
