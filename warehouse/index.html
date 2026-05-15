@@ -5,6 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>قائمة الملفات</title>
     <style>
+    
+    /* نافذة تشغيل الفيديو */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.9); backdrop-filter: blur(8px); z-index: 1000;
+    display: flex; align-items: center; justify-content: center;
+    visibility: hidden; opacity: 0; transition: 0.2s;
+}
+.modal-overlay.active { visibility: visible; opacity: 1; }
+.video-modal {
+    background: #0a0a14; border-radius: 28px; width: 90%; max-width: 1000px;
+    border: 1px solid #2a2a5a; overflow: hidden;
+}
+.modal-header {
+    display: flex; justify-content: space-between; padding: 18px 24px;
+    background: #12121e; border-bottom: 1px solid #2a2a4a;
+}
+.close-modal {
+    background: #ff4444aa; border: none; color: white; font-size: 1.6rem;
+    width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
+}
+.video-container { padding: 20px; background: #000; }
+video { width: 100%; border-radius: 16px; }
+.video-info { padding: 16px 24px; background: #12121e; }
+.btn-group { display: flex; gap: 10px; }
+.watch-btn {
+    background: linear-gradient(135deg, #7c4dff, #5e35b1); color: white;
+    padding: 10px 18px; border-radius: 8px; font-weight: bold; cursor: pointer;
+}
+    
         * {
             margin: 0;
             padding: 0;
@@ -139,7 +169,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>هذه اللعبة فريدة في عالم الالعاب وهدفها تحويل اللاعب الى مبدع لكنها محدودة جدا. اذا اعجبتك اللعبة وتريد تطويرها فلك كامل الحرية. اللعبة متاحة للمجتمع وانت سوف يكون لك دور كبير في اسعاد مجتمع لاعبي  indie. فلو كنت شغوفا حمل كل ما يلزم من هذا المستودع وانطلق ⚔️ </</h1>
+        <h1>هذه اللعبة فريدة في عالم الالعاب لكنها محدودة جدا. اذا اعجبتك اللعبة وتريد تطويرها فلك كامل الحرية. اللعبة متاحة للمجتمع وانت سوف يكون لك دور كبير في اسعاد مجتمع لاعبي  indie. فلو كنت شغوفا حمل كل ما يلزم من هذا المستودع وانطلق ⚔️ </h1>
 
         <div id="status" class="loading">جاري تحميل البيانات...</div>
 
@@ -149,6 +179,21 @@
 
     <script>
         const DATA_FILE = 'data_P.txt';
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+    });
+}
+
+function isImageFile(filename) {
+    const imageExts = ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'bmp'];
+    return imageExts.includes(filename.split('.').pop().toLowerCase());
+}
 
         function getFileIcon(filename) {
             const ext = filename.split('.').pop().toLowerCase();
@@ -178,37 +223,85 @@
             return files;
         }
 
-        function displayFiles(files) {
-            const list = document.getElementById('fileList');
-            const countDiv = document.getElementById('fileCount');
-            list.innerHTML = '';
+function displayFiles(files) {
+    const list = document.getElementById('fileList');
+    const countDiv = document.getElementById('fileCount');
+    list.innerHTML = '';
 
-            if (files.length === 0) {
-                list.innerHTML = '<li style="text-align:center;color:#888;padding:30px;">لا توجد ملفات في القائمة</li>';
-                return;
-            }
+    if (files.length === 0) {
+        list.innerHTML = '<li style="text-align:center;color:#888;padding:30px;">لا توجد ملفات في القائمة</li>';
+        countDiv.textContent = 'عدد الملفات: 0';
+        return;
+    }
 
-            files.forEach((file, index) => {
-                const li = document.createElement('li');
-                li.className = 'file-item';
-                li.style.animationDelay = `${index * 0.1}s`;
+    files.forEach((file, index) => {
+        const icon = getFileIcon(file.filename);
+        const isVideo = isVideoFile(file.filename);
+        const isImage = isImageFile(file.filename);
+        
+        const li = document.createElement('li');
+        li.className = 'file-item';
+        li.style.flexDirection = 'column';
+        li.style.alignItems = 'stretch';
+        li.style.padding = '0';
+        li.style.overflow = 'hidden';
 
-                li.innerHTML = `
-                    <div class="file-info">                        <span class="file-icon">${getFileIcon(file.filename)}</span>
-                        <div>
-                            <div class="file-name">${file.description}</div>
-                        </div>
-                    </div>
-                    <a class="download-btn" href="${file.filename}" download>
-                        ⬇ تحميل
-                    </a>
-                `;
+        // اسم الملف والأيقونة في الأعلى
+        const headerDiv = document.createElement('div');
+        headerDiv.style.display = 'flex';
+        headerDiv.style.alignItems = 'center';
+        headerDiv.style.gap = '12px';
+        headerDiv.style.padding = '16px 20px 0 20px';
+        headerDiv.style.paddingBottom = isVideo || isImage ? '12px' : '16px';
+        headerDiv.innerHTML = `
+            <span class="file-icon" style="font-size: 1.5rem;">${icon}</span>
+            <div class="file-name" style="flex:1; font-weight:500;">${escapeHtml(file.description)}</div>
+        `;
+        li.appendChild(headerDiv);
 
-                list.appendChild(li);
-            });
-
-            countDiv.textContent = `عدد الملفات: ${files.length}`;
+        // العرض الأساسي (فيديو أو صورة) يملأ عرض القائمة
+        if (isVideo) {
+            const videoContainer = document.createElement('div');
+            videoContainer.style.width = '100%';
+            videoContainer.style.backgroundColor = '#000';
+            videoContainer.style.aspectRatio = '16 / 9';
+            videoContainer.innerHTML = `
+                <video controls preload="metadata" style="width: 100%; height: 100%; object-fit: contain;">
+                    <source src="${file.filename}">
+                    متصفحك لا يدعم الفيديو
+                </video>
+            `;
+            li.appendChild(videoContainer);
+        } 
+        else if (isImage) {
+            const imgContainer = document.createElement('div');
+            imgContainer.style.width = '100%';
+            imgContainer.style.backgroundColor = '#0a0a14';
+            imgContainer.style.display = 'flex';
+            imgContainer.style.justifyContent = 'center';
+            imgContainer.style.alignItems = 'center';
+            imgContainer.style.minHeight = '200px';
+            imgContainer.innerHTML = `
+                <img src="${file.filename}" alt="${escapeHtml(file.description)}" style="max-width: 100%; max-height: 350px; object-fit: contain; display: block;">
+            `;
+            li.appendChild(imgContainer);
         }
+
+        // زر التحميل في الأسفل
+        const downloadDiv = document.createElement('div');
+        downloadDiv.style.padding = '16px 20px';
+        downloadDiv.style.borderTop = isVideo || isImage ? '1px solid #2a2a4a' : 'none';
+        downloadDiv.style.marginTop = isVideo || isImage ? '0' : '0';
+        downloadDiv.innerHTML = `
+            <a class="download-btn" href="${file.filename}" download style="display: inline-flex; width: auto;">⬇ تحميل الملف</a>
+        `;
+        li.appendChild(downloadDiv);
+        
+        list.appendChild(li);
+    });
+
+    countDiv.textContent = `عدد الملفات: ${files.length}`;
+}
 
         async function loadData() {
             const statusEl = document.getElementById('status');
@@ -235,7 +328,139 @@
             }
         }
 
+function isVideoFile(filename) {
+    const videoExts = ['mp4', 'mkv', 'avi', 'mov', 'wmv', 'flv', 'webm', 'm4v'];
+    return videoExts.includes(filename.split('.').pop().toLowerCase());
+}
+
+function openVideoModal(file) {
+    document.getElementById('videoSource').src = file.filename;
+    document.getElementById('videoPlayer').load();
+    document.getElementById('modalFileTitle').innerText = file.description;
+    document.getElementById('videoInfoTitle').innerText = file.description;
+    document.getElementById('modalDownloadLink').href = file.filename;
+    document.getElementById('modalDownloadLink').setAttribute('download', file.filename);
+    document.getElementById('videoModal').classList.add('active');
+    document.getElementById('videoPlayer').play().catch(e => console.log(e));
+}
+
+function openImageModal(file) {
+    // إزالة أي مودال صور قديم موجود
+    const oldImageModal = document.getElementById('imageModal');
+    if (oldImageModal) oldImageModal.remove();
+    
+    // إنشاء مودال جديد للصورة
+    const modal = document.createElement('div');
+    modal.id = 'imageModal';
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+        <div class="video-modal" style="max-width: 90vw; width: auto;">
+            <div class="modal-header">
+                <h3>🖼️ <span>${file.description}</span></h3>
+                <button class="close-modal" id="closeImageModalBtn">✕</button>
+            </div>
+            <div style="padding: 20px; text-align: center; background: #000;">
+                <img src="${file.filename}" alt="${file.description}" style="max-width: 100%; max-height: 70vh; border-radius: 12px;">
+            </div>
+            <div class="video-info">
+                <a href="${file.filename}" download style="display:inline-block; background:#ff9800; padding:8px 16px; border-radius:40px; color:#000; text-decoration:none;">⬇ تحميل الصورة</a>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    modal.classList.add('active');
+    
+    // إغلاق المودال
+    const closeBtn = document.getElementById('closeImageModalBtn');
+    const closeModal = () => {
+        modal.classList.remove('active');
+        setTimeout(() => modal.remove(), 300);
+    };
+    
+    closeBtn.onclick = closeModal;
+    modal.onclick = (e) => { if (e.target === modal) closeModal(); };
+    document.onkeydown = (e) => {
+        if (e.key === 'Escape' && modal.classList.contains('active')) closeModal();
+    };
+}
+
+function closeModal() {
+    let modal = document.getElementById('videoModal');
+    let video = document.getElementById('videoPlayer');
+    modal.classList.remove('active');
+    video.pause();
+    video.currentTime = 0;
+}
+
+// ربط أحداث الإغلاق (ضفها بعد تحميل الصفحة أو داخل window.onload)
+document.getElementById('closeModalBtn')?.addEventListener('click', closeModal);
+document.getElementById('videoModal')?.addEventListener('click', (e) => {
+    if (e.target === document.getElementById('videoModal')) closeModal();
+});
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && document.getElementById('videoModal')?.classList.contains('active')) closeModal();
+});
+
+// ربط أحداث إغلاق المودال (ضع هذا بعد دالة loadData أو داخل window.onload)
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('videoModal');
+    const closeBtn = document.getElementById('closeModalBtn');
+    const videoPlayer = document.getElementById('videoPlayer');
+
+    if (closeBtn) {
+        closeBtn.onclick = function() {
+            modal.classList.remove('active');
+            if (videoPlayer) {
+                videoPlayer.pause();
+                videoPlayer.currentTime = 0;
+            }
+        };
+    }
+
+    if (modal) {
+        modal.onclick = function(e) {
+            if (e.target === modal) {
+                modal.classList.remove('active');
+                if (videoPlayer) {
+                    videoPlayer.pause();
+                    videoPlayer.currentTime = 0;
+                }
+            }
+        };
+    }
+
+    document.onkeydown = function(e) {
+        if (e.key === 'Escape' && modal && modal.classList.contains('active')) {
+            modal.classList.remove('active');
+            if (videoPlayer) {
+                videoPlayer.pause();
+                videoPlayer.currentTime = 0;
+            }
+        }
+    };
+});
+
         loadData();
     </script>
+    
+    <div id="videoModal" class="modal-overlay">
+    <div class="video-modal">
+        <div class="modal-header">
+            <h3>🎬 <span id="modalFileTitle">مشغل الفيديو</span></h3>
+            <button class="close-modal" id="closeModalBtn">✕</button>
+        </div>
+        <div class="video-container">
+            <video id="videoPlayer" controls>
+                <source id="videoSource" src="">
+            </video>
+        </div>
+        <div class="video-info">
+            <div class="video-title" id="videoInfoTitle"></div>
+            <a href="#" id="modalDownloadLink" download style="display:inline-block; margin-top:12px; background:#00d4ff; padding:8px 16px; border-radius:40px; color:#000; text-decoration:none;">⬇ تحميل الفيديو</a>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>
