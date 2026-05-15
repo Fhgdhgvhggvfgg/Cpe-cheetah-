@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>قائمة الملفات</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+            background: #0f0f1a;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 700px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.8rem;
+            color: #00d4ff;
+            text-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+        }
+
+        #status {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+        }
+
+        #status.loading {
+            background: rgba(255, 193, 7, 0.15);
+            border: 1px solid #ffc107;
+            color: #ffc107;
+        }
+        #status.success {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid #00d4ff;
+            color: #00d4ff;
+        }
+
+        #status.error {
+            background: rgba(255, 68, 68, 0.15);
+            border: 1px solid #ff4444;
+            color: #ff4444;
+        }
+
+        .file-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 1px solid #2a2a4a;
+            border-radius: 12px;
+            padding: 16px 20px;
+            transition: all 0.3s ease;
+        }
+
+        .file-item:hover {
+            border-color: #00d4ff;
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .file-icon {
+            font-size: 1.8rem;
+            flex-shrink: 0;
+        }
+
+        .file-name {            font-size: 1.05rem;
+            font-weight: 500;
+            color: #ffffff;
+            word-break: break-word;
+        }
+
+        .download-btn {
+            flex-shrink: 0;
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            color: #000;
+            border: none;
+            padding: 10px 22px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+        }
+
+        .download-btn:hover {
+            background: linear-gradient(135deg, #33e0ff, #00b8e6);
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.4);
+            transform: scale(1.05);
+        }
+
+        .download-btn:active {
+            transform: scale(0.98);
+        }
+
+        .file-count {
+            text-align: center;
+            margin-top: 20px;
+            color: #888;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>هذه اللعبة فريدة في عالم الالعاب لكنها محدودة جدا. اذا اعجبتك اللعبة وتريد تطويرها فلك كامل الحرية. اللعبة متاحة للمجتمع وانت سوف يكون لك دور كبير في اسعاد مجتمع لاعبي  indie. فلو كنت شغوفا حمل كل ما يلزم من هذا المستودع وانطلق ⚔️ </h1>
+
+        <div id="status" class="loading">جاري تحميل البيانات...</div>
+
+        <ul id="fileList" class="file-list"></ul>
+
+        <div id="fileCount" class="file-count"></div>    </div>
+
+    <script>
+        const DATA_FILE = 'data_P.txt';
+
+        function getFileIcon(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            const icons = {
+                zip: '📦', rar: '📦', '7z': '📦', tar: '📦', gz: '📦',
+                exe: '⚙️', msi: '⚙️', apk: '📱',
+                png: '🖼️', jpg: '🖼️', jpeg: '🖼️', gif: '🖼️', svg: '🖼️',
+                pdf: '📄', doc: '📄', docx: '📄', txt: '📄',
+                mp4: '🎬', mkv: '🎬', avi: '🎬', mp3: '🎵', wav: '🎵',
+                js: '💻', html: '💻', css: '💻', py: '💻',
+            };
+            return icons[ext] || '📎';
+        }
+
+        function parseData(text) {
+            const regex = /"([^"]+)"\s+(\S+)/g;
+            const files = [];
+            let match;
+
+            while ((match = regex.exec(text)) !== null) {
+                files.push({
+                    description: match[1].trim(),
+                    filename: match[2].trim()
+                });
+            }
+
+            return files;
+        }
+
+        function displayFiles(files) {
+            const list = document.getElementById('fileList');
+            const countDiv = document.getElementById('fileCount');
+            list.innerHTML = '';
+
+            if (files.length === 0) {
+                list.innerHTML = '<li style="text-align:center;color:#888;padding:30px;">لا توجد ملفات في القائمة</li>';
+                return;
+            }
+
+            files.forEach((file, index) => {
+                const li = document.createElement('li');
+                li.className = 'file-item';
+                li.style.animationDelay = `${index * 0.1}s`;
+
+                li.innerHTML = `
+                    <div class="file-info">                        <span class="file-icon">${getFileIcon(file.filename)}</span>
+                        <div>
+                            <div class="file-name">${file.description}</div>
+                        </div>
+                    </div>
+                    <a class="download-btn" href="${file.filename}" download>
+                        ⬇ تحميل
+                    </a>
+                `;
+
+                list.appendChild(li);
+            });
+
+            countDiv.textContent = `عدد الملفات: ${files.length}`;
+        }
+
+        async function loadData() {
+            const statusEl = document.getElementById('status');
+
+            try {
+                const response = await fetch(DATA_FILE);
+
+                if (!response.ok) {
+                    throw new Error(`لم يتم العثور على الملف: ${DATA_FILE}`);
+                }
+
+                const text = await response.text();
+                const files = parseData(text);
+
+                displayFiles(files);
+
+                statusEl.className = 'success';
+                statusEl.textContent = '✅ تم تحميل البيانات بنجاح';
+
+            } catch (err) {
+                statusEl.className = 'error';
+                statusEl.textContent = '❌ خطأ: ' + err.message;
+                console.error(err);
+            }
+        }
+
+        loadData();
+    </script>
+</body>
+</html>

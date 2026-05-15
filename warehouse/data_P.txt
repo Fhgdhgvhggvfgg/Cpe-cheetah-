@@ -1,0 +1,8 @@
+"النسخة الاولية من اللعبة (html) "
+cheetah_game.html
+"نسخة محدثة من اللعبة مع assets (zip)" 
+cheetah_game_2.zip
+"اخر نسخة محدثة وجاهزة من اللعبة (zip) "
+game_power.zip
+"اخر تحديث غير مكتمل للعبة مع كل الملحقات (zip)" 
+game_power_2.zip
