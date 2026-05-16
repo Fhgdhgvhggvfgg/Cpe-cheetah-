@@ -2,8 +2,8 @@ import { InputHandler } from './InputHandler.js';
 
 export class GameCore {
     constructor(mode, storage, uiManager) {
-
-this.countD = 0;;
+this.dash_s = 1500
+this.countD = 0;
 this.bgMusic = new Audio();
 this.bgMusic.loop = true;
 this.blockCG = storage.blockCG; // ربط مع التخزين
@@ -32,7 +32,7 @@ this.blockCG = storage.blockCG; // ربط مع التخزين
         this.enemySpawnTimer = 0;
         this.speed = 450;
         this.gravity = 1340;
-        this.jumpForce = -650;
+        this.jumpForce = -790;
         this.velocityY = 0;
         this.moveDir = 0;
         this.facingRight = true;
@@ -392,7 +392,7 @@ for (let i = 0; i < this.enemies.length; i++) {
         
         this.input.update();
         
-        let moveSpeed = this.isDashing ? 1200 : this.speed;
+        let moveSpeed = this.isDashing ? this.dash_s: this.speed;
         let effectiveDir = this.isDashing ? (this.facingRight ? 1 : -1) : this.moveDir;
         let nx = this.x + (effectiveDir * moveSpeed) * dt;
         let ny = this.y + this.velocityY * dt;
