@@ -513,7 +513,7 @@ if (this.storage.kills > 0 && this.storage.kills % 3 === 0) {
         // مكافأة كل 10 قتلات: شفاء 15 نقطة
         if (this.storage.kills > 0 && this.storage.kills % 10 === 0) {
             if (this.playerHealth + 15 > this.maxHealth) {
-            	this.blockCG =  this.storage.kills + this.storage.kills / 2.5;
+            	this.blockCG =  this.storage.kills + 4 + this.storage.kills / 10;
                 this.playerHealth = 100;
             } else {
                 this.playerHealth += 15;
