@@ -134,11 +134,11 @@ spawnEnemy() {
     if (this.mode !== 'survival' || this.isDead) return;
     const side = Math.random() > 0.5 ? 1 : -1;
     this.enemies.push({ 
-        x: this.x + (side * 500), 
+        x: this.x + (side * 1000), 
         y: this.y - 100, 
         health: 50 + this.storage.kills, 
         maxHealth: 50 + this.storage.kills, 
-        radius: 30, 
+        radius: 50, 
         speed: 200,
         damageCircleActive: false,  // خاصية جديدة
         damageCircleTimer: 0,       // خاصية جديدة
