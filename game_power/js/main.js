@@ -10,8 +10,8 @@ const uiManager = new UIManager(storage);
 
 // تحميل الصور الافتراضية إذا لم تكن موجودة
 (async function initDefaultImages() {
-    const pData = await storage.loadImageAsDataURL('sandy.png');
-    const bData = await storage.loadImageAsDataURL('screen.png');
+    const pData = await storage.loadImageAsDataURL('ranav.png');
+    const bData = await storage.loadImageAsDataURL('ranav_ingdom.png');
     const eData = await storage.loadImageAsDataURL('enemy.png');
     
     
