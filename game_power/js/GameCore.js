@@ -3,6 +3,7 @@ import { InputHandler } from './InputHandler.js';
 export class GameCore {
     constructor(mode, storage, uiManager) {
 
+this.countD = 0;;
 this.bgMusic = new Audio();
 this.bgMusic.loop = true;
 this.blockCG = storage.blockCG; // ربط مع التخزين
@@ -314,13 +315,16 @@ for (let i = 0; i < this.enemies.length; i++) {
             
             // تسجيل الكتلة للحذف
             platformsToRemove.push(pIndex);
-            
+            this.countD++;
+            if(this.countD == 3){
+            	this.countD = 0;
             // تفعيل دائرة الضرر إذا لم تكن مفعلة بالفعل
             if (!enemy.damageCircleActive) {
                 enemy.damageCircleActive = true;
                 enemy.damageCircleTimer = 0.5; // نصف ثانية
                 enemy.damageCircleRadius = 70;
                 enemy.damageCirclePosition = { x: enemy.x, y: enemy.y };
+            }
             }
         }
     }
@@ -509,6 +513,7 @@ if (this.storage.kills > 0 && this.storage.kills % 3 === 0) {
         // مكافأة كل 10 قتلات: شفاء 15 نقطة
         if (this.storage.kills > 0 && this.storage.kills % 10 === 0) {
             if (this.playerHealth + 15 > this.maxHealth) {
+            	this.blockCG =  this.storage.kills + this.storage.kills / 2.5;
                 this.playerHealth = 100;
             } else {
                 this.playerHealth += 15;
