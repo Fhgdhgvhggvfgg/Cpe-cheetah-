@@ -138,7 +138,7 @@ spawnEnemy() {
         y: this.y - 100, 
         health: 50 + this.storage.kills, 
         maxHealth: 50 + this.storage.kills, 
-        radius: 50, 
+        radius: 70, 
         speed: 200,
         damageCircleActive: false,  // خاصية جديدة
         damageCircleTimer: 0,       // خاصية جديدة
@@ -664,7 +664,7 @@ this.drawBoundaryLines();
             this.ctx.translate(en.x, en.y);
             if (this.x < en.x) this.ctx.scale(-1, 1);
             if(this.enemyImg.complete && this.enemyImg.naturalWidth > 0) {
-                this.ctx.drawImage(this.enemyImg, -en.radius, -en.radius, en.radius * 3, en.radius * 3);
+                this.ctx.drawImage(this.enemyImg, -en.radius, -en.radius, en.radius * 2, en.radius * 2);
             } else {
                 this.ctx.fillStyle = "#e67e22";
                 this.ctx.beginPath();
