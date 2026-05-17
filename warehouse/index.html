@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>قائمة الملفات</title>
+    <title>قائمة الملفات - دعم الروابط</title>
     <style>
     
     /* نافذة تشغيل الفيديو */
@@ -158,12 +158,51 @@ video { width: 100%; border-radius: 16px; }
         .download-btn:active {
             transform: scale(0.98);
         }
+        
+        /* زر الرابط الجديد */
+        .link-btn {
+            flex-shrink: 0;
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+            color: #000;
+            border: none;
+            padding: 10px 22px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+        }
+        
+        .link-btn:hover {
+            background: linear-gradient(135deg, #ffb74d, #ff9800);
+            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);
+            transform: scale(1.05);
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-shrink: 0;
+        }
 
         .file-count {
             text-align: center;
             margin-top: 20px;
             color: #888;
             font-size: 0.9rem;
+        }
+        
+        /* تنسيق الرابط كنص داخل العنصر */
+        .url-preview {
+            font-size: 0.75rem;
+            color: #ff9800;
+            margin-top: 4px;
+            word-break: break-all;
+            font-family: monospace;
         }
     </style>
 </head>
@@ -195,7 +234,32 @@ function isImageFile(filename) {
     return imageExts.includes(filename.split('.').pop().toLowerCase());
 }
 
+// التحقق مما إذا كان الملف يمثل رابط HTTPS
+function isHttpsLink(filename) {
+    // التحقق إذا كان النص كاملاً يبدأ بـ https:// أو http://
+    if (filename.startsWith('https://') || filename.startsWith('http://')) return true;
+    // التحقق إذا كان الامتداد هو "https"
+    const ext = filename.split('.').pop().toLowerCase();
+    if (ext === 'https') return true;
+    return false;
+}
+
+// استخراج الرابط الفعلي من اسم الملف وقص الجزء الأخير .https إذا وجد
+function extractUrl(filename) {
+    let url = filename;
+    
+    // إذا كان الرابط ينتهي بـ .https، قم بقصه
+    if (url.toLowerCase().endsWith('.https')) {
+        url = url.slice(0, -6); // إزالة آخر 6 حروف (.https)
+    }
+    
+    return url;
+}
+
         function getFileIcon(filename) {
+            // إذا كان رابطاً، نعطي أيقونة خاصة
+            if (isHttpsLink(filename)) return '🔗';
+            
             const ext = filename.split('.').pop().toLowerCase();
             const icons = {
                 zip: '📦', rar: '📦', '7z': '📦', tar: '📦', gz: '📦',
@@ -235,9 +299,11 @@ function displayFiles(files) {
     }
 
     files.forEach((file, index) => {
+        const isLink = isHttpsLink(file.filename);
+        const actualUrl = extractUrl(file.filename);
         const icon = getFileIcon(file.filename);
-        const isVideo = isVideoFile(file.filename);
-        const isImage = isImageFile(file.filename);
+        const isVideo = !isLink && isVideoFile(file.filename);
+        const isImage = !isLink && isImageFile(file.filename);
         
         const li = document.createElement('li');
         li.className = 'file-item';
@@ -252,28 +318,31 @@ function displayFiles(files) {
         headerDiv.style.alignItems = 'center';
         headerDiv.style.gap = '12px';
         headerDiv.style.padding = '16px 20px 0 20px';
-        headerDiv.style.paddingBottom = isVideo || isImage ? '12px' : '16px';
+        headerDiv.style.paddingBottom = (isVideo || isImage) ? '12px' : '16px';
         headerDiv.innerHTML = `
             <span class="file-icon" style="font-size: 1.5rem;">${icon}</span>
-            <div class="file-name" style="flex:1; font-weight:500;">${escapeHtml(file.description)}</div>
+            <div style="flex:1;">
+                <div class="file-name" style="font-weight:500;">${escapeHtml(file.description)}</div>
+                ${isLink ? `<div class="url-preview">🔗 ${escapeHtml(actualUrl)}</div>` : ''}
+            </div>
         `;
         li.appendChild(headerDiv);
 
-        // العرض الأساسي (فيديو أو صورة) يملأ عرض القائمة
-        if (isVideo) {
+        // العرض الأساسي (فيديو أو صورة) فقط للملفات العادية (ليست روابط)
+        if (!isLink && isVideo) {
             const videoContainer = document.createElement('div');
             videoContainer.style.width = '100%';
             videoContainer.style.backgroundColor = '#000';
             videoContainer.style.aspectRatio = '16 / 9';
             videoContainer.innerHTML = `
                 <video controls preload="metadata" style="width: 100%; height: 100%; object-fit: contain;">
-                    <source src="${file.filename}">
+                    <source src="${actualUrl}">
                     متصفحك لا يدعم الفيديو
                 </video>
             `;
             li.appendChild(videoContainer);
         } 
-        else if (isImage) {
+        else if (!isLink && isImage) {
             const imgContainer = document.createElement('div');
             imgContainer.style.width = '100%';
             imgContainer.style.backgroundColor = '#0a0a14';
@@ -282,25 +351,34 @@ function displayFiles(files) {
             imgContainer.style.alignItems = 'center';
             imgContainer.style.minHeight = '200px';
             imgContainer.innerHTML = `
-                <img src="${file.filename}" alt="${escapeHtml(file.description)}" style="max-width: 100%; max-height: 350px; object-fit: contain; display: block;">
+                <img src="${actualUrl}" alt="${escapeHtml(file.description)}" style="max-width: 100%; max-height: 350px; object-fit: contain; display: block;">
             `;
             li.appendChild(imgContainer);
         }
 
-        // زر التحميل في الأسفل
-        const downloadDiv = document.createElement('div');
-        downloadDiv.style.padding = '16px 20px';
-        downloadDiv.style.borderTop = isVideo || isImage ? '1px solid #2a2a4a' : 'none';
-        downloadDiv.style.marginTop = isVideo || isImage ? '0' : '0';
-        downloadDiv.innerHTML = `
-            <a class="download-btn" href="${file.filename}" download style="display: inline-flex; width: auto;">⬇ تحميل الملف</a>
-        `;
-        li.appendChild(downloadDiv);
+        // الأزرار في الأسفل
+        const buttonDiv = document.createElement('div');
+        buttonDiv.style.padding = '16px 20px';
+        buttonDiv.style.borderTop = (isVideo || isImage) ? '1px solid #2a2a4a' : 'none';
+        buttonDiv.style.marginTop = (isVideo || isImage) ? '0' : '0';
+        
+        if (isLink) {
+            // رابط: نعرض زر "فتح الرابط" فقط
+            buttonDiv.innerHTML = `
+                <a class="link-btn" href="${actualUrl}" target="_blank" rel="noopener noreferrer" style="display: inline-flex; width: auto;">🔗 فتح الرابط</a>
+            `;
+        } else {
+            // ملف عادي: زر تحميل عادي
+            buttonDiv.innerHTML = `
+                <a class="download-btn" href="${actualUrl}" download style="display: inline-flex; width: auto;">⬇ تحميل الملف</a>
+            `;
+        }
+        li.appendChild(buttonDiv);
         
         list.appendChild(li);
     });
 
-    countDiv.textContent = `عدد الملفات: ${files.length}`;
+    countDiv.textContent = `عدد العناصر: ${files.length}`;
 }
 
         async function loadData() {

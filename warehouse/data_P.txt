@@ -10,3 +10,5 @@ game_power_2.zip
 keven_01-like.png
 "هذا فيديو يلخص رحلة التطوير"
 video_offer.mp4
+"هذا رابط اللعبة"
+https://fhgdhgvhggvfgg.github.io/Cpe-cheetah-/game_power/.https
