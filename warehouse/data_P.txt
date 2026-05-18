@@ -1,16 +1,16 @@
-"النسخة الاولية من اللعبة (html) "
+p(0,200) s(200,200) "النسخة الاولية من اللعبة (html)"
 cheetah_game.html
-"نسخة محدثة من اللعبة مع assets (zip)" 
+p(300,200) s(200,200) "نسخة محدثة من اللعبة مع assets (zip)" 
 cheetah_game_2.zip
-"اخر نسخة محدثة وجاهزة من اللعبة (zip) "
+p(600,200) s(200,200) "اخر نسخة محدثة وجاهزة من اللعبة (zip) "
 game_power.zip
-"اخر تحديث غير مكتمل للعبة مع كل الملحقات (zip)" 
+p(850,500) s(200,200) "اخر تحديث غير مكتمل للعبة مع كل الملحقات (zip)" 
 game_power_2.zip
-"تذكر. هذه اللعبة لاخراج اللاعب الفنان الذي يفتخر بفنه. فهذا العتادتحت مسؤليتك يا بطل 🫡 "
-keven_01-like.png
-"هذا فيديو يلخص رحلة التطوير"
+p(1000,1000) s(600,600) "تذكر. هذه اللعبة لاخراج اللا عب الفنان الذي يفتخر بفنه. فهذا العتادتحت مسؤليتك يا بطل 🫡 "
+keven_01-like.png 
+p(200,1000) s(600,600) "هذا رابط اللعبة"
+https://fhgdhgvhggvfgg.github.io/Cpe-cheetah-/game_power/&&photo_game.gif 
+p(0,500) s(400,300) "هذا فيديو يلخص رحلة التطوير"
 video_offer.mp4
-"هذا رابط اللعبة"
-https://fhgdhgvhggvfgg.github.io/Cpe-cheetah-/game_power/.https&&photo_game.gif 
-"رابط قناة اليوتيوب"
-https://youtube.com/@cheetah_man_01?si=h4-ZO8zfZwJWn7Kc.https&&photo_channel.png
+p(500,500) s(300,380) "رابط قناة اليوتيوب"
+https://youtube.com/@cheetah_man_01?si=h4-ZO8zfZwJWn7Kc&&photo_channel.png
