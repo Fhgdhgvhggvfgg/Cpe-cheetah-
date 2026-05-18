@@ -11,4 +11,4 @@ keven_01-like.png
 "هذا فيديو يلخص رحلة التطوير"
 video_offer.mp4
 "هذا رابط اللعبة"
-https://fhgdhgvhggvfgg.github.io/Cpe-cheetah-/game_power/.https&&photo_game.png 
+https://fhgdhgvhggvfgg.github.io/Cpe-cheetah-/game_power/.https&&photo_game.gif 
