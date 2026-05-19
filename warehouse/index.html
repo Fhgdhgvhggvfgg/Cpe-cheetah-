@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<link rel="icon" type="image/png" href="favicon_b.png">
-<link rel="apple-touch-icon" href="favicon_b.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>قائمة الملفات - دعم الروابط</title>
@@ -30,12 +28,15 @@
 
         #canvas {
             position: relative; width: 100vw; height: 100vh;
-            background: radial-gradient(circle at 50% 50%, #151520 0%, var(--bg) 70%),
-                linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
-            background-size: 100% 100%, 60px 60px, 60px 60px;
+            /* 🖼️ تعيين الصورة وتوسيطها */
+            background-image: url('warehouse_menu.png');
+            background-position: center;
+            background-repeat: no-repeat;
+            /* 📐 الخاصية cover تضمن مطابقة أصغر بعد للصورة مع أصغر بعد للشاشة (العرض أو الارتفاع) */
+            background-size: cover; 
             overflow: hidden; cursor: grab;
         }
+
         #canvas:active { cursor: grabbing; }
         #world {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -43,23 +44,40 @@
             transform-origin: 0 0; will-change: transform;
         }
 
-        .entity {
-            position: absolute; background: var(--card); border: 1px solid var(--border);
+          .entity {
+            position: absolute; 
+            /* 🖼️ إضافة صورة الخلفية وجعلها تغطي كامل مساحة العنصر بشكل متناسق */
+            background: url('item_back.png') center/cover no-repeat; 
+            border: 3px solid #ffffff;
             border-radius: 16px; padding: 12px; display: flex; flex-direction: column;
             align-items: center; justify-content: center; text-align: center;
-            transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
-            cursor: default; box-shadow: 0 6px 24px rgba(0,0,0,0.6);
-            backdrop-filter: blur(6px);             /* إزالة الحدود الدنيا للسماح بالأحجام المرنة */
+            transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;         
             min-width: 0; min-height: 0; 
             overflow: hidden;
         }
+
         .entity:hover {
             transform: translateY(-8px) scale(1.03);
             border-color: var(--accent); box-shadow: 0 12px 36px rgba(77, 166, 255, 0.2);
             z-index: 10;
         }
         .entity-icon { font-size: 2em; margin-bottom: 6px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
-        .entity-title { font-size: 0.9em; font-weight: 600; line-height: 1.2; margin-bottom: 6px; color: #fff; word-break: break-word; }
+.entity-title { 
+    font-size: 0.9em; 
+    font-weight: 600; 
+    line-height: 1.2; 
+    margin-bottom: 12px; /* تم زيادة المسافة ليعطي متنفساً للإطار */
+    color: #fff; 
+    word-break: break-word; 
+
+    /* 🔘 الإطار الرمادي المخصص للنص */
+    border: 2px solid #ffffff; /* يمكنك تغيير #888888 لدرجة الرمادي التي تفضلها */
+    border-radius: 8px;        /* انحناء زوايا إطار النص */
+    padding: 6px 10px;         /* مسافة داخلية حول النص لكي لا يلتصق بالإطار */
+    background: rgba(0, 0, 0, 0.4); /* خلفية سوداء خفيفة شبه شفافة لإبراز النص فوق الصورة */
+    width: 90%;                /* تحديد عرض الإطار ليكون متناسقاً داخل البطاقة */
+}
+
 
         .entity-btn {
             display: inline-flex; align-items: center; justify-content: center; gap: 6px;
