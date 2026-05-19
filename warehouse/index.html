@@ -329,7 +329,9 @@ async function init() {
                 const lines = text.split('\n').map(l=>l.trim()).filter(l=>l!=='');
                 const data = [];
                 for(let i=0; i<lines.length; i++) {
-                    const m = lines[i].match(/p\((\d+),(\d+)\)\s+s\((\d+),(\d+)\)\s+"([^"]+)"/);
+                   // التعبير الجديد يدعم -? قبل أرقام الموقع p
+const m = lines[i].match(/p\((-?\d+),(-?\d+)\)\s+s\((\d+),(\d+)\)\s+"([^"]+)"/);
+
                     if(m && lines[i+1]) {
                         const raw = lines[i+1]; let file=raw, link=null, thumb=null;
                         if(raw.includes('&&')) { const p=raw.split('&&'); link=p[0].trim(); thumb=p[1].trim(); file=link; }
