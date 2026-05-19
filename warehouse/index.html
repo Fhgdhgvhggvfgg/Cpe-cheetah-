@@ -217,7 +217,7 @@
         // --- المتغيرات ---        const canvas = document.getElementById('canvas');
         const world = document.getElementById('world');
         const zoomLevelEl = document.getElementById('zoom-level');
-        let panX = 0, panY = 0, scale = 1;
+        let panX = -600, panY = -600, scale = 0.8;
         const MIN_SCALE = 0.3, MAX_SCALE = 3;
         let isDragging = false, startX, startY, startPanX, startPanY;
         let velX = 0, velY = 0, lastMoveTime = 0, animId;
