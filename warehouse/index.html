@@ -157,11 +157,46 @@
             opacity: 0; pointer-events: none; transition: opacity 0.4s, transform 0.4s;
         }
         #toast.show { opacity: 1; transform: translateX(-50%) translateY(-5px); }
+        
+        /* حركة إخفاء وإظهار القائمة */
+#header {
+    transition: transform 0.4s ease;
+}
+#header.hide-header {
+    transform: translateY(-100%);
+}
+
+/* زر السهم */
+.arrow-btn {
+    position: fixed;
+    top: 180px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 51;
+    background: var(--accent);
+    border: none;
+    width: 48px;
+    height: 32px;
+    border-radius: 0 0 20px 20px;
+    cursor: pointer;
+    font-size: 18px;
+    color: #0a0a0f;
+    font-weight: bold;
+    transition: 0.3s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+.arrow-btn:hover {
+    background: #3388e0;
+    transform: translateX(-50%) translateY(3px);
+}
+
     </style>
 </head>
 <body>
     <div id="header">
-        <h1>📂 قائمة الملفات - دعم الروابط</h1>
+    <!-- زر السهم لرفع وإنزال القائمة -->
+<button class="arrow-btn" id="arrowBtn">▲</button>
+        <h1>مستودع عتاد اللعبة</h1>
         <p>هذه اللعبة فريدة في عالم الالعاب لكنها محدودة جدا. اذا اعجبتك اللعبة وتريد تطويرها فلك كامل الحرية. اللعبة متاحة للمجتمع وانت سوف يكون لك دور كبير في اسعاد مجتمع لاعبي indie. فلو كنت شغوفا حمل كل ما يلزم من هذا المستودع وانطلق ⚔️</p>
     </div>
 
@@ -387,6 +422,25 @@ const m = lines[i].match(/p\((-?\d+),(-?\d+)\)\s+s\((\d+),(\d+)\)\s+"([^"]+)"/);
             } catch(err) { showMsg(`❌ خطأ: ${err.message}`, 5000); }
         }
         document.addEventListener('DOMContentLoaded', init);
+        
+        // زر السهم لإخفاء وإظهار القائمة
+const headerEl = document.getElementById('header');
+const arrowBtn = document.getElementById('arrowBtn');
+
+if (arrowBtn && headerEl) {
+    arrowBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        headerEl.classList.toggle('hide-header');
+        
+        // تغيير اتجاه السهم
+        if (headerEl.classList.contains('hide-header')) {
+            arrowBtn.innerHTML = '▼';  // سهم لأسفل يعني اضغط لإنزال
+        } else {
+            arrowBtn.innerHTML = '▲';  // سهم لأعلى يعني اضغط لرفع
+        }
+    });
+}
+
     </script>
 </body>
 </html>
