@@ -16,3 +16,5 @@ p(500,500) s(300,380) "رابط قناة اليوتيوب"
 https://youtube.com/@cheetah_man_01?si=h4-ZO8zfZwJWn7Kc&&photo_channel.png
 p(-600,900) s(650,600) "رابط صفحة تويتر"
 https://x.com/Cheetah_iraq&&Xphoto.png
+p(-600,300) s(400,500) "رابط صفحة انستجرام"
+https://www.instagram.com/cheetah_666_iraq?igsh=bWFmdzFrN2sxanZx&&Iphoto.png
