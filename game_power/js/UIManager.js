@@ -15,6 +15,26 @@ export class UIManager {
     }
 
     initEventListeners() {
+    	
+    // تحميل قيمة الزوم المحفوظة
+const zoomSlider = document.getElementById('zoomSlider');
+const zoomVal = document.getElementById('zoomVal');
+
+if (zoomSlider) {
+    zoomSlider.value = this.storage.zoom || 1.5;
+    if (zoomVal) zoomVal.innerText = this.storage.zoom || 1.5;
+    
+    zoomSlider.oninput = () => {
+        const newZoom = parseFloat(zoomSlider.value);
+        if (zoomVal) zoomVal.innerText = newZoom;
+        this.storage.saveZoom(newZoom);
+        // تطبيق الزوم فوراً إذا كانت اللعبة قيد التشغيل
+        if (window.currentGame) {
+            window.currentGame.zoom = newZoom;
+        }
+    };
+}
+    
         const slider = document.getElementById('btnSizeSlider');
         const sizeVal = document.getElementById('sizeVal');
         const saveAndReload = document.getElementById('saveAndReload');
