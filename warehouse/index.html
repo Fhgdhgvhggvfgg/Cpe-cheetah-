@@ -100,7 +100,6 @@
             display: block;
         }
 
-        /* 👾 ستايل الخاص بالعدو العائم كصورة عادية */
         .raw-enemy-entity {
             position: absolute;
             cursor: pointer;
@@ -170,8 +169,8 @@
 
         .arrow-btn {
             position: fixed; top: 180px; left: 50%; transform: translateX(-50%); z-index: 51;
-            background: var(--accent); border: none; width: 48px; height: 32px;
-            border-radius: 0 0 20px 20px; cursor: pointer; font-size: 18px; color: #0a0a0f;
+            background: var(--accent); border: none; width: 100px; height: 32px;
+            border-radius: 0 0 20px 20px; cursor: pointer; font-size: 14px; color: #0a0a0f;
             font-weight: bold; transition: 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         }
         .arrow-btn:hover { background: #3388e0; transform: translateX(-50%) translateY(3px); }
@@ -179,37 +178,46 @@
 </head>
 <body>
     <div id="header">
-        <button class="arrow-btn" id="arrowBtn">▲</button>
+        <button class="arrow-btn" id="arrowBtn">اخفاء القائمة</button>
         <h1>مستودع عتاد اللعبة</h1>
-        <p>هذه اللعبة فريدة في عالم الالعاب لكنها محدودة جدا. اذا اعجبتك اللعبة وتريد تطويرها فلك كامل الحرية. اللعبة متاحة للمجتمع وانت سوف يكون لك دور كبير في اسعاد مجتمع لاعبي indie. فلو كنت شغوفا حمل كل ما يلزم من هذا المستودع وانطلق ⚔️</p>
+        <p>هذه اللعبة فريدة في عالم الالعاب لكنها محدودة جدا. اذا اعجبتك اللعبة وتريد تطويرها فلك كامل الحرية. اللعبة متاحة للمجتمع وانت سوف يكون لك دور كبير في اسعاد مجتمع لاعبي اندي. فلو كنت شغوفا حمل كل ما يلزم من هذا المستودع وانطلق</p>
     </div>
 
     <div id="canvas"><div id="world"></div></div>
     <div id="zoom-controls">
         <button class="zoom-btn" onclick="zoomIn()">+</button>
-        <button class="zoom-btn" onclick="resetZoom()">⟲</button>
-        <button class="zoom-btn" onclick="zoomOut()">−</button>
+        <button class="zoom-btn" onclick="resetZoom()">R</button>
+        <button class="zoom-btn" onclick="zoomOut()">-</button>
     </div>
     <div id="zoom-level">100%</div>
 
     <div id="preview-modal" class="preview-modal">
         <div class="preview-box">
-            <button class="close-preview" onclick="closePreview()">✕</button>
+            <button class="close-preview" onclick="closePreview()">X</button>
             <h3 id="preview-title" style="margin-bottom:12px; color:#fff;"></h3>
             <div id="preview-content"></div>
-            <a id="preview-download" href="#" download class="entity-btn download" style="margin-top:12px;">⬇ تحميل الملف</a>
+            <a id="preview-download" href="#" download class="entity-btn download" style="margin-top:12px;">تحميل الملف</a>
         </div>
     </div>
-    <div id="toast">⏳ جاري تحميل البيانات...</div>
+    <div id="toast">جاري تحميل البيانات</div>
 
     <script>
-        const icons = { html:'🌐', htm:'🌐', zip:'📦', rar:'📦', '7z':'📦', mp4:'🎬', webm:'🎬', mov:'🎬', exe:'💻', dmg:'💻', txt:'📄', json:'📄', js:'📜', css:'📜', py:'🐍', md:'📝', png:'🖼️', jpg:'🖼️', jpeg:'🖼️', svg:'🖼️', gif:'🖼️', webp:'🖼️' };
-        const getIcon = f => { if(!f) return '🔗'; const ext = f.split('.').pop().toLowerCase(); return icons[ext] || '📁'; };
+const icons = { 
+    html: '🌐', htm: '🌐', 
+    zip: '📦', rar: '📦', '7z': '📦', 
+    mp4: '🎬', webm: '🎬', mov: '🎬', 
+    exe: '💻', dmg: '💻', 
+    txt: '📄', json: '📄', 
+    js: '📜', css: '📜', 
+    py: '🐍', md: '📝', 
+    png: '🖼️', jpg: '🖼️', jpeg: '🖼️', svg: '🖼️', gif: '🖼️', webp: '🖼️' 
+};
+
+        const getIcon = f => { if(!f) return '[LINK]'; const ext = f.split('.').pop().toLowerCase(); return icons[ext] || '[FILE]'; };
 
         const toast = document.getElementById('toast');
         const showMsg = (msg, dur=3000) => { toast.textContent = msg; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), dur); };
 
-        // --- المعاينة ---
         const previewModal = document.getElementById('preview-modal');
         const previewContent = document.getElementById('preview-content');
         const previewTitle = document.getElementById('preview-title');
@@ -217,7 +225,7 @@
 
         window.openPreview = async (file, title) => {
             previewTitle.textContent = title; previewDownload.href = file;
-            previewContent.innerHTML = '<p style="color:#999;">⏳ جاري قراءة المحتوى...</p>';
+            previewContent.innerHTML = '<p style="color:#999;">جاري قراءة المحتوى</p>';
             previewModal.classList.add('active');
             const ext = file.split('.').pop().toLowerCase();
             try {
@@ -227,13 +235,12 @@
                 if(['html','htm'].includes(ext)) previewContent.innerHTML = `<iframe srcdoc="${text.replace(/"/g, '"')}"></iframe>`;
                 else if(['txt','json','js','css','py','md'].includes(ext)) previewContent.innerHTML = `<pre>${text.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre>`;
                 else if(['png','jpg','jpeg','svg','gif','webp'].includes(ext)) previewContent.innerHTML = `<img src="${file}" alt="${title}">`;
-                else previewContent.innerHTML = `<p style="color:#ccc;">⚠️ لا يمكن عرض هذا النوع من الملفات مباشرة.</p>`;
-            } catch(err) { previewContent.innerHTML = `<p style="color:#ff4d4d;">❌ ${err.message}</p>`; }
+                else previewContent.innerHTML = `<p style="color:#ccc;">لا يمكن عرض هذا النوع من الملفات مباشرة</p>`;
+            } catch(err) { previewContent.innerHTML = `<p style="color:#ff4d4d;">خطأ في العرض</p>`; }
         };
         window.closePreview = () => { previewModal.classList.remove('active'); previewContent.innerHTML = ''; };
         previewModal.addEventListener('click', e => { if(e.target === previewModal) closePreview(); });
 
-        // --- المتغيرات ---
         const canvas = document.getElementById('canvas');
         const world = document.getElementById('world');
         const zoomLevelEl = document.getElementById('zoom-level');
@@ -243,7 +250,6 @@
         let velX = 0, velY = 0, lastMoveTime = 0, animId;
         let pinchStartDist = 0, pinchStartScale = 0, pinchCenter = {x:0, y:0};
 
-        // متغيرات نطاق الخريطة المستنتجة من الكيانات
         let mapBounds = { minX: 0, maxX: 500, minY: 0, maxY: 500 };
 
         const isInteractable = el => el.closest('.entity-btn, .close-preview, a, video, .preview-modal, input, button, iframe, pre, img, .zoom-btn, .raw-enemy-entity');
@@ -253,7 +259,6 @@
             zoomLevelEl.textContent = Math.round(scale * 100) + '%';
         }
 
-        // --- التكبير ---
         function zoomAtPoint(factor, clientX, clientY) {
             const rect = canvas.getBoundingClientRect();
             const mouseX = clientX - rect.left, mouseY = clientY - rect.top;
@@ -273,7 +278,6 @@
             zoomAtPoint(e.deltaY < 0 ? 1.1 : 0.9, e.clientX, e.clientY);
         }, {passive:false});
 
-        // --- السحب (Pan) ---
         function startPan(e) {
             if(isInteractable(e.target)) return;
             isDragging = true;
@@ -314,7 +318,6 @@
         canvas.addEventListener('mouseup', endPan);
         canvas.addEventListener('mouseleave', endPan);
 
-        // --- اللمس: سحب + قرص ---
         canvas.addEventListener('touchstart', e => {
             if(e.touches.length === 1 && !isInteractable(e.target)) { startPan(e); }
             else if(e.touches.length === 2) {
@@ -344,12 +347,10 @@
             if(e.touches.length < 2) { pinchStartDist = 0; if(isDragging) endPan(); }
         });
 
-        // 👾 دالة توليد صورة عدو واحدة في إحداثيات عشوائية ضمن النطاق المحسوب
         function spawnEnemyAtRandomLocation() {
             const enemyImgData = localStorage.getItem('enemyImage');
             if (!enemyImgData) return; 
 
-            // اختيار مكان عشوائي تماماً بين أدنى وأعلى نقطة للكيانات المكتشفة
             const randomX = Math.floor(Math.random() * (mapBounds.maxX - mapBounds.minX + 1)) + mapBounds.minX;
             const randomY = Math.floor(Math.random() * (mapBounds.maxY - mapBounds.minY + 1)) + mapBounds.minY;
 
@@ -366,7 +367,6 @@
 
             let isDestroyed = false;
 
-            // مؤقت الحذف التلقائي الصامت بعد 40 ثانية لتخفيف الوزن الرسومي
             const autoDestroyTimeout = setTimeout(() => {
                 if (!isDestroyed) {
                     isDestroyed = true;
@@ -385,12 +385,11 @@
                 
                 clearTimeout(autoDestroyTimeout);
 
-                // زيادة متغير blockCG بمقدار 1 في متصفح المستخدم
                 let currentBlocks = parseInt(localStorage.getItem('blockCG')) || 0;
                 currentBlocks += 1;
                 localStorage.setItem('blockCG', currentBlocks);
                 
-                showMsg(`⚔️ تم القضاء على العدو! عدد الكتل الحالي: ${currentBlocks}`);
+                showMsg("تم القضاء على العدو! تم تحديث عدد الكتل");
 
                 enemyImg.style.opacity = '0';
                 enemyImg.style.transform = 'scale(0)';
@@ -403,13 +402,11 @@
             world.appendChild(enemyImg);
         }
 
-        // تفعيل التوليد اللانهائي كل 5 ثوانٍ
         function startEnemySpawner() {
             spawnEnemyAtRandomLocation();
             setInterval(spawnEnemyAtRandomLocation, 5000);
         }
 
-        // --- تحميل البيانات ---
         async function init() {
             try {
                 const res = await fetch('data_P.txt');
@@ -426,7 +423,7 @@
                         i++;
                     }
                 }
-                showMsg(`✅ تم تحميل ${data.length} عنصر بنجاح`);
+                showMsg("تم تحميل العناصر بنجاح");
                 
                 if (data.length > 0) {
                     let allXs = data.map(d => d.x);
@@ -456,22 +453,22 @@
                     
                     if(isVid) {
                         html = `<video class="entity-media" controls preload="metadata"><source src="${d.file}" type="video/mp4"></video>
-                                <a href="${d.file}" download class="entity-btn download" onclick="event.stopPropagation()">⬇ تحميل الفيديو</a>`;
+                                <a href="${d.file}" download class="entity-btn download" onclick="event.stopPropagation()">تحميل الفيديو</a>`;
                     }
                     else if(isImg) {
                         html = `<img src="${d.file}" class="entity-media" alt="${d.title}">
-                                <a href="${d.file}" download class="entity-btn download" onclick="event.stopPropagation()">⬇ تحميل الصورة</a>`;
+                                <a href="${d.file}" download class="entity-btn download" onclick="event.stopPropagation()">تحميل الصورة</a>`;
                     }
                     else if(d.isLink) {
                         html = `${d.thumbUrl ? `<img src="${d.thumbUrl}" class="entity-media" alt="thumb">` : ''}
-                                <a href="${d.linkUrl}" target="_blank" class="entity-btn link" onclick="event.stopPropagation()">🔗 دخول الرابط</a>`;
+                                <a href="${d.linkUrl}" target="_blank" class="entity-btn link" onclick="event.stopPropagation()">دخول الرابط</a>`;
                     }
                     else if(isPrev) {
-                        html = `<button class="entity-btn preview" onclick="event.stopPropagation();openPreview('${d.file}','${d.title.replace(/'/g,"\\'")}')" style="margin-bottom:4px;">👁️ عرض المحتوى</button>
-                                <a href="${d.file}" download class="entity-btn download" onclick="event.stopPropagation()">⬇ تحميل الملف</a>`;
+                        html = `<button class="entity-btn preview" onclick="event.stopPropagation();openPreview('${d.file}','${d.title.replace(/'/g,"\\'")}')" style="margin-bottom:4px;">عرض المحتوى</button>
+                                <a href="${d.file}" download class="entity-btn download" onclick="event.stopPropagation()">تحميل الملف</a>`;
                     }
                     else {
-                        html = `<a href="${d.file}" download class="entity-btn download" onclick="event.stopPropagation()">⬇ تحميل الملف</a>`;
+                        html = `<a href="${d.file}" download class="entity-btn download" onclick="event.stopPropagation()">تحميل الملف</a>`;
                     }
                     
                     el.innerHTML = `<div class="entity-icon">${getIcon(d.file)}</div><div class="entity-title">${d.title}</div>${html}`;
@@ -480,7 +477,7 @@
 
                 startEnemySpawner();
                 updateTransform();
-            } catch(err) { showMsg(`❌ خطأ: ${err.message}`, 5000); }
+            } catch(err) { showMsg("حدث خطأ أثناء تحميل البيانات"); }
         }
         document.addEventListener('DOMContentLoaded', init);
         
@@ -492,9 +489,9 @@
                 e.stopPropagation();
                 headerEl.classList.toggle('hide-header');
                 if (headerEl.classList.contains('hide-header')) {
-                    arrowBtn.innerHTML = '▼';  
+                    arrowBtn.innerHTML = "عرض القائمة";  
                 } else {
-                    arrowBtn.innerHTML = '▲';  
+                    arrowBtn.innerHTML = "اخفاء القائمة";  
                 }
             });
         }
