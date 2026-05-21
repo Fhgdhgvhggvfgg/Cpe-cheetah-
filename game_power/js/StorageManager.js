@@ -1,7 +1,6 @@
 export class StorageManager {
     constructor() {
-    	
-    this.blockCG = parseInt(localStorage.getItem('blockCG')) || 0; // تغيير من 20 إلى القيمة المحفوظة أو 20
+        this.blockCG = parseInt(localStorage.getItem('blockCG')) || 0;
         this.player = localStorage.getItem('playerImage');
         this.bg = localStorage.getItem('bgImage');
         this.enemy = localStorage.getItem('enemyImage');
@@ -11,7 +10,17 @@ export class StorageManager {
         this.kills = parseInt(localStorage.getItem('totalKills')) || 0;
         this.btnSize = localStorage.getItem('controlsSize') || 75;
         this.playerName = localStorage.getItem('playerName') || '';
+        this.zoom = parseFloat(localStorage.getItem('gameZoom')) || 1.5;  // <-- أضف هذا
     }
+    
+    // ... باقي الدوال ...
+
+    // أضف هذه الدالة
+    saveZoom(zoom) {
+        localStorage.setItem('gameZoom', zoom);
+        this.zoom = zoom;
+    }
+
     
     saveBlockCG(count) {
     localStorage.setItem('blockCG', count);
