@@ -1,12 +1,59 @@
 import { GameCore } from './GameCore.js';
 import { StorageManager } from './StorageManager.js';
 import { UIManager } from './UIManager.js';
-
+// أضف هذا في أول main.js
+if (navigator.storage && navigator.storage.persist) {
+    navigator.storage.persist();
+}
 // تهيئة مدير التخزين
 const storage = new StorageManager();
 
 // تهيئة مدير واجهة المستخدم
 const uiManager = new UIManager(storage);
+
+// طلب تخزين دائم (غير قابل للمسح من المتصفح)
+if (navigator.storage && navigator.storage.persist) {
+    navigator.storage.persist().then(granted => {
+        if (granted) {
+            console.log("✅ التخزين الدائم ممنوح!");
+        } else {
+            console.log("⚠️ المستخدم لم يمنح التخزين الدائم");
+        }
+    });
+}
+
+// معرفة المساحة المتاحة
+navigator.storage.estimate().then(estimate => {
+    console.log("المساحة المتاحة:", estimate.quota / 1024 / 1024, "MB");
+    console.log("المستخدم:", estimate.usage / 1024 / 1024, "MB");
+});
+
+// اطلب مساحة تخزين مؤقتة كبيرة أولاً
+if (navigator.storage && navigator.storage.estimate) {
+    navigator.storage.estimate().then(estimate => {
+        // هذه المساحة ستزيد تلقائياً عند إضافة صور
+        console.log("المساحة المحجوزة:", estimate.quota);
+        console.log("المستخدم:", estimate.usage);
+    });
+}
+
+// في بداية الملف بعد الاستيرادات
+let currentGame = null;
+window.currentGame = currentGame;
+
+// ثم عند بدء اللعبة:
+document.getElementById('survivalBtn').onclick = () => {
+    storage.kills = 0;
+    storage.saveKills(0);
+    uiManager.updateMenuDisplay();
+    currentGame = new GameCore('survival', storage, uiManager);
+    window.currentGame = currentGame;
+};
+
+document.getElementById('creativeBtn').onclick = () => {
+    currentGame = new GameCore('creative', storage, uiManager);
+    window.currentGame = currentGame;
+};
 
 // تحميل الصور الافتراضية إذا لم تكن موجودة
 (async function initDefaultImages() {
