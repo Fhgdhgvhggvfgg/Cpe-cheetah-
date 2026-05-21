@@ -30,11 +30,9 @@
 
         #canvas {
             position: relative; width: 100vw; height: 100vh;
-            /* 🖼️ تعيين الصورة وتوسيطها */
             background-image: url('warehouse_menu.png');
             background-position: center;
             background-repeat: no-repeat;
-            /* 📐 الخاصية cover تضمن مطابقة أصغر بعد للصورة مع أصغر بعد للشاشة (العرض أو الارتفاع) */
             background-size: cover; 
             overflow: hidden; cursor: grab;
         }
@@ -46,9 +44,8 @@
             transform-origin: 0 0; will-change: transform;
         }
 
-          .entity {
+        .entity {
             position: absolute; 
-            /* 🖼️ إضافة صورة الخلفية وجعلها تغطي كامل مساحة العنصر بشكل متناسق */
             background: url('item_back.png') center/cover no-repeat; 
             border: 3px solid #ffffff;
             border-radius: 16px; padding: 12px; display: flex; flex-direction: column;
@@ -64,22 +61,19 @@
             z-index: 10;
         }
         .entity-icon { font-size: 2em; margin-bottom: 6px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
-.entity-title { 
-    font-size: 0.9em; 
-    font-weight: 600; 
-    line-height: 1.2; 
-    margin-bottom: 12px; /* تم زيادة المسافة ليعطي متنفساً للإطار */
-    color: #fff; 
-    word-break: break-word; 
-
-    /* 🔘 الإطار الرمادي المخصص للنص */
-    border: 2px solid #ffffff; /* يمكنك تغيير #888888 لدرجة الرمادي التي تفضلها */
-    border-radius: 8px;        /* انحناء زوايا إطار النص */
-    padding: 6px 10px;         /* مسافة داخلية حول النص لكي لا يلتصق بالإطار */
-    background: rgba(0, 0, 0, 0.4); /* خلفية سوداء خفيفة شبه شفافة لإبراز النص فوق الصورة */
-    width: 90%;                /* تحديد عرض الإطار ليكون متناسقاً داخل البطاقة */
-}
-
+        .entity-title { 
+            font-size: 0.9em; 
+            font-weight: 600; 
+            line-height: 1.2; 
+            margin-bottom: 12px; 
+            color: #fff; 
+            word-break: break-word; 
+            border: 2px solid #ffffff; 
+            border-radius: 8px;        
+            padding: 6px 10px;         
+            background: rgba(0, 0, 0, 0.4); 
+            width: 90%;                
+        }
 
         .entity-btn {
             display: inline-flex; align-items: center; justify-content: center; gap: 6px;
@@ -94,17 +88,28 @@
         .entity-btn.download { background: #555; color: #fff; }
         .entity-btn.link { background: #ff0050; color: #fff; }
 
-        /* 🖼️🎬 الوسائط تملأ البطاقة */
         .entity-media {
             width: 100%;
-            flex-grow: 1; /* يأخذ المساحة المتبقية */
+            flex-grow: 1; 
             border-radius: 8px;
             margin-bottom: 8px;
             background: #000;
-            object-fit: contain; /* يحافظ على الأبعاد دون قص */
+            object-fit: contain; 
             pointer-events: auto;
             min-height: 0;
             display: block;
+        }
+
+        /* 👾 ستايل الخاص بالعدو العائم كصورة عادية */
+        .raw-enemy-entity {
+            position: absolute;
+            cursor: pointer;
+            pointer-events: auto;
+            transition: transform 0.2s, opacity 0.2s;
+            z-index: 60;
+        }
+        .raw-enemy-entity:hover {
+            transform: scale(1.1);
         }
 
         #zoom-controls {
@@ -160,44 +165,21 @@
         }
         #toast.show { opacity: 1; transform: translateX(-50%) translateY(-5px); }
         
-        /* حركة إخفاء وإظهار القائمة */
-#header {
-    transition: transform 0.4s ease;
-}
-#header.hide-header {
-    transform: translateY(-100%);
-}
+        #header { transition: transform 0.4s ease; }
+        #header.hide-header { transform: translateY(-100%); }
 
-/* زر السهم */
-.arrow-btn {
-    position: fixed;
-    top: 180px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 51;
-    background: var(--accent);
-    border: none;
-    width: 48px;
-    height: 32px;
-    border-radius: 0 0 20px 20px;
-    cursor: pointer;
-    font-size: 18px;
-    color: #0a0a0f;
-    font-weight: bold;
-    transition: 0.3s;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-}
-.arrow-btn:hover {
-    background: #3388e0;
-    transform: translateX(-50%) translateY(3px);
-}
-
+        .arrow-btn {
+            position: fixed; top: 180px; left: 50%; transform: translateX(-50%); z-index: 51;
+            background: var(--accent); border: none; width: 48px; height: 32px;
+            border-radius: 0 0 20px 20px; cursor: pointer; font-size: 18px; color: #0a0a0f;
+            font-weight: bold; transition: 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        .arrow-btn:hover { background: #3388e0; transform: translateX(-50%) translateY(3px); }
     </style>
 </head>
 <body>
     <div id="header">
-    <!-- زر السهم لرفع وإنزال القائمة -->
-<button class="arrow-btn" id="arrowBtn">▲</button>
+        <button class="arrow-btn" id="arrowBtn">▲</button>
         <h1>مستودع عتاد اللعبة</h1>
         <p>هذه اللعبة فريدة في عالم الالعاب لكنها محدودة جدا. اذا اعجبتك اللعبة وتريد تطويرها فلك كامل الحرية. اللعبة متاحة للمجتمع وانت سوف يكون لك دور كبير في اسعاد مجتمع لاعبي indie. فلو كنت شغوفا حمل كل ما يلزم من هذا المستودع وانطلق ⚔️</p>
     </div>
@@ -243,7 +225,7 @@
                 if(!res.ok) throw new Error('تعذر الوصول للملف');
                 const text = await res.text();
                 if(['html','htm'].includes(ext)) previewContent.innerHTML = `<iframe srcdoc="${text.replace(/"/g, '"')}"></iframe>`;
-                else if(['txt','json','js','css','py','md'].includes(ext)) previewContent.innerHTML = `<pre>${text.replace(/</g,'<').replace(/>/g,'>')}</pre>`;
+                else if(['txt','json','js','css','py','md'].includes(ext)) previewContent.innerHTML = `<pre>${text.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre>`;
                 else if(['png','jpg','jpeg','svg','gif','webp'].includes(ext)) previewContent.innerHTML = `<img src="${file}" alt="${title}">`;
                 else previewContent.innerHTML = `<p style="color:#ccc;">⚠️ لا يمكن عرض هذا النوع من الملفات مباشرة.</p>`;
             } catch(err) { previewContent.innerHTML = `<p style="color:#ff4d4d;">❌ ${err.message}</p>`; }
@@ -251,7 +233,8 @@
         window.closePreview = () => { previewModal.classList.remove('active'); previewContent.innerHTML = ''; };
         previewModal.addEventListener('click', e => { if(e.target === previewModal) closePreview(); });
 
-        // --- المتغيرات ---        const canvas = document.getElementById('canvas');
+        // --- المتغيرات ---
+        const canvas = document.getElementById('canvas');
         const world = document.getElementById('world');
         const zoomLevelEl = document.getElementById('zoom-level');
         let panX = -600, panY = -600, scale = 0.8;
@@ -260,7 +243,10 @@
         let velX = 0, velY = 0, lastMoveTime = 0, animId;
         let pinchStartDist = 0, pinchStartScale = 0, pinchCenter = {x:0, y:0};
 
-        const isInteractable = el => el.closest('.entity-btn, .close-preview, a, video, .preview-modal, input, button, iframe, pre, img, .zoom-btn');
+        // متغيرات نطاق الخريطة المستنتجة من الكيانات
+        let mapBounds = { minX: 0, maxX: 500, minY: 0, maxY: 500 };
+
+        const isInteractable = el => el.closest('.entity-btn, .close-preview, a, video, .preview-modal, input, button, iframe, pre, img, .zoom-btn, .raw-enemy-entity');
 
         function updateTransform() {
             world.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
@@ -300,7 +286,8 @@
         }
         function movePan(e) {
             if(!isDragging) return;
-            e.preventDefault();            const pt = e.touches ? e.touches[0] : e;
+            e.preventDefault();
+            const pt = e.touches ? e.touches[0] : e;
             const dx = (pt.clientX - startX) / scale;
             const dy = (pt.clientY - startY) / scale;
             panX = startPanX + dx; panY = startPanY + dy;
@@ -316,7 +303,6 @@
         }
         function animateMomentum() {
             if(Math.abs(velX)<0.1 && Math.abs(velY)<0.1) return;
-            // 🔧 تعديل قيمة الزخم هنا (0.93 لسلاسة متوسطة)
             velX *= 0; velY *= 0;
             panX += velX * 16 / scale; panY += velY * 16 / scale;
             updateTransform();
@@ -349,7 +335,8 @@
                 const rect = canvas.getBoundingClientRect();
                 const cx = pinchCenter.x - rect.left, cy = pinchCenter.y - rect.top;
                 panX = cx - (cx - panX) * (newScale/scale);
-                panY = cy - (cy - panY) * (newScale/scale);                scale = newScale; updateTransform();
+                panY = cy - (cy - panY) * (newScale/scale);
+                scale = newScale; updateTransform();
             } else if(e.touches.length === 1) { movePan(e); }
         }, {passive:false});
 
@@ -357,8 +344,58 @@
             if(e.touches.length < 2) { pinchStartDist = 0; if(isDragging) endPan(); }
         });
 
+        // 👾 دالة توليد صورة عدو واحدة في إحداثيات عشوائية ضمن النطاق المحسوب
+        function spawnEnemyAtRandomLocation() {
+            const enemyImgData = localStorage.getItem('enemyImage');
+            if (!enemyImgData) return; 
+
+            // اختيار مكان عشوائي تماماً بين أدنى وأعلى نقطة للكيانات المكتشفة
+            const randomX = Math.floor(Math.random() * (mapBounds.maxX - mapBounds.minX + 1)) + mapBounds.minX;
+            const randomY = Math.floor(Math.random() * (mapBounds.maxY - mapBounds.minY + 1)) + mapBounds.minY;
+
+            const enemyImg = document.createElement('img');
+            enemyImg.src = enemyImgData;
+            enemyImg.className = 'raw-enemy-entity';
+            
+            enemyImg.style.width = '120px';
+            enemyImg.style.height = '120px';
+            enemyImg.style.objectFit = 'contain';
+            enemyImg.style.left = randomX + 'px';
+            enemyImg.style.top = randomY + 'px';
+
+            const disappear = (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                
+                // 🔴 التعديل الجديد: زيادة متغير blockCG بمقدار 1 في متصفح المستخدم
+                let currentBlocks = parseInt(localStorage.getItem('blockCG')) || 0;
+                currentBlocks += 1;
+                localStorage.setItem('blockCG', currentBlocks);
+                
+                // عرض رسالة سريعة للتأكيد على الشاشة (اختياري، يمكنك حذفه إن لم ترغب به)
+                showMsg(`⚔️ تم القضاء على العدو! عدد الكتل الحالي: ${currentBlocks}`);
+
+                enemyImg.style.opacity = '0';
+                enemyImg.style.transform = 'scale(0)';
+                setTimeout(() => enemyImg.remove(), 200); 
+            };
+
+            enemyImg.addEventListener('click', disappear);
+            enemyImg.addEventListener('touchstart', disappear, {passive: false});
+
+            world.appendChild(enemyImg);
+        }
+
+        // تفعيل التوليد اللانهائي كل 5 ثوانٍ
+        function startEnemySpawner() {
+            // توليد العدو الأول مباشرة عند التشغيل
+            spawnEnemyAtRandomLocation();
+            // تكرار العملية كل 5000 ملي ثانية (5 ثوانٍ)
+            setInterval(spawnEnemyAtRandomLocation, 5000);
+        }
+
         // --- تحميل البيانات ---
-async function init() {
+        async function init() {
             try {
                 const res = await fetch('data_P.txt');
                 if(!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -366,9 +403,7 @@ async function init() {
                 const lines = text.split('\n').map(l=>l.trim()).filter(l=>l!=='');
                 const data = [];
                 for(let i=0; i<lines.length; i++) {
-                   // التعبير الجديد يدعم -? قبل أرقام الموقع p
-const m = lines[i].match(/p\((-?\d+),(-?\d+)\)\s+s\((\d+),(\d+)\)\s+"([^"]+)"/);
-
+                    const m = lines[i].match(/p\((-?\d+),(-?\d+)\)\s+s\((\d+),(\d+)\)\s+"([^"]+)"/);
                     if(m && lines[i+1]) {
                         const raw = lines[i+1]; let file=raw, link=null, thumb=null;
                         if(raw.includes('&&')) { const p=raw.split('&&'); link=p[0].trim(); thumb=p[1].trim(); file=link; }
@@ -378,13 +413,21 @@ const m = lines[i].match(/p\((-?\d+),(-?\d+)\)\s+s\((\d+),(\d+)\)\s+"([^"]+)"/);
                 }
                 showMsg(`✅ تم تحميل ${data.length} عنصر بنجاح`);
                 
+                // حساب أبعاد الخريطة القصوى والدنيا بناءً على مواقع الكيانات (Entities)
+                if (data.length > 0) {
+                    let allXs = data.map(d => d.x);
+                    let allYs = data.map(d => d.y);
+                    mapBounds.minX = Math.min(...allXs);
+                    mapBounds.maxX = Math.max(...allXs);
+                    mapBounds.minY = Math.min(...allYs);
+                    mapBounds.maxY = Math.max(...allYs);
+                }
+
                 const previewable = ['html','htm','txt','json','js','css','py','md'];
                 
                 data.forEach(d => {
                     const el = document.createElement('div'); 
                     el.className = 'entity';
-                    
-                    // 📏 استخدام البكسل (px) للموقع والحجم لضمان ثبات تام عند تدوير الشاشة
                     el.style.left = d.x + 'px'; 
                     el.style.top = d.y + 'px'; 
                     el.style.width = d.w + 'px'; 
@@ -420,29 +463,30 @@ const m = lines[i].match(/p\((-?\d+),(-?\d+)\)\s+s\((\d+),(\d+)\)\s+"([^"]+)"/);
                     el.innerHTML = `<div class="entity-icon">${getIcon(d.file)}</div><div class="entity-title">${d.title}</div>${html}`;
                     world.appendChild(el);
                 });
+
+                // تشغيل منشئ الأعداء التلقائي بناءً على النطاق المحسوب حديثاً
+                startEnemySpawner();
+
                 updateTransform();
             } catch(err) { showMsg(`❌ خطأ: ${err.message}`, 5000); }
         }
         document.addEventListener('DOMContentLoaded', init);
         
         // زر السهم لإخفاء وإظهار القائمة
-const headerEl = document.getElementById('header');
-const arrowBtn = document.getElementById('arrowBtn');
+        const headerEl = document.getElementById('header');
+        const arrowBtn = document.getElementById('arrowBtn');
 
-if (arrowBtn && headerEl) {
-    arrowBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        headerEl.classList.toggle('hide-header');
-        
-        // تغيير اتجاه السهم
-        if (headerEl.classList.contains('hide-header')) {
-            arrowBtn.innerHTML = '▼';  // سهم لأسفل يعني اضغط لإنزال
-        } else {
-            arrowBtn.innerHTML = '▲';  // سهم لأعلى يعني اضغط لرفع
+        if (arrowBtn && headerEl) {
+            arrowBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                headerEl.classList.toggle('hide-header');
+                if (headerEl.classList.contains('hide-header')) {
+                    arrowBtn.innerHTML = '▼';  
+                } else {
+                    arrowBtn.innerHTML = '▲';  
+                }
+            });
         }
-    });
-}
-
     </script>
 </body>
 </html>
