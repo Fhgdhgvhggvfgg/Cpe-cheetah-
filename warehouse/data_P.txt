@@ -20,3 +20,5 @@ p(-600,300) s(400,500) "رابط صفحة انستجرام"
 https://www.instagram.com/cheetah_666_iraq?igsh=bWFmdzFrN2sxanZx&&Iphoto.gif
 p(850,0) s(400,460) "صفحة تصميم الشخصيات"
 https://fhgdhgvhggvfgg.github.io/Cpe-cheetah-/photo_edit/&&character_edit.png
+p(1100,470) s(450,500) "تم تعديل تصميم الشخصية الى خطا asset كما في الصورة لكي يتم تفعيل طور القوة للشخصية اثناء القتال بالضغط المستمر على زر الضربة. لكي تغير تصاميمك فقط عليك ان تتفقد اخر تحديث لواجهة تصميم صور الشخصية."
+https://fhgdhgvhggvfgg.github.io/Cpe-cheetah-/photo_edit/&&news_P.png
