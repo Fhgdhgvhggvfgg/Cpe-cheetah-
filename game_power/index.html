@@ -398,17 +398,24 @@ window.addEventListener('load', function() {
             imgTag.parentNode.insertBefore(title, imgTag);
         }
 
-        const boxSize = 250; 
-        imgTag.style.display = 'block'; 
-        imgTag.style.margin = '0 auto'; 
-        imgTag.style.width = boxSize + 'px';  
-        imgTag.style.height = boxSize + 'px'; 
-        imgTag.style.objectFit = 'cover'; 
-        imgTag.style.objectPosition = 'left center'; 
-        imgTag.style.transform = 'none'; 
-        imgTag.src = imgData;
+const boxSize = 250; 
+imgTag.style.display = 'block'; 
+imgTag.style.margin = '0 auto'; 
+imgTag.style.width = boxSize + 'px';  
+imgTag.style.height = boxSize + 'px';
 
-        if (!document.getElementById('killCountDisplay')) {
+// ✅ صورتين: الخلفية (player_f.png) في الأسفل، وصورة اللاعب في الأعلى
+imgTag.style.background = `
+    url('${imgData}') no-repeat 0px 0px,
+    url('player_f.png') no-repeat center center
+`;
+imgTag.style.backgroundSize = '2000px 500px, cover';
+imgTag.style.backgroundPosition = '0px 0px, center';
+        
+        // إخفاء src لأننا نستخدم background الآن
+        imgTag.removeAttribute('src');
+        
+                if (!document.getElementById('killCountDisplay')) {
             const killText = document.createElement('div');
             killText.id = 'killCountDisplay';
             killText.innerText = "عدد القتل: " + totalKills;
@@ -419,31 +426,21 @@ window.addEventListener('load', function() {
             killText.style.fontWeight = 'bold';
             imgTag.parentNode.insertBefore(killText, imgTag.nextSibling);
         }
-
-        // --- إضافة نص الانتظار الجديد تحت كل شيء ---
-        if (!document.getElementById('loadingNotice')) {
+        
+               if (!document.getElementById('loadingNotice')) {
             const loadingText = document.createElement('div');
             loadingText.id = 'loadingNotice';
-            loadingText.innerText = "ازرار التحكم في كومبيوتر: a و d للحركة يمينا ويسارا. w للقفز و s للضرب و e للاندفاع.  ";
+            loadingText.innerText = "ازرار التحكم في كومبيوتر: a و d للحركة يمينا ويسارا. w للقفز و s للضرب و e للاندفاع.";
             loadingText.style.textAlign = 'center';
             loadingText.style.color = '#ffffff';
             loadingText.style.marginTop = '20px';
             loadingText.style.fontSize = '14px';
-            
-            // هذا السطر يضعه في نهاية الحاوية (تحت كل شيء)
             imgTag.parentNode.appendChild(loadingText);
         }
-
-        imgTag.onload = function() {
-            const naturalW = imgTag.naturalWidth;
-            const unitX = naturalW / 8; 
-            if (textTag) {
-                textTag.innerText = "اضغط الشاشة تبني اضغط المربع تهدم";
-                textTag.style.textAlign = 'center';
-            }
-        }
+        
+        // ... باقي الكود ...
     }
-});
+}); 
 
     </script>
 
@@ -462,7 +459,7 @@ window.addEventListener('load', function() {
             
             <div id="playerNameDisplay" class="player-name-badge" style="display: none;"></div>
             
-            <a href="https://fhgdhgvhggvfgg.github.io/Cpe-cheetah-/warehouse/index.html" target="_blank" class="repo-btn">مستودع عتاد اللعبة لخدمة المطور الشغوف</a>
+            <a href="https://www.mediafire.com/folder/9o6p3cx5obacg/assets" target="_blank" class="repo-btn">مستودع ميديا فاير لكل شيء</a>
             <a href="https://fhgdhgvhggvfgg.github.io/Cpe-cheetah-/assets" target="_blank" class="repo-btn">تحميل التصاميم الجاهزة</a>
             <a href="https://fhgdhgvhggvfgg.github.io/Cpe-cheetah-/photo_edit/" target="_blank" class="repo-btn"> اصنع رسوميات للاعب</a>
             <div class="preview-container">
@@ -484,6 +481,11 @@ window.addEventListener('load', function() {
                 <span class="slider-label">حجم أزرار التحكم: 🎮 <span id="sizeVal">75</span>px</span>
                 <input type="range" id="btnSizeSlider" min="50" max="200" value="75">
             </div>
+            
+<div class="slider-container">
+    <span class="slider-label">مسافة التقريب 👁️ <span id="zoomVal">1.5</span></span>
+    <input type="range" id="zoomSlider" min="1.5" max="4" step="0.1" value="1.5">
+</div>
 
             <div class="progress-container" id="progCont">
                 <div class="progress-bar" id="progBar"></div>
