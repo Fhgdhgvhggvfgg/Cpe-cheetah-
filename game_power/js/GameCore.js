@@ -2,8 +2,13 @@ import { InputHandler } from './InputHandler.js';
 
 export class GameCore {
     constructor(mode, storage, uiManager) {
-this.dash_s = 1500
+    	
 this.countD = 0;
+this.zoom = storage.zoom || 1.5;
+this.radius_dp = 170;
+this.damage_p = 100;
+this.useTopRow = 1;
+this.dash_s = 1500;
 this.bgMusic = new Audio();
 this.bgMusic.loop = true;
 this.blockCG = storage.blockCG; // ربط مع التخزين
@@ -39,7 +44,6 @@ this.blockCG = storage.blockCG; // ربط مع التخزين
         this.groundY = 1200;
         this.radius = 60;
         this.jumpCount = 0;
-        this.zoom = 1.5;
         this.camX = this.x;
         this.camY = this.y;
         // في constructor، بعد تعريف this.camY = this.y; أضف:
@@ -147,32 +151,36 @@ spawnEnemy() {
     });
 }
     
-    updateAnimation(dt, isMoving) {
-        if (this.isAttacking) { 
-            this.currentFrame = 7; 
-            return; 
+    
+updateAnimation(dt, isMoving) {
+    let baseFrame = 0;
+    
+    if (this.isAttacking) { 
+        baseFrame = 7; 
+    } else if (this.isDashing) { 
+        baseFrame = 6; 
+    } else if (Math.abs(this.velocityY) > 50 || this.jumpCount > 0) { 
+        baseFrame = 5; 
+    } else if (isMoving && this.moveDir !== 0) {
+        this.animTimer += dt;
+        if (this.animTimer >= this.animSpeed) { 
+            this.animTimer = 0; 
+            this.walkFrame = (this.walkFrame % 4) + 1; 
         }
-        if (this.isDashing) { 
-            this.currentFrame = 6; 
-            return; 
-        }
-        if (Math.abs(this.velocityY) > 50 || this.jumpCount > 0) { 
-            this.currentFrame = 5; 
-            return; 
-        }
-        if (isMoving && this.moveDir !== 0) {
-            this.animTimer += dt;
-            if (this.animTimer >= this.animSpeed) { 
-                this.animTimer = 0; 
-                this.walkFrame = (this.walkFrame % 4) + 1; 
-            }
-            this.currentFrame = this.walkFrame; 
-            return;
-        }
-        this.currentFrame = 0;
+        baseFrame = this.walkFrame; 
+    } else {
+        baseFrame = 0;
         this.walkFrame = 1;
         this.animTimer = 0;
     }
+    
+    // استخدام المتغير العام this.useTopRow
+    if (this.useTopRow == 1) {
+        this.currentFrame = baseFrame;      // الصف العلوي (0-7)
+    } else {
+        this.currentFrame = baseFrame + 8;  // الصف السفلي (8-15)
+    }
+}
     
     bindControls() {
 
@@ -227,19 +235,79 @@ if (pauseBtn) {
             } 
         });
         
-        btn('attackBtn', () => { 
-            if (this.canAttack && !this.isDead) { 
-                this.isAttacking = true; 
-                this.attackTime = 0.3; 
-                this.canAttack = false; 
-                const attackBtn = document.getElementById('attackBtn');
-                if(attackBtn) attackBtn.style.opacity = "0.3";
-                setTimeout(() => { 
-                    this.canAttack = true; 
-                    if(attackBtn) attackBtn.style.opacity = "1"; 
-                }, 600); 
-            } 
-        });
+let attackHoldTimeout = null;
+let resetRowTimeout = null;
+let canUseSpecial = true;  // متغير بسيط للتحكم بالمهلة
+
+btn('attackBtn', () => { 
+    if (this.canAttack && !this.isDead) { 
+        this.isAttacking = true; 
+        this.attackTime = 0.3; 
+        this.canAttack = false; 
+        const attackBtn = document.getElementById('attackBtn');
+        if(attackBtn) attackBtn.style.opacity = "0.3";
+        
+        attackHoldTimeout = setTimeout(() => {
+            // فقط إذا كانت المهلة منتهية
+            if (canUseSpecial && this.blockCG >= 5) {
+            	
+            	                            if (this.playerHealth + 20 > this.maxHealth) {
+                this.playerHealth = this.maxHealth;
+            } else {
+                this.playerHealth += 20;
+            }
+            
+            	this.blockCG = this.blockCG - 5;
+            this.storage.saveBlockCG(this.blockCG);
+        this.uiManager.updateBlockCounter(this.blockCG);
+                this.useTopRow = 0;
+                this.playerHealth = this.playerHealth * 2;
+        this.maxHealth = this.maxHealth * 2;
+        this.speed = 600;
+        this.dash_s = 2300;
+        this.damage_p = 180;
+        this.radius_dp = 230;
+
+                console.log('useTopRow changed to:', this.useTopRow);
+                
+                canUseSpecial = false;  // منع الاستخدام مرة أخرى
+                
+                if (resetRowTimeout) clearTimeout(resetRowTimeout);
+                resetRowTimeout = setTimeout(() => {
+                	                this.playerHealth = this.playerHealth / 2;
+        this.maxHealth = this.maxHealth / 2;
+                    this.useTopRow = 1;
+                    this.speed = 450;
+                    this.dash_s = 1500;
+                    this.damage_p =100;
+                    this.radius_dp = 170;
+
+                    console.log('useTopRow reset to:', this.useTopRow);
+                }, 30000);
+                
+                // إعادة تفعيل المهلة بعد 20 ثانية
+                setTimeout(() => {
+                    canUseSpecial = true;
+                    console.log('الخاصية جاهزة للاستخدام مرة أخرى');
+                }, 100000);
+            } else {
+                console.log('لا يزال في مهلة، انتظر');
+            }
+        }, 500);
+        
+        setTimeout(() => { 
+            this.canAttack = true; 
+            if(attackBtn) attackBtn.style.opacity = "1"; 
+        }, 600); 
+    } 
+}, () => {
+    if (attackHoldTimeout) {
+        clearTimeout(attackHoldTimeout);
+        attackHoldTimeout = null;
+    }
+});
+
+
         
 this.canvas.onpointerdown = (e) => {
     if(this.isDead) return;
@@ -325,7 +393,7 @@ for (let i = 0; i < this.enemies.length; i++) {
                 enemy.damageCircleRadius = 70;
                 enemy.damageCirclePosition = { x: enemy.x, y: enemy.y };
             }
-            }
+         } 
         }
     }
     
@@ -392,7 +460,7 @@ for (let i = 0; i < this.enemies.length; i++) {
         
         this.input.update();
         
-        let moveSpeed = this.isDashing ? this.dash_s: this.speed;
+        let moveSpeed = this.isDashing ? this.dash_s : this.speed;
         let effectiveDir = this.isDashing ? (this.facingRight ? 1 : -1) : this.moveDir;
         let nx = this.x + (effectiveDir * moveSpeed) * dt;
         let ny = this.y + this.velocityY * dt;
@@ -492,8 +560,8 @@ setTimeout(() => {
 let attackX = this.facingRight ? this.x + 80 : this.x - 80;
 let attackDist = Math.sqrt((attackX - en.x)**2 + (this.y - en.y)**2);
 let cc = 0;
-if (this.isAttacking && attackDist < 170) {
-    en.health -= 100 * dt;
+if (this.isAttacking && attackDist < this.radius_dp) {
+    en.health -= this.damage_p * dt;
     if(en.health <= 0) {
         this.enemies.splice(i, 1);
         this.storage.kills++;
@@ -512,9 +580,9 @@ if (this.storage.kills > 0 && this.storage.kills % 3 === 0) {
         
         // مكافأة كل 10 قتلات: شفاء 15 نقطة
         if (this.storage.kills > 0 && this.storage.kills % 10 === 0) {
+        	this.blockCG = this.blockCG + 4 + this.storage.kills /10;
             if (this.playerHealth + 15 > this.maxHealth) {
-            	this.blockCG =  this.storage.kills + 4 + this.storage.kills / 10;
-                this.playerHealth = 100;
+                this.playerHealth = this.maxHealth;
             } else {
                 this.playerHealth += 15;
             }
@@ -534,38 +602,57 @@ if (this.storage.kills > 0 && this.storage.kills % 3 === 0) {
     }
     
     drawPlayer() {
-        if (this.isDead) return;
-        
-        this.ctx.save(); 
-        this.ctx.translate(this.x, this.y);
-        
-        if (this.storage.playerName && this.storage.playerName !== 'undefined') {
-            this.ctx.save();
-            this.ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
-            this.ctx.font = "bold 18px Segoe UI";
-            this.ctx.textAlign = "center";
-            this.ctx.shadowBlur = 4;
-            this.ctx.shadowColor = "black";
-            this.ctx.fillText(this.storage.playerName, 0, -85); 
-            this.ctx.restore();
-        }
-        
-        if(!this.facingRight) this.ctx.scale(-1, 1);
-        
-        if(this.playerImg.complete && this.playerImg.naturalWidth > 0) {
-            const frameW = this.playerImg.naturalWidth / 8;
-            this.ctx.drawImage(this.playerImg, 
-                this.currentFrame * frameW, 0, frameW, this.playerImg.naturalHeight, 
-                -75, -75, 150, 150);
-        } else {
-            this.ctx.fillStyle = "#f39c12";
-            this.ctx.beginPath();
-            this.ctx.arc(0, 0, 45, 0, Math.PI * 2);
-            this.ctx.fill();
-        }
-        
+    if (this.isDead) return;
+    
+    this.ctx.save(); 
+    this.ctx.translate(this.x, this.y);
+    
+    if (this.storage.playerName && this.storage.playerName !== 'undefined') {
+        this.ctx.save();
+        this.ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+        this.ctx.font = "bold 18px Segoe UI";
+        this.ctx.textAlign = "center";
+        this.ctx.shadowBlur = 4;
+        this.ctx.shadowColor = "black";
+        this.ctx.fillText(this.storage.playerName, 0, -85); 
         this.ctx.restore();
     }
+    
+    if(!this.facingRight) this.ctx.scale(-1, 1);
+    
+    if(this.playerImg.complete && this.playerImg.naturalWidth > 0) {
+        // ================================
+        // عدد الفريمات أفقياً = 8
+        // عدد الفريمات عمودياً = 2
+        // ================================
+        const framesX = 8;  // عدد الفريمات في الصف الواحد
+        const framesY = 2;  // عدد الصفوف (ارتفاع الصورة ÷ 2)
+        
+        const frameW = this.playerImg.naturalWidth / framesX;   // عرض الفريم
+        const frameH = this.playerImg.naturalHeight / framesY;  // ارتفاع الفريم
+        
+        // حساب موقع الفريم في الشبكة
+        const frameCol = this.currentFrame % framesX;  // العمود (0-7)
+        const frameRow = Math.floor(this.currentFrame / framesX) % framesY; // الصف (0 أو 1)
+        
+        const frameX = frameCol * frameW;
+        const frameY = frameRow * frameH;
+        
+        this.ctx.drawImage(this.playerImg, 
+            frameX,    // X في الصورة
+            frameY,    // Y في الصورة
+            frameW,    // العرض
+            frameH,    // الارتفاع
+            -75, -75, 150, 150);
+    } else {
+        this.ctx.fillStyle = "#f39c12";
+        this.ctx.beginPath();
+        this.ctx.arc(0, 0, 45, 0, Math.PI * 2);
+        this.ctx.fill();
+    }
+    
+    this.ctx.restore();
+}
     
     // أضف هذه الدالة في GameCore.js
 drawBoundaryLines() {
@@ -719,7 +806,7 @@ if (this.isAttacking && !this.isDead) {
     this.ctx.fillStyle = "rgba(231, 76, 60, 0.25)";
     this.ctx.beginPath();
     let offsetX = this.facingRight ? 80 : -80;
-    this.ctx.arc(this.x + offsetX, this.y, 170, 0, Math.PI * 2);
+    this.ctx.arc(this.x + offsetX, this.y, this.radius_dp, 0, Math.PI * 2);
     this.ctx.fill();
 }
         
