@@ -47,32 +47,43 @@
 </div>
 
 <script>
-document.getElementById('fileInput').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    
-    const reader = new FileReader();
-    reader.onload = function(ev) {
-        const content = ev.target.result;
-        
-        // استخراج jumpForce مع العلامة السالبة
-        const jumpMatch = content.match(/this\.jumpForce\s*=\s*(-?\d+(?:\.\d+)?)/i);
-        const jumpForce = jumpMatch ? jumpMatch[1] : null;
-        
-        if (jumpForce !== null) {
-            // حفظ كرقم (سيحفظ "-790" كنص)
-            localStorage.setItem('playerJumpForce', parseFloat(jumpForce));
-            document.getElementById('msg').innerHTML = `✅ تم حفظ jumpForce = ${jumpForce}`;
-            
-            // تأكد من القيمة المحفوظة
-            const saved = localStorage.getItem('playerJumpForce');
-            console.log('Saved in localStorage:', saved, typeof saved);
-        } else {
-            document.getElementById('msg').innerHTML = `❌ لم يتم العثور على jumpForce في الملف`;
-        }
-    };
-    reader.readAsText(file);
-});
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+            const content = ev.target.result;
+
+            // استخراج جميع القيم (تدعم السالب)
+            const speed = content.match(/this\.speed\s*=\s*(-?\d+(?:\.\d+)?)/i)?.[1];
+            const dash_s = content.match(/this\.dash_s\s*=\s*(-?\d+(?:\.\d+)?)/i)?.[1];
+            const damage_p = content.match(/this\.damage_p\s*=\s*(-?\d+(?:\.\d+)?)/i)?.[1];
+            const radius_dp = content.match(/this\.radius_dp\s*=\s*(-?\d+(?:\.\d+)?)/i)?.[1];
+            const jumpForce = content.match(/this\.jumpForce\s*=\s*(-?\d+(?:\.\d+)?)/i)?.[1];
+
+            // حفظ القيم في localStorage (كمفاتيح تطابق StorageManager)
+            if (speed !== undefined) localStorage.setItem('playerSpeed', parseFloat(speed));
+            if (dash_s !== undefined) localStorage.setItem('playerDashSpeed', parseFloat(dash_s));
+            if (damage_p !== undefined) localStorage.setItem('playerDamage', parseFloat(damage_p));
+            if (radius_dp !== undefined) localStorage.setItem('damageRadius', parseFloat(radius_dp));
+            if (jumpForce !== undefined) localStorage.setItem('playerJumpForce', parseFloat(jumpForce));
+
+            // عرض النتيجة
+            const savedCount = [speed, dash_s, damage_p, radius_dp, jumpForce].filter(v => v !== undefined).length;
+            document.getElementById('msg').innerHTML = `✅ تم تحديث ${savedCount} متغير في localStorage`;
+
+            // تأكيد القيم من localStorage
+            console.log({
+                speed: localStorage.getItem('playerSpeed'),
+                dash_s: localStorage.getItem('playerDashSpeed'),
+                damage_p: localStorage.getItem('playerDamage'),
+                radius_dp: localStorage.getItem('damageRadius'),
+                jumpForce: localStorage.getItem('playerJumpForce')
+            });
+        };
+        reader.readAsText(file);
+    });
 </script>
 </body>
 </html>
