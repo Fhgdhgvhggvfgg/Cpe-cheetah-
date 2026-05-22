@@ -5,10 +5,10 @@ export class GameCore {
     	
 this.countD = 0;
 this.zoom = storage.zoom || 1.5;
-this.radius_dp = 170;
-this.damage_p = 100;
+this.radius_dp = storage.radius_dp;
+this.damage_p = storage.damage_p;
 this.useTopRow = 1;
-this.dash_s = 1500;
+this.dash_s = storage.dash_s;
 this.bgMusic = new Audio();
 this.bgMusic.loop = true;
 this.blockCG = storage.blockCG; // ربط مع التخزين
@@ -35,9 +35,9 @@ this.blockCG = storage.blockCG; // ربط مع التخزين
         // خصائص اللعبة
         this.enemies = [];
         this.enemySpawnTimer = 0;
-        this.speed = 450;
+        this.speed = storage.speed;
         this.gravity = 1340;
-        this.jumpForce = -790;
+        this.jumpForce = storage.jumpForce;
         this.velocityY = 0;
         this.moveDir = 0;
         this.facingRight = true;
@@ -263,10 +263,10 @@ btn('attackBtn', () => {
                 this.useTopRow = 0;
                 this.playerHealth = this.playerHealth * 2;
         this.maxHealth = this.maxHealth * 2;
-        this.speed = 600;
-        this.dash_s = 2300;
-        this.damage_p = 180;
-        this.radius_dp = 230;
+        this.speed = this.speed * 1.5;
+        this.dash_s = this.dash_s * 1.5;
+        this.damage_p = this.damage_p * 2;
+        this.radius_dp = this.radius_dp * 1.5;
 
                 console.log('useTopRow changed to:', this.useTopRow);
                 
@@ -277,10 +277,10 @@ btn('attackBtn', () => {
                 	                this.playerHealth = this.playerHealth / 2;
         this.maxHealth = this.maxHealth / 2;
                     this.useTopRow = 1;
-                    this.speed = 450;
-                    this.dash_s = 1500;
-                    this.damage_p =100;
-                    this.radius_dp = 170;
+                    this.speed = this.speed / 1.5;
+                    this.dash_s = this.dash_s / 1.5;
+                    this.damage_p = this.damage_p / 2;
+                    this.radius_dp = this.radius_dp / 1.5;
 
                     console.log('useTopRow reset to:', this.useTopRow);
                 }, 30000);
