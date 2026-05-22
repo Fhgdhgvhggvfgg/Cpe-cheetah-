@@ -26,3 +26,5 @@ p(1300,-100) s(450,560) "معرض الشخصيات والصور"
 https://fhgdhgvhggvfgg.github.io/Cpe-cheetah-/assets/&&exhibition.png
 p(1650,560) s(450,560) "تعديل بيانات اللعبة"
 https://fhgdhgvhggvfgg.github.io/Cpe-cheetah-/game_power/edit_data/&&edit_data_f.png
+p(1650,1250) s(450,560) "تحديث keven الدراج 🏍️ "
+https://fhgdhgvhggvfgg.github.io/Cpe-cheetah-/assets/&&keven_biker.png
