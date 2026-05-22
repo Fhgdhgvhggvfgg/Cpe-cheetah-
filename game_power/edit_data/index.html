@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>حفظ بيانات اللعبة</title>
+    <style>
+        body {
+            background: black;
+            color: #0f0;
+            font-family: monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        div {
+            background: #000;
+            border: 1px solid #0f0;
+            padding: 20px;
+            text-align: center;
+        }
+        input, button {
+            background: #000;
+            color: #0f0;
+            border: 1px solid #0f0;
+            padding: 8px;
+            margin: 5px;
+            font-family: monospace;
+        }
+        button {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<div>
+    <h3>البيانات كالتالي:</h3>
+        <h3>this.speed = 450;</h3>
+        <h3>this.dash_s = 1500;</h3>
+         <h3>this.damage_p = 100;</h3>
+         <h3>this.radius_dp = 170;</h3>
+         <h3>this.jumpForce = -790;</h3>
+             <h3>انسخ هذه السطور واطبعها في ملف data_g.txt وغير ما تريده من الارقام وادخله هنا:</h3>
+    <input type="file" id="fileInput" accept=".txt">
+    <div id="msg" style="margin-top:10px; font-size:12px;"></div>
+</div>
+
+<script>
+document.getElementById('fileInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+        const content = ev.target.result;
+        
+        // استخراج jumpForce مع العلامة السالبة
+        const jumpMatch = content.match(/this\.jumpForce\s*=\s*(-?\d+(?:\.\d+)?)/i);
+        const jumpForce = jumpMatch ? jumpMatch[1] : null;
+        
+        if (jumpForce !== null) {
+            // حفظ كرقم (سيحفظ "-790" كنص)
+            localStorage.setItem('playerJumpForce', parseFloat(jumpForce));
+            document.getElementById('msg').innerHTML = `✅ تم حفظ jumpForce = ${jumpForce}`;
+            
+            // تأكد من القيمة المحفوظة
+            const saved = localStorage.getItem('playerJumpForce');
+            console.log('Saved in localStorage:', saved, typeof saved);
+        } else {
+            document.getElementById('msg').innerHTML = `❌ لم يتم العثور على jumpForce في الملف`;
+        }
+    };
+    reader.readAsText(file);
+});
+</script>
+</body>
+</html>
