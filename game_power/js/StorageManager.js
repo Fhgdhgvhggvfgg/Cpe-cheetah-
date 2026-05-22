@@ -10,22 +10,27 @@ export class StorageManager {
         this.kills = parseInt(localStorage.getItem('totalKills')) || 0;
         this.btnSize = localStorage.getItem('controlsSize') || 75;
         this.playerName = localStorage.getItem('playerName') || '';
-        this.zoom = parseFloat(localStorage.getItem('gameZoom')) || 1.5;  // <-- أضف هذا
+        this.zoom = parseFloat(localStorage.getItem('gameZoom')) || 1.5;
+        
+        this.speed = parseFloat(localStorage.getItem('playerSpeed')) || 450;
+        this.dash_s = parseFloat(localStorage.getItem('playerDashSpeed')) || 1500;
+        this.damage_p = parseFloat(localStorage.getItem('playerDamage')) || 100;
+        this.radius_dp = parseFloat(localStorage.getItem('damageRadius')) || 170;
+        
+        // مهم: يجب أن تسمح القيمة السالبة، 0 تعتبر قيمة صحيحة
+        const savedJump = localStorage.getItem('playerJumpForce');
+        this.jumpForce = savedJump !== null ? parseFloat(savedJump) : -790;
     }
     
-    // ... باقي الدوال ...
-
-    // أضف هذه الدالة
     saveZoom(zoom) {
         localStorage.setItem('gameZoom', zoom);
         this.zoom = zoom;
     }
 
-    
     saveBlockCG(count) {
-    localStorage.setItem('blockCG', count);
-    this.blockCG = count;
-}
+        localStorage.setItem('blockCG', count);
+        this.blockCG = count;
+    }
 
     savePlayerPosition(x, y) {
         localStorage.setItem('playerLastX', x);
@@ -64,11 +69,17 @@ export class StorageManager {
         localStorage.removeItem('gamePlatforms');
         this.platforms = [];
     }
-    
-    // دالة جديدة لحفظ عدد البلوكات
-    saveBlockCG(count) {
-        localStorage.setItem('blockCG', count);
-        this.blockCG = count;
+
+    // دالة حفظ قوة القفز - مهم: تقبل الأرقام السالبة
+    saveJumpForce(force) {
+        const numForce = parseFloat(force);
+        if (!isNaN(numForce)) {
+            localStorage.setItem('playerJumpForce', numForce);
+            this.jumpForce = numForce;
+            console.log('JumpForce saved:', numForce); // للتأكد
+            return true;
+        }
+        return false;
     }
 
     async loadImageAsDataURL(path) {
