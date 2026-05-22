@@ -706,13 +706,13 @@ drawBoundaryLines() {
         
         // رسم الخلفية
         if(this.bgImg.complete && this.bgImg.naturalWidth > 0) { 
-            const drawW = 851, drawH = 1276;
+            const drawW = 1296 / this.zoom, drawH = 1728 / this.zoom;
             let startX = this.camX - (this.LOGIC_WIDTH / (2 * this.zoom));
             let centerY = this.camY - (drawH / 4); 
-            for(let i = 0; i < 3; i++) {
+
                 this.ctx.drawImage(this.bgImg, 0, 0, this.bgImg.width, this.bgImg.height / 2, 
-                    startX + (i * drawW) - drawW, centerY, drawW, drawH / 2);
-            }
+                    startX + (drawW) - drawW, centerY, drawW, drawH / 2);
+            
             const drawW2 = 3600, drawH2 = 5200;
             for(let i = -2000; i < 9000; i += (drawW2 - 1)) {
                 this.ctx.drawImage(this.bgImg, 0, this.bgImg.height / 2, this.bgImg.width, this.bgImg.height / 2, 
