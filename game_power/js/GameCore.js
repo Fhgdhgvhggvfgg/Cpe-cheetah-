@@ -2,7 +2,8 @@ import { InputHandler } from './InputHandler.js';
 
 export class GameCore {
     constructor(mode, storage, uiManager) {
-    	
+    	this.bossIsActive = false;
+this.spawningEnabled = true;
 this.countD = 0;
 this.zoom = storage.zoom || 1.5;
 this.radius_dp = storage.radius_dp;
@@ -136,6 +137,8 @@ init() {
     
 spawnEnemy() {
     if (this.mode !== 'survival' || this.isDead) return;
+    if (!this.spawningEnabled) return; // منع spawn إذا كان البوس موجود
+    
     const side = Math.random() > 0.5 ? 1 : -1;
     this.enemies.push({ 
         x: this.x + (side * 1000), 
@@ -144,10 +147,32 @@ spawnEnemy() {
         maxHealth: 50 + this.storage.kills, 
         radius: 70, 
         speed: 200,
-        damageCircleActive: false,  // خاصية جديدة
-        damageCircleTimer: 0,       // خاصية جديدة
-        damageCircleRadius: 120,    // خاصية جديدة
-        damageCirclePosition: null  // خاصية جديدة
+        damageCircleActive: false,
+        damageCircleTimer: 0,
+        damageCircleRadius: 120,
+        damageCirclePosition: null
+    });
+}
+
+spawnEnemyBoss() {
+    if (this.mode !== 'survival' || this.isDead) return;
+    if (this.bossIsActive) return;
+    
+    this.bossIsActive = true;
+    this.spawningEnabled = false; // إيقاف spawn الأعداء
+    
+    const side = Math.random() > 0.5 ? 1 : -1;
+    this.enemies.push({ 
+        x: this.x + (side * 1000), 
+        y: this.y - 100, 
+        health: 200 + 3 * this.storage.kills, 
+        maxHealth: 200 + 3 * this.storage.kills, 
+        radius: 150, 
+        speed: 200,
+        damageCircleActive: false,
+        damageCircleTimer: 0,
+        damageCircleRadius: 120,
+        damageCirclePosition: null
     });
 }
     
@@ -425,17 +450,31 @@ for (let i = 0; i < this.enemies.length; i++) {
                 // إحداث ضرر مستمر (30 ضرر في الثانية)
                 otherEnemy.health -= 34 * dt;
                 
-                if (otherEnemy.health <= 0) {
-                    // قتل العدو
-                    this.storage.kills++;
-                    this.blockCG++;
-                    this.enemies.splice(j, 1);
-                    this.storage.saveBlockCG(this.blockCG);
-                    this.uiManager.updateBlockCounter(this.blockCG);
-                    this.storage.saveKills(this.storage.kills);
-                    this.uiManager.updateMenuDisplay();
-                    j--; // تعديل المؤشر بعد الحذف
-                }
+if (otherEnemy.health <= 0) {
+    // 🔽 تحقق إذا كان بوس 🔽
+    if (otherEnemy.radius > 100) {
+        this.bossIsActive = false;
+        this.spawningEnabled = true;
+        this.playerHealth = this.maxHealth;  // شفاء كامل
+        this.uiManager.updateHealth(this.playerHealth, this.maxHealth);
+    }
+    // 🔼 انتهى 🔼
+    
+    // قتل العدو
+    this.storage.kills++;
+    // كل 30 عدو يظهر boss
+    if (this.storage.kills > 0 && this.storage.kills % 30 === 0 && !this.bossIsActive && this.spawningEnabled) {
+        this.spawnEnemyBoss();
+    }
+    
+    this.blockCG++;
+    this.enemies.splice(j, 1);
+    this.storage.saveBlockCG(this.blockCG);
+    this.uiManager.updateBlockCounter(this.blockCG);
+    this.storage.saveKills(this.storage.kills);
+    this.uiManager.updateMenuDisplay();
+    j--;
+}
             }
         }
     }
@@ -562,37 +601,37 @@ let attackDist = Math.sqrt((attackX - en.x)**2 + (this.y - en.y)**2);
 let cc = 0;
 if (this.isAttacking && attackDist < this.radius_dp) {
     en.health -= this.damage_p * dt;
-    if(en.health <= 0) {
-        this.enemies.splice(i, 1);
-        this.storage.kills++;
-        cc++;
-        // إضافة بلوك جديد مع كل قتل
-if (this.storage.kills > 0 && this.storage.kills % 3 === 0) {
-	this.blockCG++;
-
-                    cc = 0;
-        }
+if(en.health <= 0) {
+    // 🔽 تحقق إذا كان بوس 🔽
+    if (en.radius > 100) {  // إذا كان بوس (radius 150)
+        this.bossIsActive = false;
+        this.spawningEnabled = true;
         
-
-       
-        this.storage.saveBlockCG(this.blockCG);
-        this.uiManager.updateBlockCounter(this.blockCG);
-        
-        // مكافأة كل 10 قتلات: شفاء 15 نقطة
-        if (this.storage.kills > 0 && this.storage.kills % 10 === 0) {
-        	this.blockCG = this.blockCG + 4 + this.storage.kills /10;
-            if (this.playerHealth + 15 > this.maxHealth) {
-                this.playerHealth = this.maxHealth;
-            } else {
-                this.playerHealth += 15;
-            }
-            this.uiManager.updateHealth(this.playerHealth, this.maxHealth);
-        }
-        
-        this.storage.saveKills(this.storage.kills);
-        this.uiManager.updateMenuDisplay();
-        i--;
+        // مكافأة: شفاء اللاعب إلى أقصى صحة
+        this.playerHealth = this.maxHealth;
+        this.uiManager.updateHealth(this.playerHealth, this.maxHealth);
     }
+    // 🔼 انتهى 🔼
+    
+    this.enemies.splice(i, 1);
+    this.storage.kills++;
+    cc++;
+    
+    // إضافة بلوك جديد مع كل قتل
+    if (this.storage.kills > 0 && this.storage.kills % 3 === 0) {
+        this.blockCG++;
+        cc = 0;
+    }
+    
+    // إضافة شرط ظهور البوس كل 30 عدو
+    if (this.storage.kills > 0 && this.storage.kills % 30 === 0 && !this.bossIsActive && this.spawningEnabled) {
+        this.spawnEnemyBoss();
+    }
+    
+    this.storage.saveKills(this.storage.kills);
+    this.uiManager.updateMenuDisplay();
+    i--;
+}
 }
             }
         }
