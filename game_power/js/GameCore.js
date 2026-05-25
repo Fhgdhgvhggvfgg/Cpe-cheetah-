@@ -2,6 +2,12 @@ import { InputHandler } from './InputHandler.js';
 
 export class GameCore {
     constructor(mode, storage, uiManager) {
+    	
+    this.canUseSpecial = true;
+this.attackHoldTimeout = null;
+this.resetRowTimeout = null;
+    	// أضف هذا السطر مع باقي المتغيرات (قبل this.input = new InputHandler)
+this.isAttackPressed = false;
     	// في constructor، بعد الأسطر الموجودة
 this.abilityCooldownRemaining = 0;   // الوقت المتبقي لإعادة الاستخدام
 this.abilityDurationRemaining = 0;   // الوقت المتبقي للقدرة النشطة
@@ -213,6 +219,47 @@ checkAndHandleEnemyDeath() {
     }
 }
     
+    
+    activateSuperPower() {
+    if (!this.canUseSpecial || this.blockCG < 5) return;
+    
+    if (this.playerHealth + 30 > this.maxHealth) {
+        this.playerHealth = this.maxHealth;
+    } else {
+        this.playerHealth += 30;
+    }
+    
+    this.blockCG -= 8;
+    this.storage.saveBlockCG(this.blockCG);
+    this.uiManager.updateBlockCounter(this.blockCG);
+    this.useTopRow = 0;
+    this.playerHealth *= 2;
+    this.maxHealth *= 2;
+    this.speed *= 1.5;
+    this.dash_s *= 1.5;
+    this.damage_p *= 2;
+    this.radius_dp *= 1.5;
+    this.abilityCooldownRemaining = 100;
+    this.abilityDurationRemaining = 30;
+    this.canUseSpecial = false;
+    
+    if (this.resetRowTimeout) clearTimeout(this.resetRowTimeout);
+    this.resetRowTimeout = setTimeout(() => {
+        this.abilityDurationRemaining = 0;
+        this.playerHealth /= 2;
+        this.maxHealth /= 2;
+        this.useTopRow = 1;
+        this.speed /= 1.5;
+        this.dash_s /= 1.5;
+        this.damage_p /= 2;
+        this.radius_dp /= 1.5;
+    }, 30000);
+    
+    setTimeout(() => {
+        this.canUseSpecial = true;
+    }, 100000);
+}
+
 updateAnimation(dt, isMoving) {
     let baseFrame = 0;
     
@@ -308,57 +355,9 @@ btn('attackBtn', () => {
         const attackBtn = document.getElementById('attackBtn');
         if(attackBtn) attackBtn.style.opacity = "0.3";
         
-        attackHoldTimeout = setTimeout(() => {
-            // فقط إذا كانت المهلة منتهية
-            if (canUseSpecial && this.blockCG >= 5) {
-            	
-            	                            if (this.playerHealth + 30 > this.maxHealth) {
-                this.playerHealth = this.maxHealth;
-            } else {
-                this.playerHealth += 30;
-            }
-            
-            	this.blockCG = this.blockCG - 8;
-            this.storage.saveBlockCG(this.blockCG);
-        this.uiManager.updateBlockCounter(this.blockCG);
-                this.useTopRow = 0;
-                this.playerHealth = this.playerHealth * 2;
-        this.maxHealth = this.maxHealth * 2;
-        this.speed = this.speed * 1.5;
-        this.dash_s = this.dash_s * 1.5;
-        this.damage_p = this.damage_p * 2;
-        this.radius_dp = this.radius_dp * 1.5;
-        this.abilityCooldownRemaining = 100;  // 100 ثانية إعادة استخدام
-this.abilityDurationRemaining = 30;   // 30 ثانية مدة القدرة 
-
-                console.log('useTopRow changed to:', this.useTopRow);
-                
-                canUseSpecial = false;  // منع الاستخدام مرة أخرى
-                
-                if (resetRowTimeout) clearTimeout(resetRowTimeout);
-                resetRowTimeout = setTimeout(() => {
-                	// عند تفعيل القدرة
-this.abilityDurationRemaining = 0;
-                	                this.playerHealth = this.playerHealth / 2;
-        this.maxHealth = this.maxHealth / 2;
-                    this.useTopRow = 1;
-                    this.speed = this.speed / 1.5;
-                    this.dash_s = this.dash_s / 1.5;
-                    this.damage_p = this.damage_p / 2;
-                    this.radius_dp = this.radius_dp / 1.5;
-
-                    console.log('useTopRow reset to:', this.useTopRow);
-                }, 30000);
-                
-                // إعادة تفعيل المهلة بعد 20 ثانية
-                setTimeout(() => {
-                    canUseSpecial = true;
-                    console.log('الخاصية جاهزة للاستخدام مرة أخرى');
-                }, 100000);
-            } else {
-                console.log('لا يزال في مهلة، انتظر');
-            }
-        }, 500);
+attackHoldTimeout = setTimeout(() => {
+    this.activateSuperPower();
+}, 500);
         
         setTimeout(() => { 
             this.canAttack = true; 
@@ -420,6 +419,19 @@ this.canvas.onpointerdown = (e) => {
     }
     
     update(dt) {
+    	
+    // هجوم مستمر مثل زر اللمس
+if (this.isAttackPressed && this.canAttack && !this.isDead) {
+    this.isAttacking = true;
+    this.attackTime = 0.3;
+    this.canAttack = false;
+    const attackBtn = document.getElementById('attackBtn');
+    if(attackBtn) attackBtn.style.opacity = "0.3";
+    setTimeout(() => { 
+        this.canAttack = true; 
+        if(attackBtn) attackBtn.style.opacity = "1"; 
+    }, 250); // 0.25 ثانية بين الهجمات
+}
     	
 
     // تحديث مؤقتات القدرة الخارقة
