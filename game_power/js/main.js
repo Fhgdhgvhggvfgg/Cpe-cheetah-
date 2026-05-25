@@ -162,3 +162,12 @@ document.getElementById('openCustomizer').onclick = () => {
 document.getElementById('closeCustomizer').onclick = () => {
     uiManager.hideCustomizer();
 };
+
+// أضف هذا الكود في آخر main.js (قبل السطر الأخير)
+
+// منع التكرار التلقائي لزر الهجوم S
+document.addEventListener('keydown', (e) => {
+    if (e.code === 'KeyS' && e.repeat) {
+        e.preventDefault();
+    }
+});
