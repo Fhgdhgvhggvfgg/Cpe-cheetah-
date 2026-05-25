@@ -516,7 +516,12 @@ imgTag.style.backgroundPosition = '0px 0px, center';
     <button id="exitBtn" class="custom-img-btn">خروج</button>
 </div>
 
+<!-- العدادين الجديدين للقدرة الخارقة -->
+<div id="abilityCooldownTimer" style="position: fixed; top: 120px; left: 50px; z-index: 1000; background: rgba(0,0,0,0.75); padding: 5px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; color: #3498db; border: 1px solid #3498db; backdrop-filter: blur(5px); pointer-events: auto; font-family: monospace; display: none;">
+    🔋: <span id="cooldownSeconds">0</span>  </div>
 
+<div id="abilityDurationTimer" style="position: fixed; top: 148px; left: 50px; z-index: 1000; background: rgba(0,0,0,0.75); padding: 5px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; color: #e74c3c; border: 1px solid #e74c3c; backdrop-filter: blur(5px); pointer-events: auto; font-family: monospace; display: none;">
+    ⚡ <span id="durationSeconds">0</span>  </div>
             <div id="killCounterGame">0</div>
             <div id="blockCounterGame">0</div>
         </div>
@@ -618,5 +623,94 @@ window.addEventListener('storage', function(e) {
     <canvas id="gameCanvas"></canvas>
 
     <script type="module" src="js/main.js"></script>
+    
+    <script>
+// نظام مؤقتات القدرة الخارقة
+(function() {
+    let abilityCooldownRemaining = 0;
+    let abilityDurationRemaining = 0;
+    
+    const cooldownTimer = document.getElementById('abilityCooldownTimer');
+    const durationTimer = document.getElementById('abilityDurationTimer');
+    const cooldownSpan = document.getElementById('cooldownSeconds');
+    const durationSpan = document.getElementById('durationSeconds');
+    
+    function updateDisplay() {
+        if (cooldownTimer && cooldownSpan) {
+            if (abilityCooldownRemaining > 0) {
+                cooldownTimer.style.display = 'block';
+                cooldownSpan.innerText = Math.ceil(abilityCooldownRemaining);
+            } else {
+                cooldownTimer.style.display = 'none';
+            }
+        }
+        
+        if (durationTimer && durationSpan) {
+            if (abilityDurationRemaining > 0) {
+                durationTimer.style.display = 'block';
+                durationSpan.innerText = Math.ceil(abilityDurationRemaining);
+            } else {
+                durationTimer.style.display = 'none';
+            }
+        }
+    }
+    
+    window.setAbilityTimers = function(cooldown, duration) {
+        abilityCooldownRemaining = cooldown;
+        abilityDurationRemaining = duration;
+        updateDisplay();
+    };
+    
+    window.updateAbilityTimers = function(dt) {
+        let changed = false;
+        if (abilityCooldownRemaining > 0) {
+            abilityCooldownRemaining -= dt;
+            if (abilityCooldownRemaining < 0) abilityCooldownRemaining = 0;
+            changed = true;
+        }
+        if (abilityDurationRemaining > 0) {
+            abilityDurationRemaining -= dt;
+            if (abilityDurationRemaining < 0) abilityDurationRemaining = 0;
+            changed = true;
+        }
+        if (changed) updateDisplay();
+    };
+    
+    // حلقة تحديث تلقائية
+    let lastTime = 0;
+    function loop(now) {
+        if (lastTime > 0) {
+            const dt = Math.min(0.033, (now - lastTime) / 1000);
+            if (window.updateAbilityTimers) window.updateAbilityTimers(dt);
+        }
+        lastTime = now;
+        requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+})();
+
+// مراقبة متغيرات اللعبة
+setInterval(function() {
+    if (window.currentGame) {
+        if (typeof window.currentGame.abilityCooldownRemaining !== 'undefined') {
+            window.setAbilityTimers(
+                window.currentGame.abilityCooldownRemaining,
+                window.currentGame.abilityDurationRemaining
+            );
+        }
+    }
+}, 100);
+</script>
+    <script>
+// للتجربة فقط - يظهر العدادين بعد 3 ثوان من تحميل الصفحة
+setTimeout(function() {
+    var cooldown = document.getElementById('abilityCooldownTimer');
+    var duration = document.getElementById('abilityDurationTimer');
+    if (cooldown) cooldown.style.display = 'block';
+    if (duration) duration.style.display = 'block';
+    document.getElementById('cooldownSeconds').innerText = '100';
+    document.getElementById('durationSeconds').innerText = '30';
+}, 3000);
+</script>
 </body>
 </html>

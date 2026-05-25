@@ -2,6 +2,9 @@ import { InputHandler } from './InputHandler.js';
 
 export class GameCore {
     constructor(mode, storage, uiManager) {
+    	// في constructor، بعد الأسطر الموجودة
+this.abilityCooldownRemaining = 0;   // الوقت المتبقي لإعادة الاستخدام
+this.abilityDurationRemaining = 0;   // الوقت المتبقي للقدرة النشطة
     	this.bossIsActive = false;
 this.spawningEnabled = true;
 this.countD = 0;
@@ -165,7 +168,7 @@ spawnEnemyBoss() {
     this.enemies.push({ 
         x: this.x + (side * 1000), 
         y: this.y - 100, 
-        health: 200 + 3 * this.storage.kills, 
+        health: 230 + 3 * this.storage.kills, 
         maxHealth: 200 + 3 * this.storage.kills, 
         radius: 150, 
         speed: 200,
@@ -185,7 +188,8 @@ checkAndHandleEnemyDeath() {
             if (enemy.radius > 100) {
                 this.bossIsActive = false;
                 this.spawningEnabled = true;
-                this.blockCG += 10;
+                this.blockCG += this.storage.kills;
+                this.storage.kills++;
                 this.playerHealth = this.maxHealth;
                 this.uiManager.updateHealth(this.playerHealth, this.maxHealth);
             }
@@ -324,6 +328,8 @@ btn('attackBtn', () => {
         this.dash_s = this.dash_s * 1.5;
         this.damage_p = this.damage_p * 2;
         this.radius_dp = this.radius_dp * 1.5;
+        this.abilityCooldownRemaining = 100;  // 100 ثانية إعادة استخدام
+this.abilityDurationRemaining = 30;   // 30 ثانية مدة القدرة 
 
                 console.log('useTopRow changed to:', this.useTopRow);
                 
@@ -331,6 +337,8 @@ btn('attackBtn', () => {
                 
                 if (resetRowTimeout) clearTimeout(resetRowTimeout);
                 resetRowTimeout = setTimeout(() => {
+                	// عند تفعيل القدرة
+this.abilityDurationRemaining = 0;
                 	                this.playerHealth = this.playerHealth / 2;
         this.maxHealth = this.maxHealth / 2;
                     this.useTopRow = 1;
@@ -413,8 +421,21 @@ this.canvas.onpointerdown = (e) => {
     
     update(dt) {
     	
-    // بعد الانتهاء من كل الضرر، تحقق من موت الأعداء تلقائياً
-    
+
+    // تحديث مؤقتات القدرة الخارقة
+if (this.abilityCooldownRemaining > 0) {
+    this.abilityCooldownRemaining -= dt;
+    if (this.abilityCooldownRemaining < 0) this.abilityCooldownRemaining = 0;
+}
+if (this.abilityDurationRemaining > 0) {
+    this.abilityDurationRemaining -= dt;
+    if (this.abilityDurationRemaining < 0) this.abilityDurationRemaining = 0;
+}
+
+// إرسال القيم إلى العدادين في الواجهة
+if (window.setAbilityTimers) {
+    window.setAbilityTimers(this.abilityCooldownRemaining, this.abilityDurationRemaining);
+}
     
 // التحقق من تصادم الأعداء مع الكتل (المنصات)
 for (let i = 0; i < this.enemies.length; i++) {
