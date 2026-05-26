@@ -803,27 +803,48 @@ this.drawBoundaryLines();
         });
         
         // رسم الأعداء
-        this.enemies.forEach(en => {
-            this.ctx.save();
-            this.ctx.translate(en.x, en.y);
-            if (this.x < en.x) this.ctx.scale(-1, 1);
-            if(this.enemyImg.complete && this.enemyImg.naturalWidth > 0) {
-                this.ctx.drawImage(this.enemyImg, -en.radius, -en.radius, en.radius * 2, en.radius * 2);
-            } else {
-                this.ctx.fillStyle = "#e67e22";
-                this.ctx.beginPath();
-                this.ctx.arc(0, 0, en.radius, 0, Math.PI * 2);
-                this.ctx.fill();
-            }
-            this.ctx.restore();
-            
-            // شريط حياة العدو
-            const barWidth = 60;
-            this.ctx.fillStyle = "#222";
-            this.ctx.fillRect(en.x - barWidth/2, en.y - en.radius - 15, barWidth, 6);
-            this.ctx.fillStyle = "#e74c3c";
-            this.ctx.fillRect(en.x - barWidth/2, en.y - en.radius - 15, (en.health / en.maxHealth) * barWidth, 6);
-        });
+// رسم الأعداء مع دعم صورتين (علوي للعدو، سفلي للبوس)
+// في دالة draw() - تعديل رسم الأعداء
+// استبدل هذا الجزء في دالة draw() (رسم الأعداء)
+// رسم الأعداء (استبدل هذا الجزء في دالة draw())
+this.enemies.forEach(en => {
+    this.ctx.save();
+    this.ctx.translate(en.x, en.y);
+    if (this.x < en.x) this.ctx.scale(-1, 1);
+    
+    if(this.enemyImg.complete && this.enemyImg.naturalWidth > 0) {
+        // تقسيم الصورة: العرض 250، الارتفاع 500 مقسم إلى نصفين
+        const frameW = this.enemyImg.naturalWidth;      // = 250
+        const frameH = this.enemyImg.naturalHeight / 2; // = 250
+        
+        // تحديد النصف حسب نوع العدو
+        // العدو العادي (radius <= 100) -> النصف العلوي (0)
+        // البوس (radius > 100) -> النصف السفلي (250)
+        const frameY = en.radius > 100 ? frameH : 0;
+        
+        this.ctx.drawImage(
+            this.enemyImg, 
+            0, frameY,           // نقطة البداية في الصورة
+            frameW, frameH,      // الأبعاد المأخوذة (250×250)
+            -en.radius, -en.radius,  // مكان الرسم على canvas
+            en.radius * 2, en.radius * 2  // حجم الرسم
+        );
+    } else {
+        // لون احتياطي إذا لم تتحمل الصورة
+        this.ctx.fillStyle = en.radius > 100 ? "#8e44ad" : "#e67e22";
+        this.ctx.beginPath();
+        this.ctx.arc(0, 0, en.radius, 0, Math.PI * 2);
+        this.ctx.fill();
+    }
+    this.ctx.restore();
+    
+    // شريط حياة العدو
+    const barWidth = 60;
+    this.ctx.fillStyle = "#222";
+    this.ctx.fillRect(en.x - barWidth/2, en.y - en.radius - 15, barWidth, 6);
+    this.ctx.fillStyle = "#e74c3c";
+    this.ctx.fillRect(en.x - barWidth/2, en.y - en.radius - 15, (en.health / en.maxHealth) * barWidth, 6);
+});
         
         // رسم دوائر الضرر للأعداء
 this.enemies.forEach(en => {
