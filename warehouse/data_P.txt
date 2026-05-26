@@ -32,5 +32,5 @@ p(1000,1700) s(450,450) " سيرفر دسكورد لمجتمع لعبة unhappy 
 https://discord.gg/ae8tNcb2X&&unhappy_raccoon.png
 p(1000,2150) s(450,270) "وهذا رابط اللعبة للايفون والاندرويد"
 https://www.mediafire.com/folder/0pylhgjl3gxzy/unhappy+raccoon+download&&unhappy_raccoon_D.png
-p(500,1650) s(450,470) "هذا رابط اللعبة في مستودع احتياطي على codeberg"
-https://cheetah_art.codeberg.page/Cheetah_engine/game_power/&&codeberg.png
+p(500,1750) s(450,500) "قصة keven الحقيقية. وكيف خسر اطرافه 🔥🦾"
+keven_story.mp4
