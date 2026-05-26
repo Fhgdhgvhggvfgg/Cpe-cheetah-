@@ -352,60 +352,65 @@ const icons = {
             if(e.touches.length < 2) { pinchStartDist = 0; if(isDragging) endPan(); }
         });
 
-        function spawnEnemyAtRandomLocation() {
-            const enemyImgData = localStorage.getItem('enemyImage');
-            if (!enemyImgData) return; 
+function spawnEnemyAtRandomLocation() {
+    const enemyImgData = localStorage.getItem('enemyImage');
+    if (!enemyImgData) return; 
 
-            const randomX = Math.floor(Math.random() * (mapBounds.maxX - mapBounds.minX + 1)) + mapBounds.minX;
-            const randomY = Math.floor(Math.random() * (mapBounds.maxY - mapBounds.minY + 1)) + mapBounds.minY;
+    const randomX = Math.floor(Math.random() * (mapBounds.maxX - mapBounds.minX + 1)) + mapBounds.minX;
+    const randomY = Math.floor(Math.random() * (mapBounds.maxY - mapBounds.minY + 1)) + mapBounds.minY;
 
-            const enemyImg = document.createElement('img');
-            enemyImg.src = enemyImgData;
-            enemyImg.className = 'raw-enemy-entity';
-            
-            enemyImg.style.width = '120px';
-            enemyImg.style.height = '120px';
-            enemyImg.style.objectFit = 'contain';
-            enemyImg.style.left = randomX + 'px';
-            enemyImg.style.top = randomY + 'px';
-            enemyImg.style.transition = 'opacity 0.2s, transform 0.2s';
+    // إنشاء div بدلاً من img
+    const enemyDiv = document.createElement('div');
+    enemyDiv.className = 'raw-enemy-entity';
+    
+    // استخدام background لعرض الصورة
+enemyDiv.style.background = `url('${enemyImgData}') no-repeat`;
+enemyDiv.style.backgroundSize = '125px 250px';
+enemyDiv.style.backgroundPosition = '0px 0px';
+    
+    enemyDiv.style.width = '120px';
+    enemyDiv.style.height = '120px';
+    enemyDiv.style.left = randomX + 'px';
+    enemyDiv.style.top = randomY + 'px';
+    enemyDiv.style.transition = 'opacity 0.2s, transform 0.2s';
+    enemyDiv.style.cursor = 'pointer';
+    
+    let isDestroyed = false;
 
-            let isDestroyed = false;
-
-            const autoDestroyTimeout = setTimeout(() => {
-                if (!isDestroyed) {
-                    isDestroyed = true;
-                    enemyImg.style.opacity = '0';
-                    enemyImg.style.transform = 'scale(0)';
-                    setTimeout(() => enemyImg.remove(), 200);
-                }
-            }, 40000);
-
-            const disappear = (e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                
-                if (isDestroyed) return;
-                isDestroyed = true;
-                
-                clearTimeout(autoDestroyTimeout);
-
-                let currentBlocks = parseInt(localStorage.getItem('blockCG')) || 0;
-                currentBlocks += 1;
-                localStorage.setItem('blockCG', currentBlocks);
-                
-                showMsg("تم القضاء على العدو! عدد الكتل هو " + currentBlocks);
-
-                enemyImg.style.opacity = '0';
-                enemyImg.style.transform = 'scale(0)';
-                setTimeout(() => enemyImg.remove(), 200); 
-            };
-
-            enemyImg.addEventListener('click', disappear);
-            enemyImg.addEventListener('touchstart', disappear, {passive: false});
-
-            world.appendChild(enemyImg);
+    const autoDestroyTimeout = setTimeout(() => {
+        if (!isDestroyed) {
+            isDestroyed = true;
+            enemyDiv.style.opacity = '0';
+            enemyDiv.style.transform = 'scale(0)';
+            setTimeout(() => enemyDiv.remove(), 200);
         }
+    }, 40000);
+
+    const disappear = (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        
+        if (isDestroyed) return;
+        isDestroyed = true;
+        
+        clearTimeout(autoDestroyTimeout);
+
+        let currentBlocks = parseInt(localStorage.getItem('blockCG')) || 0;
+        currentBlocks += 1;
+        localStorage.setItem('blockCG', currentBlocks);
+        
+        showMsg("تم القضاء على العدو! عدد الكتل هو " + currentBlocks);
+
+        enemyDiv.style.opacity = '0';
+        enemyDiv.style.transform = 'scale(0)';
+        setTimeout(() => enemyDiv.remove(), 200); 
+    };
+
+    enemyDiv.addEventListener('click', disappear);
+    enemyDiv.addEventListener('touchstart', disappear, {passive: false});
+
+    world.appendChild(enemyDiv);
+}
 
         function startEnemySpawner() {
             spawnEnemyAtRandomLocation();
