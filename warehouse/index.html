@@ -63,6 +63,28 @@
             border-color: var(--accent); box-shadow: 0 12px 36px rgba(77, 166, 255, 0.2);
             z-index: 10;
         }
+        
+        /* نمط خاص للكائنات من نوع xxx (صورة خلفية فقط) */
+        .entity-background-only {
+            position: absolute;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            border: none;
+            border-radius: 0;
+            padding: 0;
+            transition: none;
+            cursor: default;
+            pointer-events: none;
+        }
+        
+        .entity-background-only:hover {
+            transform: none;
+            border-color: none;
+            box-shadow: none;
+            z-index: auto;
+        }
+        
         .entity-icon { font-size: 2em; margin-bottom: 6px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
         .entity-title { 
             font-size: 0.9em; 
@@ -425,11 +447,44 @@ enemyDiv.style.backgroundPosition = '0px 0px';
                 const lines = text.split('\n').map(l=>l.trim()).filter(l=>l!=='');
                 const data = [];
                 for(let i=0; i<lines.length; i++) {
-                    const m = lines[i].match(/p\((-?\d+),(-?\d+)\)\s+s\((\d+),(\d+)\)\s+"([^"]+)"/);
+                    // تعديل regex للسماح بـ xxx بدون علامات تنصيص
+                    // النمط: p(x,y) s(w,h) متبوعاً إما بـ "نص" أو xxx
+                    let m = lines[i].match(/p\((-?\d+),(-?\d+)\)\s+s\((\d+),(\d+)\)\s+"([^"]+)"/);
+                    let isBackgroundOnly = false;
+                    let title = "";
+                    
+                    if (!m) {
+                        // إذا لم يجد النمط الأول، جرب البحث عن xxx بدون علامات تنصيص
+                        m = lines[i].match(/p\((-?\d+),(-?\d+)\)\s+s\((\d+),(\d+)\)\s+xxx/);
+                        if (m) {
+                            isBackgroundOnly = true;
+                            title = "xxx";
+                        }
+                    } else {
+                        title = m[5];
+                    }
+                    
                     if(m && lines[i+1]) {
-                        const raw = lines[i+1]; let file=raw, link=null, thumb=null;
-                        if(raw.includes('&&')) { const p=raw.split('&&'); link=p[0].trim(); thumb=p[1].trim(); file=link; }
-                        data.push({x:+m[1], y:+m[2], w:+m[3], h:+m[4], title:m[5], file, isLink:!!link, linkUrl:link, thumbUrl:thumb});
+                        const raw = lines[i+1]; 
+                        let file=raw, link=null, thumb=null;
+                        
+                        if(raw.includes('&&')) { 
+                            const p=raw.split('&&'); 
+                            link=p[0].trim(); 
+                            thumb=p[1].trim(); 
+                            file=link; 
+                        }
+                        
+                        data.push({
+                            x:+m[1], y:+m[2], 
+                            w:+m[3], h:+m[4], 
+                            title: title, 
+                            file, 
+                            isLink:!!link, 
+                            linkUrl:link, 
+                            thumbUrl:thumb,
+                            isBackgroundOnly: isBackgroundOnly
+                        });
                         i++;
                     }
                 }
@@ -447,6 +502,24 @@ enemyDiv.style.backgroundPosition = '0px 0px';
                 const previewable = ['html','htm','txt','json','js','css','py','md'];
                 
                 data.forEach(d => {
+                    // التحقق إذا كان الكائن من نوع خلفية فقط (xxx)
+                    if (d.isBackgroundOnly) {
+                        // إنشاء div كخلفية فقط بدون أي تفاعل أو إطار
+                        const bgDiv = document.createElement('div');
+                        bgDiv.className = 'entity-background-only';
+                        bgDiv.style.left = d.x + 'px';
+                        bgDiv.style.top = d.y + 'px';
+                        bgDiv.style.width = d.w + 'px';
+                        bgDiv.style.height = d.h + 'px';
+                        bgDiv.style.backgroundImage = `url('${d.file}')`;
+                        bgDiv.style.backgroundSize = 'cover';
+                        bgDiv.style.backgroundPosition = 'center';
+                        bgDiv.style.backgroundRepeat = 'no-repeat';
+                        world.appendChild(bgDiv);
+                        return; // الخروج مبكراً، لا نضيف أي عناصر تفاعلية
+                    }
+                    
+                    // الكود الأصلي للكائنات العادية
                     const el = document.createElement('div'); 
                     el.className = 'entity';
                     el.style.left = d.x + 'px'; 
@@ -487,7 +560,10 @@ enemyDiv.style.backgroundPosition = '0px 0px';
 
                 startEnemySpawner();
                 updateTransform();
-            } catch(err) { showMsg("حدث خطأ أثناء تحميل البيانات"); }
+            } catch(err) { 
+                console.error(err);
+                showMsg("حدث خطأ أثناء تحميل البيانات"); 
+            }
         }
         document.addEventListener('DOMContentLoaded', init);
         
