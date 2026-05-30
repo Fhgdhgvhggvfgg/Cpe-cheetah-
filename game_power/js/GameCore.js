@@ -431,8 +431,9 @@ this.canvas.onpointerdown = (e) => {
     }
     
     update(dt) {
+    	
+    if(this.stopUpdating) return;
 
-    // ... الكود الموجود ...
     
     // تحديث إزاحة الفريم عند الموت
     if (this.isDead) {
@@ -651,10 +652,15 @@ setTimeout(() => {
                     this.playerHealth -= 20 * dt;
                     this.uiManager.updateHealth(this.playerHealth, this.maxHealth);
                     
-                    if(this.playerHealth <= 0) {
-                        this.isDead = true;
-                        setTimeout(() => location.reload(), 1000);
-                    }
+if(this.playerHealth <= 0) {
+    this.isDead = true;
+    
+    setTimeout(() => {
+        this.stopUpdating = true;  // يحتاج متغير جديد
+    }, 2000);
+    
+    setTimeout(() => location.reload(), 2000);
+}
                 }
                 
        // احسب المسافة من موقع الهجوم (أمام اللاعب)
