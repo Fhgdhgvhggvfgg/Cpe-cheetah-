@@ -2,6 +2,9 @@ import { InputHandler } from './InputHandler.js';
 
 export class GameCore {
     constructor(mode, storage, uiManager) {
+    	
+this.deadFrameOffsetY = 0;  // إزاحة الفريم للأعلى عند الموت
+this.deadFrameRiseSpeed = 100;  // سرعة الصعود (بكسل في الثانية)
     	// أضف هذا مع باقي المتغيرات
 const savedSuperMode = localStorage.getItem('superModeEnabled');
 this.damageCircleEnabled = savedSuperMode !== null ? (parseInt(savedSuperMode) === 0) : false;
@@ -223,7 +226,7 @@ checkAndHandleEnemyDeath() {
     
     
     activateSuperPower() {
-    if (!this.canUseSpecial || this.blockCG < 5) return;
+    if (!this.canUseSpecial || this.blockCG < 8) return;
     
     if (this.playerHealth + 30 > this.maxHealth) {
         this.playerHealth = this.maxHealth;
@@ -265,30 +268,37 @@ checkAndHandleEnemyDeath() {
 updateAnimation(dt, isMoving) {
     let baseFrame = 0;
     
-    if (this.isAttacking) { 
+    // ✅ أضف هذا الشرط أولاً
+    if (this.isDead) {
+        baseFrame = 5;
+    }
+    else if (this.isAttacking) { 
         baseFrame = 7; 
-    } else if (this.isDashing) { 
+    } 
+    else if (this.isDashing) { 
         baseFrame = 6; 
-    } else if (Math.abs(this.velocityY) > 50 || this.jumpCount > 0) { 
+    } 
+    else if (Math.abs(this.velocityY) > 50 || this.jumpCount > 0) { 
         baseFrame = 5; 
-    } else if (isMoving && this.moveDir !== 0) {
+    } 
+    else if (isMoving && this.moveDir !== 0) {
         this.animTimer += dt;
         if (this.animTimer >= this.animSpeed) { 
             this.animTimer = 0; 
             this.walkFrame = (this.walkFrame % 4) + 1; 
         }
         baseFrame = this.walkFrame; 
-    } else {
+    } 
+    else {
         baseFrame = 0;
         this.walkFrame = 1;
         this.animTimer = 0;
     }
     
-    // استخدام المتغير العام this.useTopRow
     if (this.useTopRow == 1) {
-        this.currentFrame = baseFrame;      // الصف العلوي (0-7)
+        this.currentFrame = baseFrame;
     } else {
-        this.currentFrame = baseFrame + 8;  // الصف السفلي (8-15)
+        this.currentFrame = baseFrame + 8;
     }
 }
     
@@ -421,7 +431,16 @@ this.canvas.onpointerdown = (e) => {
     }
     
     update(dt) {
-    	
+
+    // ... الكود الموجود ...
+    
+    // تحديث إزاحة الفريم عند الموت
+    if (this.isDead) {
+        this.deadFrameOffsetY -= this.deadFrameRiseSpeed * dt;
+    
+    
+    // ... باقي الكود
+}
     // هجوم مستمر مثل زر اللمس
 if (this.isAttackPressed && this.canAttack && !this.isDead) {
     this.isAttacking = true;
@@ -538,7 +557,7 @@ for (let i = 0; i < this.enemies.length; i++) {
 }
     
         if (dt > 0.1) dt = 0.1;
-        if (this.isDead) return;
+
         
         this.input.update();
         
@@ -656,12 +675,18 @@ if (this.isAttacking && attackDist < this.radius_dp) {
         
         this.checkAndHandleEnemyDeath();
     }
+   
     
     drawPlayer() {
-    if (this.isDead) return;
-    
+    	
     this.ctx.save(); 
     this.ctx.translate(this.x, this.y);
+    
+    // ✅ تأثير الموت: شفافية أو تبييض
+    if (this.isDead) {
+        this.ctx.translate(0, this.deadFrameOffsetY);  // حركة الفريم فقط
+        this.ctx.globalAlpha = 0.6;  // شفافية اختيارية
+    }
     
     if (this.storage.playerName && this.storage.playerName !== 'undefined') {
         this.ctx.save();
@@ -673,6 +698,9 @@ if (this.isAttacking && attackDist < this.radius_dp) {
         this.ctx.fillText(this.storage.playerName, 0, -85); 
         this.ctx.restore();
     }
+    
+  
+
     
     if(!this.facingRight) this.ctx.scale(-1, 1);
     
