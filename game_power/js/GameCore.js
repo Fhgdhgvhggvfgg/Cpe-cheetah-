@@ -3,6 +3,10 @@ import { InputHandler } from './InputHandler.js';
 export class GameCore {
     constructor(mode, storage, uiManager) {
     	
+    
+    // أضف هذا مع باقي المتغيرات (مثلاً بعد this.enemies = [])
+this.staticBlocks = [];
+    
 this.deadFrameOffsetY = 0;  // إزاحة الفريم للأعلى عند الموت
 this.deadFrameRiseSpeed = 100;  // سرعة الصعود (بكسل في الثانية)
     	// أضف هذا مع باقي المتغيرات
@@ -168,6 +172,22 @@ spawnEnemy() {
     });
 }
 
+
+spawnStaticBlock(x, y, size = 40) {
+    if (!this.staticBlocks) this.staticBlocks = [];
+    
+    this.staticBlocks.push({
+        x: x,
+        y: y,
+        size: size,
+        originalY: y,
+        bobOffset: Math.random() * Math.PI * 2,
+        bobSpeed: 2,
+        bobAmount: 5
+    });
+}
+
+
 spawnEnemyBoss() {
     if (this.mode !== 'survival' || this.isDead) return;
     if (this.bossIsActive) return;
@@ -195,6 +215,7 @@ checkAndHandleEnemyDeath() {
         const enemy = this.enemies[i];
         
         if (enemy.health <= 0) {
+        	this.spawnStaticBlock(enemy.x, enemy.y - 50, 45);
             // 🔽 تحقق إذا كان بوس 🔽
             if (enemy.radius > 100) {
                 this.bossIsActive = false;
@@ -206,7 +227,6 @@ checkAndHandleEnemyDeath() {
             }
             else {
                 this.storage.kills++;
-                this.blockCG++;
                 
                 if (this.storage.kills > 0 && this.storage.kills % 30 === 0 && !this.bossIsActive && this.spawningEnabled) {
                     this.spawnEnemyBoss();
@@ -430,10 +450,46 @@ this.canvas.onpointerdown = (e) => {
         };
     }
     
+    
+        updateStaticBlocks(dt) {
+    if (!this.staticBlocks) return;
+    for (let i = 0; i < this.staticBlocks.length; i++) {
+        const block = this.staticBlocks[i];
+        block.bobOffset += dt * block.bobSpeed;
+        block.y = block.originalY + Math.sin(block.bobOffset) * block.bobAmount;
+    }
+    }
+    
+    
+    
+    checkBlockCollection() {
+    for (let i = 0; i < this.staticBlocks.length; i++) {
+        const block = this.staticBlocks[i];
+        
+        const dx = this.x - block.x;
+        const dy = this.y - block.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        
+        if (dist < this.radius + block.size/2) {
+            this.blockCG++;
+            this.storage.saveBlockCG(this.blockCG);
+            this.uiManager.updateBlockCounter(this.blockCG);
+            
+            this.staticBlocks.splice(i, 1);
+            i--;
+        }
+    }
+}
+    
+    
     update(dt) {
     	
     if(this.stopUpdating) return;
 
+this.checkBlockCollection();
+
+    this.updateStaticBlocks(dt);
+    
     
     // تحديث إزاحة الفريم عند الموت
     if (this.isDead) {
@@ -783,6 +839,36 @@ drawBoundaryLines() {
     this.ctx.restore();
 }
     
+drawStaticBlocks() {
+    if (!this.staticBlocks) return;
+    for (const block of this.staticBlocks) {
+        this.ctx.save();
+        this.ctx.translate(block.x, block.y);
+        
+        // قيمة متغيرة بين 0 و 0.5 (بدلاً من 0 و 1)
+        const whiteAmount = (Math.sin(Date.now() / 120) + 1) / 4; // 0 إلى 0.5
+        
+        if (this.bgImg.complete && this.bgImg.naturalWidth > 0) {
+            // رسم الكتلة الطبيعية أولاً
+            this.ctx.drawImage(
+                this.bgImg,
+                770, 1175, 40, 40,
+                -block.size/2, -block.size/2, block.size, block.size
+            );
+            
+            // طبقة بيضاء تتغير بين شفافية 0% و 50%
+            this.ctx.fillStyle = `rgba(255, 255, 255, ${whiteAmount})`;
+            this.ctx.fillRect(-block.size/2, -block.size/2, block.size, block.size);
+        } else {
+            const mix = Math.floor(243 - (243 - 255) * whiteAmount * 2);
+            this.ctx.fillStyle = `rgb(255, ${mix}, ${Math.floor(156 + (255 - 156) * whiteAmount * 2)})`;
+            this.ctx.fillRect(-block.size/2, -block.size/2, block.size, block.size);
+        }
+        
+        this.ctx.restore();
+    }
+}
+    
     draw() {
         const s = this.scale * this.zoom;
         this.ctx.setTransform(s, 0, 0, s, 0, 0);
@@ -821,6 +907,8 @@ this.drawBoundaryLines();
             this.ctx.restore();
         }
         
+            // أضف هذا السطر قبل this.ctx.restore() أو بعد رسم المنصات
+    this.drawStaticBlocks();
         // رسم المنصات
         this.platforms.forEach(p => {
             if(this.bgImg.complete && this.bgImg.naturalWidth > 0) {
