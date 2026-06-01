@@ -1,3 +1,5 @@
+// GameCore.js - نسخة محسنة بحركة ناعمة باستخدام تقنيات الألعاب الاحترافية
+
 import { InputHandler } from './InputHandler.js';
 
 export class GameCore {
@@ -37,6 +39,21 @@ export class GameCore {
         this.LOGIC_WIDTH = 1280;
         this.LOGIC_HEIGHT = 720;
         
+        // --- تقنيات الحركة الناعمة ---
+        this.FIXED_TIMESTEP = 1 / 60; // 60 إطار في الثانية للفيزياء
+        this.accumulator = 0;
+        this.lastTimestamp = 0;
+        
+        // متغيرات الاستيفاء (Interpolation) للرسم الناعم
+        this.renderX = storage.lastX;
+        this.renderY = storage.lastY;
+        this.prevX = storage.lastX;
+        this.prevY = storage.lastY;
+        this.renderCamX = storage.lastX;
+        this.renderCamY = storage.lastY;
+        this.prevCamX = storage.lastX;
+        this.prevCamY = storage.lastY;
+        
         this.x = storage.lastX;
         this.y = storage.lastY;
         this.playerHealth = 100;
@@ -68,7 +85,6 @@ export class GameCore {
         this.platforms = [...storage.platforms];
         
         this.isDead = false;
-        this.lastTimestamp = 0;
         
         this.currentFrame = 0;
         this.animTimer = 0;
@@ -126,7 +142,12 @@ export class GameCore {
         this.enemies.push({ 
             x: this.x + (side * 1000), y: this.y - 100, health: 50 + this.storage.kills, 
             maxHealth: 50 + this.storage.kills, radius: 70, speed: 200,
-            damageCircleActive: false, damageCircleTimer: 0, damageCircleRadius: 120, damageCirclePosition: null
+            damageCircleActive: false, damageCircleTimer: 0, damageCircleRadius: 120, damageCirclePosition: null,
+            // متغيرات الاستيفاء للأعداء
+            renderX: this.x + (side * 1000),
+            renderY: this.y - 100,
+            prevX: this.x + (side * 1000),
+            prevY: this.y - 100
         });
     }
     
@@ -146,7 +167,11 @@ export class GameCore {
         this.enemies.push({ 
             x: this.x + (side * 1000), y: this.y - 100, health: 230 + 3 * this.storage.kills, 
             maxHealth: 200 + 3 * this.storage.kills, radius: 150, speed: 200,
-            damageCircleActive: false, damageCircleTimer: 0, damageCircleRadius: 120, damageCirclePosition: null
+            damageCircleActive: false, damageCircleTimer: 0, damageCircleRadius: 120, damageCirclePosition: null,
+            renderX: this.x + (side * 1000),
+            renderY: this.y - 100,
+            prevX: this.x + (side * 1000),
+            prevY: this.y - 100
         });
     }
     
@@ -210,7 +235,6 @@ export class GameCore {
     }
     
     updateAnimation(dt, isMoving) {
-        // تبسيط منطق الفريمات لتقليل العمليات الحسابية
         let baseFrame = 0;
         if (this.isDead) baseFrame = 5;
         else if (this.isAttacking) baseFrame = 7;
@@ -314,8 +338,22 @@ export class GameCore {
         }
     }
     
-    update(dt) {
+    // تحديث الفيزياء بوقت ثابت (Fixed Update)
+    fixedUpdate(dt) {
         if(this.stopUpdating || this.isPaused) return;
+        
+        // حفظ الموضع السابق للاستيفاء
+        this.prevX = this.x;
+        this.prevY = this.y;
+        this.prevCamX = this.camX;
+        this.prevCamY = this.camY;
+        
+        // حفظ مواضع الأعداء السابقة
+        for (const enemy of this.enemies) {
+            enemy.prevX = enemy.x;
+            enemy.prevY = enemy.y;
+        }
+        
         this.checkBlockCollection();
         this.updateStaticBlocks(dt);
         
@@ -373,7 +411,6 @@ export class GameCore {
             }
         }
         
-        if (dt > 0.1) dt = 0.1;
         this.input.update();
         
         let moveSpeed = this.isDashing ? this.dash_s : this.speed;
@@ -384,7 +421,9 @@ export class GameCore {
         if (this.isDashing) this.velocityY = 0;
         else this.velocityY += this.gravity * dt;
         
-        this.platforms.forEach(p => {
+        // تحسين كشف التصادم مع المنصات
+        for (let i = 0; i < this.platforms.length; i++) {
+            const p = this.platforms[i];
             const pL = p.x, pR = p.x + 60, pT = p.y, pB = p.y + 60;
             if (nx + 45 > pL && nx - 45 < pR && ny + 45 > pT && ny - 45 < pB) {
                 const oL = (nx + 45) - pL;
@@ -392,12 +431,20 @@ export class GameCore {
                 const oT = (ny + 45) - pT;
                 const oB = pB - (ny - 45);
                 const min = Math.min(oL, oR, oT, oB);
-                if (min === oT && this.velocityY > 0) { ny = pT - 45; this.velocityY = 0; this.jumpCount = 0; }
-                else if (min === oB && this.velocityY < 0) { ny = pB + 45; this.velocityY = 0; }
-                else if (min === oL) nx = pL - 45;
-                else if (min === oR) nx = pR + 45;
+                if (min === oT && this.velocityY > 0) { 
+                    ny = pT - 45; 
+                    this.velocityY = 0; 
+                    this.jumpCount = 0; 
+                } else if (min === oB && this.velocityY < 0) { 
+                    ny = pB + 45; 
+                    this.velocityY = 0; 
+                } else if (min === oL) {
+                    nx = pL - 45;
+                } else if (min === oR) {
+                    nx = pR + 45;
+                }
             }
-        });
+        }
         
         this.x = nx;
         this.y = ny;
@@ -423,7 +470,10 @@ export class GameCore {
                 const dx = this.x - en.x;
                 const dy = this.y - en.y;
                 const dist = Math.sqrt(dx*dx + dy*dy);
-                if (dist > 0.01) { en.x += (dx/dist) * en.speed * dt; en.y += (dy/dist) * en.speed * dt; }
+                if (dist > 0.01) { 
+                    en.x += (dx/dist) * en.speed * dt; 
+                    en.y += (dy/dist) * en.speed * dt; 
+                }
                 if (dist < this.radius + en.radius) {
                     this.playerHealth -= 20 * dt;
                     this.uiManager.updateHealth(this.playerHealth, this.maxHealth);
@@ -435,14 +485,63 @@ export class GameCore {
             }
         }
         
-        this.camX += (this.x - this.camX) * 0.1;
-        this.camY += (this.y - this.camY) * 0.1;
+        // تحديث الكاميرا مع smooth follow
+        const FOLLOW_SPEED = 0.15;
+        this.camX += (this.x - this.camX) * FOLLOW_SPEED;
+        this.camY += (this.y - this.camY) * FOLLOW_SPEED;
+        
         this.checkAndHandleEnemyDeath();
+    }
+    
+    // الحلقة الرئيسية مع Fixed Timestep و Interpolation
+    loop(timestamp) {
+        if (!this.lastTimestamp) {
+            this.lastTimestamp = timestamp;
+            requestAnimationFrame((t) => this.loop(t));
+            return;
+        }
+        
+        let dt = Math.min(0.033, (timestamp - this.lastTimestamp) / 1000);
+        this.lastTimestamp = timestamp;
+        
+        if (!this.isPaused && !this.stopUpdating) {
+            // Fixed Timestep - تحديث الفيزياء بوقت ثابت
+            this.accumulator += dt;
+            
+            // منع تراكم كبير (max 5 frames)
+            if (this.accumulator > 0.1) this.accumulator = 0.1;
+            
+            while (this.accumulator >= this.FIXED_TIMESTEP) {
+                this.fixedUpdate(this.FIXED_TIMESTEP);
+                this.accumulator -= this.FIXED_TIMESTEP;
+            }
+            
+            // حساب مواضع الرسم بالاستيفاء (Interpolation)
+            const alpha = this.accumulator / this.FIXED_TIMESTEP;
+            
+            // استيفاء موضع اللاعب
+            this.renderX = this.prevX + (this.x - this.prevX) * alpha;
+            this.renderY = this.prevY + (this.y - this.prevY) * alpha;
+            
+            // استيفاء الكاميرا
+            this.renderCamX = this.prevCamX + (this.camX - this.prevCamX) * alpha;
+            this.renderCamY = this.prevCamY + (this.camY - this.prevCamY) * alpha;
+            
+            // استيفاء مواضع الأعداء
+            for (const enemy of this.enemies) {
+                enemy.renderX = enemy.prevX + (enemy.x - enemy.prevX) * alpha;
+                enemy.renderY = enemy.prevY + (enemy.y - enemy.prevY) * alpha;
+            }
+        }
+        
+        this.draw();
+        requestAnimationFrame((t) => this.loop(t));
     }
     
     drawPlayer() {
         this.ctx.save(); 
-        this.ctx.translate(this.x, this.y);
+        // استخدام موضع الرسم المستوف (الناعم)
+        this.ctx.translate(this.renderX, this.renderY);
         if (this.isDead) { this.ctx.translate(0, this.deadFrameOffsetY); this.ctx.globalAlpha = 0.6; }
         if (this.storage.playerName && this.storage.playerName !== 'undefined') {
             this.ctx.save();
@@ -475,7 +574,7 @@ export class GameCore {
     
     drawBoundaryLines() {
         this.ctx.save();
-        const lineY = this.camY;
+        const lineY = this.renderCamY;
         this.ctx.strokeStyle = "#ff3366";
         this.ctx.lineWidth = this.boundaryLineWidth;
         this.ctx.shadowBlur = 8;
@@ -526,12 +625,13 @@ export class GameCore {
         this.ctx.imageSmoothingEnabled = false;
         this.ctx.clearRect(0, 0, this.LOGIC_WIDTH, this.LOGIC_HEIGHT);
         this.ctx.save();
-        this.ctx.translate(-this.camX + (this.LOGIC_WIDTH / (2 * this.zoom)), -this.camY + (this.LOGIC_HEIGHT / (2 * this.zoom)));
+        // استخدام موضع الكاميرا المستوف (الناعم)
+        this.ctx.translate(-this.renderCamX + (this.LOGIC_WIDTH / (2 * this.zoom)), -this.renderCamY + (this.LOGIC_HEIGHT / (2 * this.zoom)));
         
         if(this.bgImg.complete && this.bgImg.naturalWidth > 0) { 
             const drawW = 1296 / this.zoom, drawH = 1728 / this.zoom;
-            let startX = this.camX - (this.LOGIC_WIDTH / (2 * this.zoom));
-            let centerY = this.camY - (drawH / 4);
+            let startX = this.renderCamX - (this.LOGIC_WIDTH / (2 * this.zoom));
+            let centerY = this.renderCamY - (drawH / 4);
             this.ctx.drawImage(this.bgImg, 0, 0, this.bgImg.width, this.bgImg.height / 2, startX + (drawW) - drawW, centerY, drawW, drawH / 2);
             const drawW2 = 3600, drawH2 = 5200;
             for(let i = -2000; i < 9000; i += (drawW2 - 1)) {
@@ -539,7 +639,7 @@ export class GameCore {
             }
             this.drawBoundaryLines();
             this.ctx.save();
-            this.ctx.drawImage(this.bgImg, this.pinkSquare.sourceX, this.pinkSquare.sourceY, this.pinkSquare.size, this.pinkSquare.size, this.x + 30, this.y - 20, 20, 20);
+            this.ctx.drawImage(this.bgImg, this.pinkSquare.sourceX, this.pinkSquare.sourceY, this.pinkSquare.size, this.pinkSquare.size, this.renderX + 30, this.renderY - 20, 20, 20);
             this.ctx.restore();
         }
         
@@ -549,10 +649,11 @@ export class GameCore {
             else { this.ctx.fillStyle = "rgba(52, 152, 219, 0.6)"; this.ctx.fillRect(p.x, p.y, 60, 60); }
         });
         
-        this.enemies.forEach(en => {
+        // رسم الأعداء باستخدام الموضع المستوف
+        for (const en of this.enemies) {
             this.ctx.save();
-            this.ctx.translate(en.x, en.y);
-            if (this.x < en.x) this.ctx.scale(-1, 1);
+            this.ctx.translate(en.renderX, en.renderY);
+            if (this.renderX < en.renderX) this.ctx.scale(-1, 1);
             if(this.enemyImg.complete && this.enemyImg.naturalWidth > 0) {
                 const frameW = this.enemyImg.naturalWidth;
                 const frameH = this.enemyImg.naturalHeight / 2;
@@ -567,51 +668,42 @@ export class GameCore {
             this.ctx.restore();
             const barWidth = 60;
             this.ctx.fillStyle = "#222";
-            this.ctx.fillRect(en.x - barWidth/2, en.y - en.radius - 15, barWidth, 6);
+            this.ctx.fillRect(en.renderX - barWidth/2, en.renderY - en.radius - 15, barWidth, 6);
             this.ctx.fillStyle = "#e74c3c";
-            this.ctx.fillRect(en.x - barWidth/2, en.y - en.radius - 15, (en.health / en.maxHealth) * barWidth, 6);
-        });
+            this.ctx.fillRect(en.renderX - barWidth/2, en.renderY - en.radius - 15, (en.health / en.maxHealth) * barWidth, 6);
+        }
         
-        this.enemies.forEach(en => {
+        for (const en of this.enemies) {
             if (en.damageCircleActive) {
                 this.ctx.save();
                 this.ctx.shadowBlur = 15;
                 this.ctx.shadowColor = "#ff0000";
                 this.ctx.beginPath();
-                this.ctx.arc(en.x, en.y, en.damageCircleRadius || 120, 0, Math.PI * 2);
+                this.ctx.arc(en.renderX, en.renderY, en.damageCircleRadius || 120, 0, Math.PI * 2);
                 this.ctx.fillStyle = "rgba(255, 0, 0, 0.3)";
                 this.ctx.fill();
                 this.ctx.beginPath();
-                this.ctx.arc(en.x, en.y, (en.damageCircleRadius || 120) * 0.6, 0, Math.PI * 2);
+                this.ctx.arc(en.renderX, en.renderY, (en.damageCircleRadius || 120) * 0.6, 0, Math.PI * 2);
                 this.ctx.fillStyle = "rgba(255, 100, 0, 0.5)";
                 this.ctx.fill();
                 this.ctx.beginPath();
-                this.ctx.arc(en.x, en.y, en.damageCircleRadius || 120, 0, Math.PI * 2);
+                this.ctx.arc(en.renderX, en.renderY, en.damageCircleRadius || 120, 0, Math.PI * 2);
                 this.ctx.strokeStyle = "#ff3300";
                 this.ctx.lineWidth = 3;
                 this.ctx.stroke();
                 this.ctx.restore();
             }
-        });
+        }
         
         this.drawPlayer();
         if (this.isAttacking && !this.isDead) {
             this.ctx.fillStyle = "rgba(231, 76, 60, 0.25)";
             this.ctx.beginPath();
             let offsetX = this.facingRight ? 80 : -80;
-            this.ctx.arc(this.x + offsetX, this.y, this.radius_dp, 0, Math.PI * 2);
+            this.ctx.arc(this.renderX + offsetX, this.renderY, this.radius_dp, 0, Math.PI * 2);
             this.ctx.fill();
         }
         this.ctx.restore();
-    }
-    
-    loop(timestamp) {
-        if (!this.lastTimestamp) this.lastTimestamp = timestamp;
-        const dt = Math.min(0.033, (timestamp - this.lastTimestamp) / 1000);
-        this.lastTimestamp = timestamp;
-        if (!this.isPaused) this.update(dt);
-        this.draw();
-        requestAnimationFrame((t) => this.loop(t));
     }
     
     showNoBlocksWarning() {
