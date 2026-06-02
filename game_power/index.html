@@ -20,6 +20,17 @@
     display: block;    /* لضمان عمل fit-content */
 }
 
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; } /* تم تصحيح القيمة من 10 إلى 1 */
+}
+
+.fade-in-element {
+    /* 1s مدة الحركة، 2s مدة التأخير قبل البدء */
+    animation: fadeIn 1s ease-in-out 1s forwards;
+    opacity: 0; /* يبدأ مخفياً */
+}
+
 
         .custom-img-btn {
     /* تطبيق الصورة كخلفية */
@@ -371,12 +382,12 @@
 </head>
 <body>
 
-<div id="startScreen" style="position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; align-items: center; justify-content: center; flex-direction: column;">
-    <img src="favicon.png" alt="Game Logo" style="max-width: 220px; margin-bottom: 20px; image-rendering: pixelated;">
-    
-    <h1 style="color: white; margin-bottom: 20px;">Cheetah Power</h1>
-    <button id="startBtn" class="menu-btn" style="background: url('button.png') no-repeat center/contain !important; width: 150px; height: 50px; cursor: pointer;">ابدأ اللعب</button>
+<div id="startScreen" style="position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; align-items: center; justify-content: center; flex-direction: column;">    
+    <img src="favicon.png" alt="Game Logo" class="fade-in-element" style="max-width: 220px; margin-bottom: 20px; image-rendering: pixelated;">    
+    <h1 class="fade-in-element" style="color: white; margin-bottom: 20px;">Cheetah Power</h1>
+    <button id="startBtn" class="menu-btn fade-in-element" style="background: url('button.png') no-repeat center/contain !important; width: 150px; height: 50px; cursor: pointer;">ابدأ اللعب</button>
 </div>
+
 
 
 
