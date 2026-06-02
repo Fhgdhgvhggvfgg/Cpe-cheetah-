@@ -371,6 +371,15 @@
 </head>
 <body>
 
+<div id="startScreen" style="position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+    <img src="favicon.png" alt="Game Logo" style="max-width: 220px; margin-bottom: 20px; image-rendering: pixelated;">
+    
+    <h1 style="color: white; margin-bottom: 20px;">Cheetah Power</h1>
+    <button id="startBtn" class="menu-btn" style="background: url('button.png') no-repeat center/contain !important; width: 150px; height: 50px; cursor: pointer;">ابدأ اللعب</button>
+</div>
+
+
+
 <div id="mainMenu">
     <div style="text-align: center; margin-bottom: 15px;">
 <img id="quickShowPlayer" style="max-width: none; border: 5px solid #ffffff; border-radius: 8px; display: none; background: url('player_f.png') no-repeat center center; background-size: cover;">
@@ -721,5 +730,39 @@ setTimeout(function() {
     document.getElementById('durationSeconds').innerText = '30';
 }, 3000);
 </script>
+
+<script>
+    const startScreen = document.getElementById('startScreen');
+    const startBtn = document.getElementById('startBtn');
+    const mainMenu = document.getElementById('mainMenu');
+
+    // إخفاء القائمة الرئيسية افتراضياً حتى يضغط المستخدم على الزر
+    if (mainMenu) {
+        mainMenu.style.display = 'none';
+    }
+
+    // التحقق مما إذا كان المستخدم قد ضغط على الزر سابقاً
+    if (sessionStorage.getItem('gameStarted')) {
+        startScreen.style.display = 'none';
+        if (mainMenu) mainMenu.style.display = 'block';
+    }
+
+    // عند الضغط على زر ابدأ اللعب
+    startBtn.addEventListener('click', function() {
+        startScreen.style.opacity = '0';
+        startScreen.style.transition = 'opacity 0.5s';
+        
+        sessionStorage.setItem('gameStarted', 'true');
+        
+        setTimeout(() => {
+            startScreen.style.display = 'none';
+            if (mainMenu) mainMenu.style.display = 'block';
+        }, 500);
+    });
+</script>
+
+
+
+
 </body>
 </html>
