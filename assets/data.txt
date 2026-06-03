@@ -1,5 +1,6 @@
 #player
 ranav
+daiana
 keven_01
 steve
 mario
