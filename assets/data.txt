@@ -1,17 +1,11 @@
 #player
 ranav
-geeny_lynx
-razan
-daiana
 keven_01
 steve
-sandy
 mario
 #stadium
 daiana_temple
 minecraft
-sandy_city
-baghdad
 steve_city
 keven_city
 kingdom_shoto
@@ -20,4 +14,3 @@ ghost
 vex
 dron
 eyes
-jeen_demon
