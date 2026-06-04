@@ -1,7 +1,9 @@
 import { GameCore } from './GameCore.js';
 import { StorageManager } from './StorageManager.js';
 import { UIManager } from './UIManager.js';
-// أضف هذا في أول main.js
+
+window.isGamePaused = false;
+
 if (navigator.storage && navigator.storage.persist) {
     navigator.storage.persist();
 }
