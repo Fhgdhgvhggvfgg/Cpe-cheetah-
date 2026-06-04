@@ -653,8 +653,8 @@ window.addEventListener('storage', function(e) {
 
     <script type="module" src="js/main.js"></script>
     
-    <script>
-// نظام مؤقتات القدرة الخارقة
+<script>
+// نظام مؤقتات القدرة الخارقة - يتوقف عند الضغط على استئناف
 (function() {
     let abilityCooldownRemaining = 0;
     let abilityDurationRemaining = 0;
@@ -690,19 +690,23 @@ window.addEventListener('storage', function(e) {
         updateDisplay();
     };
     
+    // دالة تحديث المؤقتات - تتوقف عندما تكون اللعبة متوقفة
     window.updateAbilityTimers = function(dt) {
-        let changed = false;
-        if (abilityCooldownRemaining > 0) {
-            abilityCooldownRemaining -= dt;
-            if (abilityCooldownRemaining < 0) abilityCooldownRemaining = 0;
-            changed = true;
+        // فقط قم بتحديث المؤقتات إذا كانت اللعبة غير متوقفة
+        if (!window.isGamePaused) {
+            let changed = false;
+            if (abilityCooldownRemaining > 0) {
+                abilityCooldownRemaining -= dt;
+                if (abilityCooldownRemaining < 0) abilityCooldownRemaining = 0;
+                changed = true;
+            }
+            if (abilityDurationRemaining > 0) {
+                abilityDurationRemaining -= dt;
+                if (abilityDurationRemaining < 0) abilityDurationRemaining = 0;
+                changed = true;
+            }
+            if (changed) updateDisplay();
         }
-        if (abilityDurationRemaining > 0) {
-            abilityDurationRemaining -= dt;
-            if (abilityDurationRemaining < 0) abilityDurationRemaining = 0;
-            changed = true;
-        }
-        if (changed) updateDisplay();
     };
     
     // حلقة تحديث تلقائية
