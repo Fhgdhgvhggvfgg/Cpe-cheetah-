@@ -262,6 +262,10 @@ export class GameCore {
                 this.isPaused = !this.isPaused;
                 pauseBtn.innerText = this.isPaused ? "استئناف" : "إيقاف";
                 pauseBtn.style.background = this.isPaused ? "var(--success)" : "var(--primary)";
+                
+                            if (window) {
+                window.isGamePaused = this.isPaused;
+            }
             };
         }
         const btn = (id, down, up) => {
