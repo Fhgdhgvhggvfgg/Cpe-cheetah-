@@ -130,6 +130,30 @@ export class GameCore {
         this.ctx.imageSmoothingEnabled = false;
     }
     
+    updateZoom(newZoom) {
+    // تحديد نطاق الزوم بين 1 و 4
+    this.zoom = Math.min(4, Math.max(1, newZoom));
+    
+    // حفظ القيمة في التخزين
+    this.storage.saveZoom(this.zoom);
+    
+    // تحديث العرض في الواجهة إذا كان العنصر موجوداً
+    const zoomValueDisplay = document.getElementById('zoomValueDisplay');
+    if (zoomValueDisplay) {
+        zoomValueDisplay.innerText = this.zoom.toFixed(1) + 'x';
+    }
+    
+    // تحديث شريط التحكم في الزوم في القائمة (إذا كان مفتوحاً)
+    const zoomSlider = document.getElementById('zoomSlider');
+    if (zoomSlider) {
+        zoomSlider.value = this.zoom;
+        const zoomVal = document.getElementById('zoomVal');
+        if (zoomVal) zoomVal.innerText = this.zoom;
+    }
+    
+    console.log('Zoom changed to:', this.zoom);
+}
+
     loadImages() {
         if(this.storage.player) this.playerImg.src = this.storage.player;
         if(this.storage.bg) this.bgImg.src = this.storage.bg;
@@ -256,66 +280,157 @@ export class GameCore {
     }
     
     bindControls() {
-        const pauseBtn = document.getElementById('pauseBtn');
-        if (pauseBtn) {
-            pauseBtn.onclick = () => {
-                this.isPaused = !this.isPaused;
-                pauseBtn.innerText = this.isPaused ? "استئناف" : "إيقاف";
-                pauseBtn.style.background = this.isPaused ? "var(--success)" : "var(--primary)";
-                
-                            if (window) {
+    // متغيرات للضغط المستمر للزوم
+    let zoomInterval = null;
+    let currentZoomAction = null;
+    const ZOOM_STEP = 0.5;
+    
+    // دالة بدء التكبير/التصغير
+    const startZoom = (action) => {
+        if (action === 'in') {
+            let newZoom = Math.min(4, this.zoom + ZOOM_STEP);
+            this.updateZoom(newZoom);
+        } else if (action === 'out') {
+            let newZoom = Math.max(1, this.zoom - ZOOM_STEP);
+            this.updateZoom(newZoom);
+        }
+        
+        currentZoomAction = action;
+        if (zoomInterval) clearInterval(zoomInterval);
+        zoomInterval = setInterval(() => {
+            if (action === 'in') {
+                let newZoom = Math.min(4, this.zoom + ZOOM_STEP);
+                this.updateZoom(newZoom);
+            } else if (action === 'out') {
+                let newZoom = Math.max(1, this.zoom - ZOOM_STEP);
+                this.updateZoom(newZoom);
+            }
+        }, 150);
+    };
+    
+    const stopZoom = () => {
+        if (zoomInterval) {
+            clearInterval(zoomInterval);
+            zoomInterval = null;
+        }
+        currentZoomAction = null;
+    };
+    
+    // ربط أزرار الزوم
+    const zoomInBtn = document.getElementById('zoomInBtn');
+    const zoomOutBtn = document.getElementById('zoomOutBtn');
+    
+    if (zoomInBtn) {
+        zoomInBtn.onclick = null;
+        zoomInBtn.onpointerdown = null;
+        zoomInBtn.onpointerup = null;
+        
+        zoomInBtn.onpointerdown = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            startZoom('in');
+        };
+        zoomInBtn.onpointerup = stopZoom;
+        zoomInBtn.onpointerleave = stopZoom;
+        
+        zoomInBtn.onmousedown = (e) => {
+            e.preventDefault();
+            startZoom('in');
+        };
+        zoomInBtn.onmouseup = stopZoom;
+        zoomInBtn.onmouseleave = stopZoom;
+    }
+    
+    if (zoomOutBtn) {
+        zoomOutBtn.onclick = null;
+        zoomOutBtn.onpointerdown = null;
+        zoomOutBtn.onpointerup = null;
+        
+        zoomOutBtn.onpointerdown = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            startZoom('out');
+        };
+        zoomOutBtn.onpointerup = stopZoom;
+        zoomOutBtn.onpointerleave = stopZoom;
+        
+        zoomOutBtn.onmousedown = (e) => {
+            e.preventDefault();
+            startZoom('out');
+        };
+        zoomOutBtn.onmouseup = stopZoom;
+        zoomOutBtn.onmouseleave = stopZoom;
+    }
+    
+    // ========== باقي الكود من هنا ==========
+    
+    // زر الإيقاف المؤقت
+    const pauseBtn = document.getElementById('pauseBtn');
+    if (pauseBtn) {
+        pauseBtn.onclick = () => {
+            this.isPaused = !this.isPaused;
+            pauseBtn.innerText = this.isPaused ? "استئناف" : "إيقاف";
+            pauseBtn.style.background = this.isPaused ? "var(--success)" : "var(--primary)";
+            if (window) {
                 window.isGamePaused = this.isPaused;
             }
-            };
-        }
-        const btn = (id, down, up) => {
-            const el = document.getElementById(id);
-            if(el) {
-                el.onpointerdown = (e) => { e.preventDefault(); if(!this.isDead) down(); };
-                if(up) el.onpointerup = (e) => { e.preventDefault(); up(); };
-            }
         };
-        btn('leftBtn', () => { this.moveDir = -1; this.facingRight = false; }, () => this.moveDir = 0);
-        btn('rightBtn', () => { this.moveDir = 1; this.facingRight = true; }, () => this.moveDir = 0);
-        btn('jumpBtn', () => { if(this.jumpCount < 2 && !this.isDead) { this.velocityY = this.jumpForce; this.jumpCount++; } });
-        btn('dashBtn', () => { if (this.canDash && !this.isDead) { this.isDashing = true; this.canDash = false; setTimeout(() => this.isDashing = false, 200); setTimeout(() => this.canDash = true, 760); } });
-        
-        btn('attackBtn', () => { 
-            if (this.canAttack && !this.isDead) { 
-                this.isAttacking = true; 
-                this.attackTime = 0.3; 
-                this.canAttack = false; 
-                const attackBtn = document.getElementById('attackBtn');
-                if(attackBtn) attackBtn.style.opacity = "0.3";
-                this.attackHoldTimeout = setTimeout(() => { this.activateSuperPower(); }, 500);
-                setTimeout(() => { this.canAttack = true; if(attackBtn) attackBtn.style.opacity = "1"; }, 600);
-            } 
-        }, () => { if (this.attackHoldTimeout) { clearTimeout(this.attackHoldTimeout); this.attackHoldTimeout = null; } });
-        
-        this.canvas.onpointerdown = (e) => {
-            if(this.isDead) return;
-            const rect = this.canvas.getBoundingClientRect();
-            const mx = (e.clientX - rect.left) / (this.scale * this.zoom) + this.camX - (this.LOGIC_WIDTH / (2 * this.zoom));
-            const my = (e.clientY - rect.top) / (this.scale * this.zoom) + this.camY - (this.LOGIC_HEIGHT / (2 * this.zoom));
-            const gx = Math.floor(mx/60)*60;
-            const gy = Math.floor(my/60)*60;
-            const idx = this.platforms.findIndex(p => p.x === gx && p.y === gy);
-            if (idx !== -1) {
-                this.platforms.splice(idx, 1);
-                this.blockCG++;
-                this.storage.saveBlockCG(this.blockCG);
-                this.uiManager.updateBlockCounter(this.blockCG);
-            } else {
-                if (this.blockCG <= 0) { this.showNoBlocksWarning(); return; }
-                this.platforms.push({x: gx, y: gy});
-                this.blockCG--;
-                this.storage.saveBlockCG(this.blockCG);
-                this.uiManager.updateBlockCounter(this.blockCG);
-            }
-        };
-        document.getElementById('exitBtn').onclick = () => { this.storage.savePlayerPosition(this.x, this.y); this.storage.savePlatforms(this.platforms); location.reload(); };
-        document.getElementById('clearBtn').onclick = () => { this.storage.clearPlatforms(); location.reload(); };
     }
+    
+    // دالة مساعدة لربط أزرار التحكم
+    const btn = (id, down, up) => {
+        const el = document.getElementById(id);
+        if(el) {
+            el.onpointerdown = (e) => { e.preventDefault(); if(!this.isDead) down(); };
+            if(up) el.onpointerup = (e) => { e.preventDefault(); up(); };
+        }
+    };
+    
+    // أزرار الحركة والهجوم
+    btn('leftBtn', () => { this.moveDir = -1; this.facingRight = false; }, () => this.moveDir = 0);
+    btn('rightBtn', () => { this.moveDir = 1; this.facingRight = true; }, () => this.moveDir = 0);
+    btn('jumpBtn', () => { if(this.jumpCount < 2 && !this.isDead) { this.velocityY = this.jumpForce; this.jumpCount++; } });
+    btn('dashBtn', () => { if (this.canDash && !this.isDead) { this.isDashing = true; this.canDash = false; setTimeout(() => this.isDashing = false, 200); setTimeout(() => this.canDash = true, 760); } });
+    
+    btn('attackBtn', () => { 
+        if (this.canAttack && !this.isDead) { 
+            this.isAttacking = true; 
+            this.attackTime = 0.3; 
+            this.canAttack = false; 
+            const attackBtn = document.getElementById('attackBtn');
+            if(attackBtn) attackBtn.style.opacity = "0.3";
+            this.attackHoldTimeout = setTimeout(() => { this.activateSuperPower(); }, 500);
+            setTimeout(() => { this.canAttack = true; if(attackBtn) attackBtn.style.opacity = "1"; }, 600);
+        } 
+    }, () => { if (this.attackHoldTimeout) { clearTimeout(this.attackHoldTimeout); this.attackHoldTimeout = null; } });
+    
+    // الضغط على الكانفاس للبناء/الهدم
+    this.canvas.onpointerdown = (e) => {
+        if(this.isDead) return;
+        const rect = this.canvas.getBoundingClientRect();
+        const mx = (e.clientX - rect.left) / (this.scale * this.zoom) + this.camX - (this.LOGIC_WIDTH / (2 * this.zoom));
+        const my = (e.clientY - rect.top) / (this.scale * this.zoom) + this.camY - (this.LOGIC_HEIGHT / (2 * this.zoom));
+        const gx = Math.floor(mx/60)*60;
+        const gy = Math.floor(my/60)*60;
+        const idx = this.platforms.findIndex(p => p.x === gx && p.y === gy);
+        if (idx !== -1) {
+            this.platforms.splice(idx, 1);
+            this.blockCG++;
+            this.storage.saveBlockCG(this.blockCG);
+            this.uiManager.updateBlockCounter(this.blockCG);
+        } else {
+            if (this.blockCG <= 0) { this.showNoBlocksWarning(); return; }
+            this.platforms.push({x: gx, y: gy});
+            this.blockCG--;
+            this.storage.saveBlockCG(this.blockCG);
+            this.uiManager.updateBlockCounter(this.blockCG);
+        }
+    };
+    
+    // أزرار الخروج والمسح
+    document.getElementById('exitBtn').onclick = () => { this.storage.savePlayerPosition(this.x, this.y); this.storage.savePlatforms(this.platforms); location.reload(); };
+    document.getElementById('clearBtn').onclick = () => { this.storage.clearPlatforms(); location.reload(); };
+}
     
     updateStaticBlocks(dt) {
         if (!this.staticBlocks) return;
