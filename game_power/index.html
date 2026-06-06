@@ -196,7 +196,7 @@
     gap: 10px;              /* المسافة بين الأزرار */
     align-items: center;    /* محاذاة الأزرار في المنتصف */
     position: fixed;        /* لجعلها ثابتة في مكانها */
-    top: 20px;              /* المسافة من الأعلى */
+    top: 45px;              /* المسافة من الأعلى */
     right: 20px;            /* المسافة من اليمين (يمكنك تغييرها لـ left إذا أردت) */
     z-index: 1000;          /* لضمان ظهورها فوق كل شيء */
 }
@@ -536,16 +536,7 @@ imgTag.style.backgroundPosition = '0px 0px, center';
     </div>
 
     <div id="uiLayer">
-        <div id="healthBarContainer"><div id="healthBar"></div></div>
-        
-        <div class="top-bar">
-<div class="top-btn-group" style="pointer-events: auto;">
-    <button id="pauseBtn" class="custom-img-btn">إيقاف</button>
-    <button id="clearBtn" class="custom-img-btn">مسح</button>
-    <button id="exitBtn" class="custom-img-btn">خروج</button>
-    
-    <!-- أزرار التحكم في التقريب -->
-    <button id="zoomInBtn" class="custom-img-btn" style="background: #27ae60; width: 40px; height: 40px; min-width: 20px; padding: 0; font-size: 20px; pointer-events: auto;">+</button>
+        <button id="zoomInBtn" class="custom-img-btn" style="background: #27ae60; width: 40px; height: 40px; min-width: 20px; padding: 0; font-size: 20px; pointer-events: auto;">+</button>
 <span id="zoomValueDisplay" style="color: white; font-weight: bold; text-align: center; background: rgba(0,0,0,0.5); padding: 4px 8px; border-radius: 8px; font-size: 12px; pointer-events: auto;">1.5x</span>
 
 <script>
@@ -559,6 +550,15 @@ imgTag.style.backgroundPosition = '0px 0px, center';
 })();
 </script>
     <button id="zoomOutBtn" class="custom-img-btn" style="background: #e74c3c; width: 40px; height: 40px; min-width: 20px; padding: 0; font-size: 20px; pointer-events: auto;">-</button>
+        <div id="healthBarContainer"><div id="healthBar"></div></div>
+        
+        <div class="top-bar">
+<div class="top-btn-group" style="pointer-events: auto;">
+    <button id="pauseBtn" class="custom-img-btn">إيقاف</button>
+    <button id="clearBtn" class="custom-img-btn">مسح</button>
+    <button id="exitBtn" class="custom-img-btn">خروج</button>
+    
+
 </div>
 
 <!-- العدادين الجديدين للقدرة الخارقة -->
