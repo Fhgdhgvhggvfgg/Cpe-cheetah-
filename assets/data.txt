@@ -9,6 +9,7 @@ mario
 daiana_temple
 baghdad
 minecraft
+ranav_ingdom
 steve_city
 keven_city
 kingdom_shoto
