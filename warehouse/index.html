@@ -207,7 +207,7 @@
     <div id="header">
         <button class="arrow-btn" id="arrowBtn">اخفاء القائمة</button>
         <h1>مستودع عتاد اللعبة</h1>
-        <p>هذه اللعبة فريدة في عالم الالعاب لكنها محدودة جدا. اذا اعجبتك اللعبة وتريد تطويرها فلك كامل الحرية. اللعبة متاحة للمجتمع وانت سوف يكون لك دور كبير في اسعاد مجتمع لاعبي اندي. فلو كنت شغوفا حمل كل ما يلزم من هذا المستودع وانطلق</p>
+        <p id="dynamicDescription">جاري تحميل الوصف...</p>
     </div>
 
     <div id="canvas"><div id="world"></div></div>
@@ -444,7 +444,24 @@ enemyDiv.style.backgroundPosition = '0px 0px';
                 const res = await fetch('data_P.txt');
                 if(!res.ok) throw new Error(`HTTP ${res.status}`);
                 const text = await res.text();
-                const lines = text.split('\n').map(l=>l.trim()).filter(l=>l!=='');
+                
+                // ----- استخراج الوصف من أول سطر يحتوي على <> -----
+                const lines = text.split('\n');
+                let descriptionText = "هذه اللعبة فريدة في عالم الالعاب لكنها محدودة جدا. اذا اعجبتك اللعبة وتريد تطويرها فلك كامل الحرية. اللعبة متاحة للمجتمع وانت سوف يكون لك دور كبير في اسعاد مجتمع لاعبي اندي. فلو كنت شغوفا حمل كل ما يلزم من هذا المستودع وانطلق";
+                for (let line of lines) {
+                    const match = line.match(/<([^>]+)>/);
+                    if (match) {
+                        descriptionText = match[1];
+                        break;
+                    }
+                }
+                // تحديث الوصف في الهيدر
+                const descElement = document.getElementById('dynamicDescription');
+                if (descElement) {
+                    descElement.textContent = descriptionText;
+                }
+                // ------------------------------------------------
+                
                 const data = [];
                 for(let i=0; i<lines.length; i++) {
                     // تعديل regex للسماح بـ xxx بدون علامات تنصيص
