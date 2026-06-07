@@ -4,6 +4,17 @@ import { InputHandler } from './InputHandler.js';
 
 export class GameCore {
     constructor(mode, storage, uiManager) {
+    	
+    
+    this.canUseSpecial = true;
+        this.attackHoldTimeout = null;
+        this.resetRowTimeout = null; // لم يعد مستخدماً للإنهاء المباشر
+        this.isAttackPressed = false;
+        
+        // متغيرات العداد الجديد
+        this.abilityCooldownRemaining = 0;
+        this.abilityDurationRemaining = 0;
+    
         this.staticBlocks = [];
         this.deadFrameOffsetY = 0;
         this.deadFrameRiseSpeed = 100;
@@ -227,13 +238,19 @@ export class GameCore {
         }
     }
     
-    activateSuperPower() {
+activateSuperPower() {
+        // التحقق من الجاهزية وعدد البلوكات المتاحة
         if (!this.canUseSpecial || this.blockCG < 8) return;
+
+        // زيادة الصحة واستهلاك البلوكات وتحديث الواجهة
         if (this.playerHealth + 30 > this.maxHealth) this.playerHealth = this.maxHealth;
         else this.playerHealth += 30;
+        
         this.blockCG -= 8;
         this.storage.saveBlockCG(this.blockCG);
         this.uiManager.updateBlockCounter(this.blockCG);
+
+        // تفعيل الخصائص الخارقة (مضاعفة القوة والسرعة)
         this.useTopRow = 0;
         this.playerHealth *= 2;
         this.maxHealth *= 2;
@@ -241,21 +258,42 @@ export class GameCore {
         this.dash_s *= 1.5;
         this.damage_p *= 2;
         this.radius_dp *= 1.5;
-        this.abilityCooldownRemaining = 100;
-        this.abilityDurationRemaining = 30;
+
+        // ضبط العدادات الزمنية للقوة
+        this.abilityCooldownRemaining = 100; // مدة إعادة الشحن 100 ثانية
+        this.abilityDurationRemaining = 30;  // مدة استمرار القوة 30 ثانية
         this.canUseSpecial = false;
-        if (this.resetRowTimeout) clearTimeout(this.resetRowTimeout);
-        this.resetRowTimeout = setTimeout(() => {
-            this.abilityDurationRemaining = 0;
-            this.playerHealth /= 2;
-            this.maxHealth /= 2;
-            this.useTopRow = 1;
-            this.speed /= 1.5;
-            this.dash_s /= 1.5;
-            this.damage_p /= 2;
-            this.radius_dp /= 1.5;
-        }, 30000);
-        setTimeout(() => { this.canUseSpecial = true; }, 100000);
+
+        // إلغاء أي مؤقتات سابقة إذا وجدت لضمان النظافة
+        if (this.resetRowTimeout) {
+            clearTimeout(this.resetRowTimeout);
+            this.resetRowTimeout = null;
+        }
+        
+        // ملاحظة: تم إزالة setTimeout الخاص بإعادة الشحن لأننا سنعتمد على abilityCooldownRemaining في fixedUpdate
+    }
+    
+    deactivateSuperPower() {
+        // التحقق من أن القوة تعمل حالياً (عبر فحص حالة استخدام الصف العلوي) لمنع الإلغاء المتكرر
+        if (this.useTopRow === 1) return; 
+
+        console.log("جاري إلغاء القوة الخارقة واستعادة القيم الأصلية...");
+
+        // إعادة الخصائص إلى القيم الأصلية بدقة
+        this.playerHealth /= 2; 
+        this.maxHealth /= 2; 
+        this.useTopRow = 1;
+        
+        // استعادة القيم الأصلية بدقة تامة
+        this.speed /= 1.5;
+        this.dash_s /= 1.5;
+        this.damage_p /= 2;
+        this.radius_dp /= 1.5;
+
+        // تأكد من أن العداد صفر
+        this.abilityDurationRemaining = 0;
+        
+        console.log(`تم الاستعادة: Speed=${this.speed}, Dash=${this.dash_s}`);
     }
     
     updateAnimation(dt, isMoving) {
@@ -478,10 +516,31 @@ export class GameCore {
         
         if (this.isDead) this.deadFrameOffsetY -= this.deadFrameRiseSpeed * dt;
         
-        if (this.abilityCooldownRemaining > 0) { this.abilityCooldownRemaining -= dt; if (this.abilityCooldownRemaining < 0) this.abilityCooldownRemaining = 0; }
-        if (this.abilityDurationRemaining > 0) { this.abilityDurationRemaining -= dt; if (this.abilityDurationRemaining < 0) this.abilityDurationRemaining = 0; }
-        if (window.setAbilityTimers) window.setAbilityTimers(this.abilityCooldownRemaining, this.abilityDurationRemaining);
+// تحديث العدادات الزمنية
+// تحديث العدادات الزمنية (تتجمد تلقائياً عند isPaused لأن الدالة تتوقف)
+    
+    // 1. عداد إعادة الاستخدام (Cooldown)
+    if (this.abilityCooldownRemaining > 0) { 
+        this.abilityCooldownRemaining -= dt; 
+        if (this.abilityCooldownRemaining <= 0) {
+            this.abilityCooldownRemaining = 0;
+            this.canUseSpecial = true; // إعادة تفعيل الزر عند انتهاء الوقت
+        }
+    }
+    
+    // 2. عداد مدة القوة (Duration)
+    if (this.abilityDurationRemaining > 0) { 
+        this.abilityDurationRemaining -= dt; 
         
+        // إذا انتهى وقت القوة أثناء اللعب
+        if (this.abilityDurationRemaining <= 0) {
+            this.abilityDurationRemaining = 0;
+            this.deactivateSuperPower(); // استدعاء دالة الإلغاء
+        }
+    }
+    
+    // تحديث الواجهة بالقيم الحالية
+    if (window.setAbilityTimers) window.setAbilityTimers(this.abilityCooldownRemaining, this.abilityDurationRemaining);
         // تحسين منطق دوائر الضرر
         if (this.damageCircleEnabled) {
             for (let i = 0; i < this.enemies.length; i++) {
