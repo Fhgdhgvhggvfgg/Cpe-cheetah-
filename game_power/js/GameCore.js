@@ -655,7 +655,23 @@ activateSuperPower() {
                 if (dist < this.radius + en.radius) {
                     this.playerHealth -= 20 * dt;
                     this.uiManager.updateHealth(this.playerHealth, this.maxHealth);
-                    if(this.playerHealth <= 0) { this.isDead = true; setTimeout(() => { this.stopUpdating = true; }, 2000); setTimeout(() => location.reload(), 2000); }
+if (this.playerHealth <= 0) { 
+    this.isDead = true; 
+    
+    // 🟢 الحماية: حفظ الكتل الحالية فوراً لمنع المتصفح من تصفيرها عند الـ reload
+    if (this.storage && typeof this.storage.savePlatforms === 'function') {
+        this.storage.savePlatforms(this.platforms); 
+    }
+    
+    // حفظ موقع اللاعب الأخير أيضاً إذا كنت تحتاجه
+    if (this.storage && typeof this.storage.savePlayerPosition === 'function') {
+        this.storage.savePlayerPosition(this.x, this.y);
+    }
+
+    setTimeout(() => { this.stopUpdating = true; }, 2000); 
+    setTimeout(() => location.reload(), 2000); 
+}
+
                 }
                 let attackX = this.facingRight ? this.x + 80 : this.x - 80;
                 let attackDist = Math.sqrt((attackX - en.x)**2 + (this.y - en.y)**2);
