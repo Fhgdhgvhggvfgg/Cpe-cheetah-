@@ -572,70 +572,55 @@ imgTag.style.backgroundPosition = '0px 0px, center';
         </div>
         
 <script>
-// دالة لتقسيم الصورة وتحديث الأزرار
 function loadButtonImagesFromBg() {
     const savedBg = localStorage.getItem('bgImage');
-    
-    if (!savedBg) {
-        console.log('لا توجد صورة خلفية محفوظة');
-        return;
-    }
+    if (!savedBg) return;
     
     const bgImage = new Image();
     bgImage.crossOrigin = 'Anonymous';
     
     bgImage.onload = function() {
-        console.log('تم تحميل صورة الخلفية بنجاح');
+        const imgWidth = this.width;
+        const imgHeight = this.height;
         
-        // الأجزاء المطلوبة
+        const scaleX = imgWidth / 810;
+        const scaleY = imgHeight / 1215;
+        
+        const btnWidth = 40 * scaleX;
+        const btnHeight = 40 * scaleY;
+        
+        const startY = imgHeight - btnHeight;
+        
         const parts = [
-            { x: 0,   y: 1175, id: 'leftBtnImg' },
-            { x: 40,  y: 1175, id: 'rightBtnImg' },
-            { x: 80,  y: 1175, id: 'jumpBtnImg' },
-            { x: 120, y: 1175, id: 'dashBtnImg' },
-            { x: 160, y: 1175, id: 'attackBtnImg' }
+            { x: 0 * scaleX,      y: startY, id: 'leftBtnImg' },
+            { x: 40 * scaleX,     y: startY, id: 'rightBtnImg' },
+            { x: 80 * scaleX,     y: startY, id: 'jumpBtnImg' },
+            { x: 120 * scaleX,    y: startY, id: 'dashBtnImg' },
+            { x: 160 * scaleX,    y: startY, id: 'attackBtnImg' }
         ];
         
-        // إنشاء canvas لقص الصور
         const canvas = document.createElement('canvas');
-        canvas.width = 40;
-        canvas.height = 40;
+        canvas.width = btnWidth;
+        canvas.height = btnHeight;
         const ctx = canvas.getContext('2d');
         ctx.imageSmoothingEnabled = false;
         
-        // قص كل جزء وتطبيقه على العنصر المناسب
         parts.forEach(part => {
-            ctx.clearRect(0, 0, 40, 40);
-            ctx.drawImage(bgImage, part.x, part.y, 40, 40, 0, 0, 40, 40);
-            
-            const imgElement = document.getElementById(part.id);
-            if (imgElement) {
-                imgElement.src = canvas.toDataURL();
-                console.log('تم تحديث الزر:', part.id);
-            } else {
-                console.log('عنصر غير موجود:', part.id);
+            if (part.x + btnWidth <= imgWidth && part.y + btnHeight <= imgHeight) {
+                ctx.clearRect(0, 0, btnWidth, btnHeight);
+                ctx.drawImage(bgImage, part.x, part.y, btnWidth, btnHeight, 0, 0, btnWidth, btnHeight);
+                
+                const imgElement = document.getElementById(part.id);
+                if (imgElement) imgElement.src = canvas.toDataURL();
             }
         });
     };
-    
-    bgImage.onerror = function() {
-        console.log('خطأ في تحميل صورة الخلفية');
-    };
-    
     bgImage.src = savedBg;
 }
 
-// تشغيل الدالة عند تحميل الصفحة وبعد تحميل جميع العناصر
-window.addEventListener('load', function() {
-    setTimeout(loadButtonImagesFromBg, 100);
-});
-
-// أيضاً عند تغيير الصورة من القائمة، تحديث الأزرار
-window.addEventListener('storage', function(e) {
-    if (e.key === 'bgImage') {
-        console.log('تم تغيير صورة الخلفية، جاري تحديث الأزرار');
-        setTimeout(loadButtonImagesFromBg, 200);
-    }
+window.addEventListener('load', () => setTimeout(loadButtonImagesFromBg, 100));
+window.addEventListener('storage', (e) => {
+    if (e.key === 'bgImage') setTimeout(loadButtonImagesFromBg, 200);
 });
 </script>
 
