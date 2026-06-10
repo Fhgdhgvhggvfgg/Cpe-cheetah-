@@ -67,24 +67,45 @@ export class UIManager {
 
     applyBtnSize(size) { document.querySelectorAll('.control-btn').forEach(btn => { btn.style.width = size + 'px'; btn.style.height = size + 'px'; }); }
     
-    updateBlockCounter(blockCount) {
-        const blockCounter = document.getElementById('blockCounterGame');
-        if (blockCounter) {
-            if (this.storage.bg) {
-                const img = new Image();
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = 20;
-                    canvas.height = 20;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 770, 1175, 40, 40, 0, 0, 20, 20);
-                    const blockImgSrc = canvas.toDataURL();
-                    blockCounter.innerHTML = `<img src="${blockImgSrc}" style="width: 30px; height: 30px; vertical-align: middle; margin-left: 0px;"> ${blockCount}`;
-                };
-                img.src = this.storage.bg;
-            } else { blockCounter.innerHTML = `🧱 ${blockCount}`; }
+updateBlockCounter(blockCount) {
+    const blockCounter = document.getElementById('blockCounterGame');
+    if (blockCounter) {
+        if (this.storage.bg) {
+            const img = new Image();
+            img.onload = () => {
+                const imgWidth = img.width;
+                const imgHeight = img.height;
+                
+                // حساب النسب بناءً على الأبعاد الفعلية للصورة
+                const scaleX = imgWidth / 810;
+                const scaleY = imgHeight / 1215;
+                
+                // الإحداثيات الأصلية للكتلة (في الصورة 810x1215)
+                const originalX = 770;
+                const originalY = 1175;
+                const originalSize = 40;
+                
+                // الإحداثيات الجديدة حسب حجم الصورة الفعلي
+                const sourceX = originalX * scaleX;
+                const sourceY = originalY * scaleY;
+                const sourceSize = originalSize * scaleX;
+                
+                const canvas = document.createElement('canvas');
+                canvas.width = 32;
+                canvas.height = 32;
+                const ctx = canvas.getContext('2d');
+                ctx.imageSmoothingEnabled = false;
+                
+                ctx.drawImage(img, sourceX, sourceY, sourceSize, sourceSize, 0, 0, 32, 32);
+                const blockImgSrc = canvas.toDataURL();
+                blockCounter.innerHTML = `<img src="${blockImgSrc}" style="width: 28px; height: 28px; vertical-align: middle; margin-left: 5px; image-rendering: pixelated;"> ${blockCount}`;
+            };
+            img.src = this.storage.bg;
+        } else {
+            blockCounter.innerHTML = `🧱 ${blockCount}`;
         }
     }
+}
 
     updateMenuDisplay() {
         const killDisplay = document.getElementById('killCountDisplay');
