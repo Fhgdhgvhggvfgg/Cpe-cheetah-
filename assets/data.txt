@@ -12,6 +12,7 @@ baghdad
 minecraft
 ranav_ingdom
 steve_city
+geeny_city
 keven_city
 kingdom_shoto
 #enemys
