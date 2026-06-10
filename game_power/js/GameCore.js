@@ -107,10 +107,10 @@ export class GameCore {
         this.enemyImg = new Image();
         
         this.pinkSquare = {
-            sourceX: 770,
-            sourceY: 1175,
-            size: 40
-        };
+    sourceX: 770 / 810,
+    sourceY: 1175 / 1215,
+    size: 40 / 810
+};
         
         this.input = new InputHandler(this);
         this.init();
@@ -801,7 +801,7 @@ if (this.playerHealth <= 0) {
             this.ctx.translate(block.x, block.y);
             const whiteAmount = (Math.sin(Date.now() / 120) + 1) / 4;
             if (this.bgImg.complete && this.bgImg.naturalWidth > 0) {
-                this.ctx.drawImage(this.bgImg, 770, 1175, 40, 40, -block.size/2, -block.size/2, block.size, block.size);
+                this.ctx.drawImage(this.bgImg, this.pinkSquare.sourceX * this.bgImg.width, this.pinkSquare.sourceY * this.bgImg.height, this.pinkSquare.size * this.bgImg.width, this.pinkSquare.size * this.bgImg.width, -block.size/2, -block.size/2, block.size, block.size);
                 this.ctx.fillStyle = `rgba(255, 255, 255, ${whiteAmount})`;
                 this.ctx.fillRect(-block.size/2, -block.size/2, block.size, block.size);
             } else {
@@ -833,13 +833,13 @@ if (this.playerHealth <= 0) {
             }
             this.drawBoundaryLines();
             this.ctx.save();
-            this.ctx.drawImage(this.bgImg, this.pinkSquare.sourceX, this.pinkSquare.sourceY, this.pinkSquare.size, this.pinkSquare.size, this.renderX + 30, this.renderY - 20, 20, 20);
+            this.ctx.drawImage(this.bgImg, this.pinkSquare.sourceX * this.bgImg.width, this.pinkSquare.sourceY * this.bgImg.height, this.pinkSquare.size * this.bgImg.width, this.pinkSquare.size * this.bgImg.width, this.renderX + 30, this.renderY - 20, 20, 20);
             this.ctx.restore();
         }
         
         this.drawStaticBlocks();
         this.platforms.forEach(p => {
-            if(this.bgImg.complete && this.bgImg.naturalWidth > 0) this.ctx.drawImage(this.bgImg, this.pinkSquare.sourceX, this.pinkSquare.sourceY, this.pinkSquare.size, this.pinkSquare.size, p.x, p.y, 60, 60);
+            if(this.bgImg.complete && this.bgImg.naturalWidth > 0) this.ctx.drawImage(this.bgImg, this.pinkSquare.sourceX * this.bgImg.width, this.pinkSquare.sourceY * this.bgImg.height, this.pinkSquare.size * this.bgImg.width, this.pinkSquare.size * this.bgImg.width, p.x, p.y, 60, 60);
             else { this.ctx.fillStyle = "rgba(52, 152, 219, 0.6)"; this.ctx.fillRect(p.x, p.y, 60, 60); }
         });
         
