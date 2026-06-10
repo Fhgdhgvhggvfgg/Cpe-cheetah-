@@ -5,7 +5,7 @@ import { InputHandler } from './InputHandler.js';
 export class GameCore {
     constructor(mode, storage, uiManager) {
     	
-    
+    this.power_b = 25;
     this.canUseSpecial = true;
         this.attackHoldTimeout = null;
         this.resetRowTimeout = null; // لم يعد مستخدماً للإنهاء المباشر
@@ -240,13 +240,13 @@ export class GameCore {
     
 activateSuperPower() {
         // التحقق من الجاهزية وعدد البلوكات المتاحة
-        if (!this.canUseSpecial || this.blockCG < 8) return;
+        if (!this.canUseSpecial || this.blockCG < this.power_b) return;
 
         // زيادة الصحة واستهلاك البلوكات وتحديث الواجهة
         if (this.playerHealth + 30 > this.maxHealth) this.playerHealth = this.maxHealth;
         else this.playerHealth += 30;
         
-        this.blockCG -= 8;
+        this.blockCG -= this.power_b;
         this.storage.saveBlockCG(this.blockCG);
         this.uiManager.updateBlockCounter(this.blockCG);
 
