@@ -397,9 +397,27 @@
         <div id="frameValDisplay" style="color: #f39c12; font-size: 14px; margin-top: 5px; font-weight: bold;"></div>
     </div>
 
-    <script>
-window.addEventListener('load', function() {
-    const imgData = localStorage.getItem('playerImage');
+<script>
+window.addEventListener('load', async function() {
+    // انتظر حتى يتوفر storage
+    let retries = 0;
+    while (!window.storage && retries < 50) {
+        await new Promise(r => setTimeout(r, 100));
+        retries++;
+    }
+    
+    // الحصول على صورة اللاعب من IndexedDB أو localStorage
+    let imgData = null;
+    if (window.storage) {
+        await window.storage.waitForImages();
+        imgData = window.storage.player;
+    }
+    
+    // إذا لم توجد في IndexedDB، جرب localStorage
+    if (!imgData) {
+        imgData = localStorage.getItem('playerImage');
+    }
+    
     const imgTag = document.getElementById('quickShowPlayer');
     const textTag = document.getElementById('frameValDisplay');
     
@@ -418,24 +436,24 @@ window.addEventListener('load', function() {
             imgTag.parentNode.insertBefore(title, imgTag);
         }
 
-const boxSize = 250; 
-imgTag.style.display = 'block'; 
-imgTag.style.margin = '0 auto'; 
-imgTag.style.width = boxSize + 'px';  
-imgTag.style.height = boxSize + 'px';
+        const boxSize = 250; 
+        imgTag.style.display = 'block'; 
+        imgTag.style.margin = '0 auto'; 
+        imgTag.style.width = boxSize + 'px';  
+        imgTag.style.height = boxSize + 'px';
 
-// ✅ صورتين: الخلفية (player_f.png) في الأسفل، وصورة اللاعب في الأعلى
-imgTag.style.background = `
-    url('${imgData}') no-repeat 0px 0px,
-    url('player_f.png') no-repeat center center
-`;
-imgTag.style.backgroundSize = '2000px 500px, cover';
-imgTag.style.backgroundPosition = '0px 0px, center';
+        // صورتين: الخلفية (player_f.png) في الأسفل، وصورة اللاعب في الأعلى
+        imgTag.style.background = `
+            url('${imgData}') no-repeat 0px 0px,
+            url('player_f.png') no-repeat center center
+        `;
+        imgTag.style.backgroundSize = '2000px 500px, cover';
+        imgTag.style.backgroundPosition = '0px 0px, center';
         
         // إخفاء src لأننا نستخدم background الآن
         imgTag.removeAttribute('src');
         
-                if (!document.getElementById('killCountDisplay')) {
+        if (!document.getElementById('killCountDisplay')) {
             const killText = document.createElement('div');
             killText.id = 'killCountDisplay';
             killText.innerText = "عدد القتل: " + totalKills;
@@ -447,7 +465,7 @@ imgTag.style.backgroundPosition = '0px 0px, center';
             imgTag.parentNode.insertBefore(killText, imgTag.nextSibling);
         }
         
-               if (!document.getElementById('loadingNotice')) {
+        if (!document.getElementById('loadingNotice')) {
             const loadingText = document.createElement('div');
             loadingText.id = 'loadingNotice';
             loadingText.innerText = "ازرار التحكم في كومبيوتر: a و d للحركة يمينا ويسارا. w للقفز و s للضرب و e للاندفاع.";
@@ -457,12 +475,9 @@ imgTag.style.backgroundPosition = '0px 0px, center';
             loadingText.style.fontSize = '14px';
             imgTag.parentNode.appendChild(loadingText);
         }
-        
-        // ... باقي الكود ...
     }
 }); 
-
-    </script>
+</script>
 
 <div style="color: white; text-align: center; font-weight: bold; margin-top: 10px;">قد يتأخر تحميل صور الساحة وواجهة شخصية اللاعب لذا ادخل للعب واخرج عدة مرات. </div>
 
@@ -571,58 +586,6 @@ imgTag.style.backgroundPosition = '0px 0px, center';
             <div id="blockCounterGame">0</div>
         </div>
         
-<script>
-function loadButtonImagesFromBg() {
-    const savedBg = localStorage.getItem('bgImage');
-    if (!savedBg) return;
-    
-    const bgImage = new Image();
-    bgImage.crossOrigin = 'Anonymous';
-    
-    bgImage.onload = function() {
-        const imgWidth = this.width;
-        const imgHeight = this.height;
-        
-        const scaleX = imgWidth / 810;
-        const scaleY = imgHeight / 1215;
-        
-        const btnWidth = 40 * scaleX;
-        const btnHeight = 40 * scaleY;
-        
-        const startY = imgHeight - btnHeight;
-        
-        const parts = [
-            { x: 0 * scaleX,      y: startY, id: 'leftBtnImg' },
-            { x: 40 * scaleX,     y: startY, id: 'rightBtnImg' },
-            { x: 80 * scaleX,     y: startY, id: 'jumpBtnImg' },
-            { x: 120 * scaleX,    y: startY, id: 'dashBtnImg' },
-            { x: 160 * scaleX,    y: startY, id: 'attackBtnImg' }
-        ];
-        
-        const canvas = document.createElement('canvas');
-        canvas.width = btnWidth;
-        canvas.height = btnHeight;
-        const ctx = canvas.getContext('2d');
-        ctx.imageSmoothingEnabled = false;
-        
-        parts.forEach(part => {
-            if (part.x + btnWidth <= imgWidth && part.y + btnHeight <= imgHeight) {
-                ctx.clearRect(0, 0, btnWidth, btnHeight);
-                ctx.drawImage(bgImage, part.x, part.y, btnWidth, btnHeight, 0, 0, btnWidth, btnHeight);
-                
-                const imgElement = document.getElementById(part.id);
-                if (imgElement) imgElement.src = canvas.toDataURL();
-            }
-        });
-    };
-    bgImage.src = savedBg;
-}
-
-window.addEventListener('load', () => setTimeout(loadButtonImagesFromBg, 100));
-window.addEventListener('storage', (e) => {
-    if (e.key === 'bgImage') setTimeout(loadButtonImagesFromBg, 200);
-});
-</script>
 
 <!-- أزرار تحتوي على img -->
 <div class="controls-move">
@@ -778,7 +741,104 @@ setTimeout(function() {
 </script>
 
 
+<script>
+// تحسين تحميل أزرار التحكم من صورة الخلفية - يتم التحميل فوراً
+async function loadButtonImagesFromBg() {
+    // انتظر حتى يتوفر storage
+    let retries = 0;
+    while (!window.storage && retries < 50) {
+        await new Promise(r => setTimeout(r, 100));
+        retries++;
+    }
+    
+    // انتظر تحميل الصور من IndexedDB
+    let bgImageSrc = null;
+    if (window.storage) {
+        await window.storage.waitForImages();
+        bgImageSrc = window.storage.bg;
+    }
+    
+    // إذا لم توجد في IndexedDB، جرب localStorage
+    if (!bgImageSrc) {
+        bgImageSrc = localStorage.getItem('bgImage');
+    }
+    
+    if (!bgImageSrc) {
+        console.log('⚠️ لا توجد صورة خلفية لتحميل الأزرار، سيتم المحاولة مرة أخرى بعد 1 ثانية');
+        setTimeout(loadButtonImagesFromBg, 1000);
+        return;
+    }
+    
+    const bgImage = new Image();
+    bgImage.crossOrigin = 'Anonymous';
+    
+    bgImage.onload = function() {
+        const imgWidth = this.width;
+        const imgHeight = this.height;
+        
+        const scaleX = imgWidth / 810;
+        const scaleY = imgHeight / 1215;
+        
+        const btnWidth = 40 * scaleX;
+        const btnHeight = 40 * scaleY;
+        
+        const startY = imgHeight - btnHeight;
+        
+        const parts = [
+            { x: 0 * scaleX,      y: startY, id: 'leftBtnImg' },
+            { x: 40 * scaleX,     y: startY, id: 'rightBtnImg' },
+            { x: 80 * scaleX,     y: startY, id: 'jumpBtnImg' },
+            { x: 120 * scaleX,    y: startY, id: 'dashBtnImg' },
+            { x: 160 * scaleX,    y: startY, id: 'attackBtnImg' }
+        ];
+        
+        const canvas = document.createElement('canvas');
+        canvas.width = btnWidth;
+        canvas.height = btnHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = false;
+        
+        parts.forEach(part => {
+            if (part.x + btnWidth <= imgWidth && part.y + btnHeight <= imgHeight) {
+                ctx.clearRect(0, 0, btnWidth, btnHeight);
+                ctx.drawImage(bgImage, part.x, part.y, btnWidth, btnHeight, 0, 0, btnWidth, btnHeight);
+                
+                const imgElement = document.getElementById(part.id);
+                if (imgElement) imgElement.src = canvas.toDataURL();
+            }
+        });
+        
+        console.log('✅ تم تحميل أزرار التحكم بنجاح');
+        
+        // إظهار الأزرار بعد التحميل (اختياري)
+        document.querySelectorAll('.control-btn img').forEach(img => {
+            img.style.opacity = '1';
+        });
+    };
+    
+    bgImage.onerror = () => {
+        console.log('⚠️ فشل تحميل صورة الخلفية للأزرار، سيتم المحاولة مرة أخرى');
+        setTimeout(loadButtonImagesFromBg, 1000);
+    };
+    
+    bgImage.src = bgImageSrc;
+}
 
+// بدء تحميل الأزرار فوراً (قبل أن يضغط المستخدم على زر اللعب)
+loadButtonImagesFromBg();
+
+// استمع لتغيرات الصور (عند تغيير الخلفية من القائمة)
+window.addEventListener('storage', (e) => {
+    if (e.key === 'bgImage' || e.key === 'bgImageUpdated') {
+        setTimeout(loadButtonImagesFromBg, 200);
+    }
+});
+
+// أيضاً استمع لحدث custom عند تغيير الصورة من داخل اللعبة
+window.addEventListener('bgImageChanged', () => {
+    setTimeout(loadButtonImagesFromBg, 200);
+});
+</script>
 
 </body>
 </html>
