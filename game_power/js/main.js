@@ -7,20 +7,32 @@ window.isGamePaused = false;
 if (navigator.storage && navigator.storage.persist) {
     navigator.storage.persist();
 }
+
+// ========== تنظيف التخزين القديم ==========
+(async function migrateOldImages() {
+    const migrationDone = localStorage.getItem('migrationToIndexedDB');
+    
+    if (!migrationDone) {
+        console.log('🔄 جاري ترحيل الصور القديمة إلى IndexedDB...');
+        
+        window.pendingMigration = {
+            player: localStorage.getItem('playerImage'),
+            bg: localStorage.getItem('bgImage'),
+            enemy: localStorage.getItem('enemyImage')
+        };
+    }
+})();
+
 // تهيئة مدير التخزين
 const storage = new StorageManager();
 
 // تهيئة مدير واجهة المستخدم
 const uiManager = new UIManager(storage);
 
-// طلب تخزين دائم (غير قابل للمسح من المتصفح)
+// طلب تخزين دائم
 if (navigator.storage && navigator.storage.persist) {
     navigator.storage.persist().then(granted => {
-        if (granted) {
-            console.log("✅ التخزين الدائم ممنوح!");
-        } else {
-            console.log("⚠️ المستخدم لم يمنح التخزين الدائم");
-        }
+        console.log(granted ? "✅ التخزين الدائم ممنوح!" : "⚠️ المستخدم لم يمنح التخزين الدائم");
     });
 }
 
@@ -30,87 +42,127 @@ navigator.storage.estimate().then(estimate => {
     console.log("المستخدم:", estimate.usage / 1024 / 1024, "MB");
 });
 
-// اطلب مساحة تخزين مؤقتة كبيرة أولاً
-if (navigator.storage && navigator.storage.estimate) {
-    navigator.storage.estimate().then(estimate => {
-        // هذه المساحة ستزيد تلقائياً عند إضافة صور
-        console.log("المساحة المحجوزة:", estimate.quota);
-        console.log("المستخدم:", estimate.usage);
-    });
-}
-
-// في بداية الملف بعد الاستيرادات
 let currentGame = null;
 window.currentGame = currentGame;
 
-// ثم عند بدء اللعبة:
-document.getElementById('survivalBtn').onclick = () => {
+// ========== أزرار بدء اللعبة ==========
+document.getElementById('survivalBtn').onclick = async () => {
     storage.kills = 0;
     storage.saveKills(0);
     uiManager.updateMenuDisplay();
+    await storage.waitForImages();
     currentGame = new GameCore('survival', storage, uiManager);
     window.currentGame = currentGame;
 };
 
-document.getElementById('creativeBtn').onclick = () => {
+document.getElementById('creativeBtn').onclick = async () => {
+    await storage.waitForImages();
     currentGame = new GameCore('creative', storage, uiManager);
     window.currentGame = currentGame;
 };
 
-// تحميل الصور الافتراضية إذا لم تكن موجودة
+// ========== تحميل الصور الافتراضية ==========
 (async function initDefaultImages() {
+    await storage.initDB();
+    
+    // ترحيل الصور القديمة
+    if (window.pendingMigration) {
+        let migrated = false;
+        
+        if (window.pendingMigration.player && !(await storage.loadImageFromStore('player', 'main'))) {
+            await storage.saveImage('playerImage', window.pendingMigration.player);
+            console.log('📦 تم ترحيل صورة اللاعب');
+            migrated = true;
+        }
+        if (window.pendingMigration.bg && !(await storage.loadImageFromStore('background', 'main'))) {
+            await storage.saveImage('bgImage', window.pendingMigration.bg);
+            console.log('📦 تم ترحيل صورة الخلفية');
+            migrated = true;
+        }
+        if (window.pendingMigration.enemy && !(await storage.loadImageFromStore('enemy', 'main'))) {
+            await storage.saveImage('enemyImage', window.pendingMigration.enemy);
+            console.log('📦 تم ترحيل صورة العدو');
+            migrated = true;
+        }
+        
+        if (migrated) {
+            localStorage.removeItem('playerImage');
+            localStorage.removeItem('bgImage');
+            localStorage.removeItem('enemyImage');
+            localStorage.setItem('migrationToIndexedDB', 'done');
+            console.log('✅ تم الترحيل بنجاح ومسح التخزين القديم');
+        }
+        
+        delete window.pendingMigration;
+    }
+    
+    // التحقق من وجود الصور
+    const existingPlayer = await storage.loadImageFromStore('player', 'main');
+    const existingBg = await storage.loadImageFromStore('background', 'main');
+    const existingEnemy = await storage.loadImageFromStore('enemy', 'main');
+    
     const pData = await storage.loadImageAsDataURL('ranav.png');
     const bData = await storage.loadImageAsDataURL('ranav_ingdom.png');
     const eData = await storage.loadImageAsDataURL('enemy.png');
     
-    
-    // بعد الكود الموجود، أضف:
-// إنشاء قيمة افتراضية لـ blockCG إذا لم تكن موجودة
-if (!localStorage.getItem('blockCG')) {
-    localStorage.setItem('blockCG', '0');
-}
-    if (pData && !localStorage.getItem('playerImage')) {
-        storage.saveImage('playerImage', pData);
-    }
-    if (bData && !localStorage.getItem('bgImage')) {
-        storage.saveImage('bgImage', bData);
-    }
-    if (eData && !localStorage.getItem('enemyImage')) {
-        storage.saveImage('enemyImage', eData);
-    }
-    
-    // إنشاء صور افتراضية إذا لم توجد أي صورة
-    if (!localStorage.getItem('playerImage')) {
-        const canvas = document.createElement('canvas');
-        canvas.width = 800;
-        canvas.height = 100;
-        const ctx = canvas.getContext('2d');
-        ctx.fillStyle = '#f39c12';
-        ctx.fillRect(0, 0, 800, 100);
-        storage.saveImage('playerImage', canvas.toDataURL());
+    // صورة اللاعب
+    if (!existingPlayer) {
+        if (pData) {
+            await storage.saveImage('playerImage', pData);
+            console.log('🎮 تم تحميل صورة اللاعب الافتراضية');
+        } else {
+            const canvas = document.createElement('canvas');
+            canvas.width = 800;
+            canvas.height = 200;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#f39c12';
+            ctx.fillRect(0, 0, 800, 200);
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 30px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('PLAYER', 400, 110);
+            await storage.saveImage('playerImage', canvas.toDataURL());
+            console.log('🎨 تم إنشاء صورة لاعب افتراضية');
+        }
     }
     
-    if (!localStorage.getItem('bgImage')) {
-        const canvas = document.createElement('canvas');
-        canvas.width = 1920;
-        canvas.height = 1080;
-        const ctx = canvas.getContext('2d');
-        ctx.fillStyle = '#1a472a';
-        ctx.fillRect(0, 0, 1920, 1080);
-        storage.saveImage('bgImage', canvas.toDataURL());
+    // صورة الخلفية
+    if (!existingBg) {
+        if (bData) {
+            await storage.saveImage('bgImage', bData);
+            console.log('🌄 تم تحميل صورة الخلفية الافتراضية');
+        } else {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1920;
+            canvas.height = 1080;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#1a472a';
+            ctx.fillRect(0, 0, 1920, 1080);
+            await storage.saveImage('bgImage', canvas.toDataURL());
+            console.log('🎨 تم إنشاء خلفية افتراضية');
+        }
     }
     
-    if (!localStorage.getItem('enemyImage')) {
-        const canvas = document.createElement('canvas');
-        canvas.width = 100;
-        canvas.height = 100;
-        const ctx = canvas.getContext('2d');
-        ctx.fillStyle = '#e74c3c';
-        ctx.beginPath();
-        ctx.arc(50, 50, 40, 0, Math.PI * 2);
-        ctx.fill();
-        storage.saveImage('enemyImage', canvas.toDataURL());
+    // صورة العدو
+    if (!existingEnemy) {
+        if (eData) {
+            await storage.saveImage('enemyImage', eData);
+            console.log('👾 تم تحميل صورة العدو الافتراضية');
+        } else {
+            const canvas = document.createElement('canvas');
+            canvas.width = 200;
+            canvas.height = 200;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#e74c3c';
+            ctx.beginPath();
+            ctx.arc(100, 100, 80, 0, Math.PI * 2);
+            ctx.fill();
+            await storage.saveImage('enemyImage', canvas.toDataURL());
+            console.log('🎨 تم إنشاء صورة عدو افتراضية');
+        }
     }
+    
+    await storage.waitForImages();
     
     // تحديث المعاينات
     const playerPreview = document.getElementById('playerPreview');
@@ -121,9 +173,10 @@ if (!localStorage.getItem('blockCG')) {
     if (bgPreview && storage.bg) bgPreview.src = storage.bg;
     if (enemyPreview && storage.enemy) enemyPreview.src = storage.enemy;
     
-    // تحديث عرض اسم اللاعب
     uiManager.updateFileNameDisplay();
-
+    
+    const info = await storage.getStorageInfo();
+    console.log(`✅ تم التهيئة | المستخدم: ${info.totalUsedMB} MB / ${info.totalMB} MB`);
 })();
 
 // تحديث عرض القائمة
@@ -134,28 +187,17 @@ const playerImgObj = new Image();
 const bgImgObj = new Image();
 const enemyImgObj = new Image();
 
-if (storage.player) playerImgObj.src = storage.player;
-if (storage.bg) bgImgObj.src = storage.bg;
-if (storage.enemy) enemyImgObj.src = storage.enemy;
+setTimeout(async () => {
+    if (storage.player) playerImgObj.src = storage.player;
+    if (storage.bg) bgImgObj.src = storage.bg;
+    if (storage.enemy) enemyImgObj.src = storage.enemy;
+}, 500);
 
 uiManager.setupImageLoader('playerLoader', 'playerPreview', 'playerImage', playerImgObj);
 uiManager.setupImageLoader('bgLoader', 'bgPreview', 'bgImage', bgImgObj);
 uiManager.setupImageLoader('enemyLoader', 'enemyPreview', 'enemyImage', enemyImgObj);
 
-// تطبيق حجم الأزرار المحفوظ
 uiManager.applyBtnSize(storage.btnSize);
-
-// أزرار القائمة الرئيسية
-document.getElementById('survivalBtn').onclick = () => {
-    storage.kills = 0;
-    storage.saveKills(0);
-    uiManager.updateMenuDisplay();
-    new GameCore('survival', storage, uiManager);
-};
-
-document.getElementById('creativeBtn').onclick = () => {
-    new GameCore('creative', storage, uiManager);
-};
 
 document.getElementById('openCustomizer').onclick = () => {
     uiManager.showCustomizer();
@@ -165,11 +207,21 @@ document.getElementById('closeCustomizer').onclick = () => {
     uiManager.hideCustomizer();
 };
 
-// أضف هذا الكود في آخر main.js (قبل السطر الأخير)
-
-// منع التكرار التلقائي لزر الهجوم S
 document.addEventListener('keydown', (e) => {
     if (e.code === 'KeyS' && e.repeat) {
         e.preventDefault();
     }
+    
+    // بعد حفظ صورة الخلفية، أرسل حدث
+const originalSaveImage = storage.saveImage.bind(storage);
+storage.saveImage = async (key, dataUrl) => {
+    await originalSaveImage(key, dataUrl);
+    if (key === 'bgImage') {
+        window.dispatchEvent(new Event('bgImageChanged'));
+    }
+};
+    
 });
+
+// في نهاية main.js، بعد تعريف storage
+window.storage = storage;
