@@ -228,7 +228,7 @@
     </div>
     <div id="toast">جاري تحميل البيانات</div>
 
-    <script>
+<script>
 const icons = { 
     html: '🌐', htm: '🌐', 
     zip: '📦', rar: '📦', '7z': '📦', 
@@ -240,155 +240,216 @@ const icons = {
     png: '🖼️', jpg: '🖼️', jpeg: '🖼️', svg: '🖼️', gif: '🖼️', webp: '🖼️' 
 };
 
-        const getIcon = f => { if(!f) return '[LINK]'; const ext = f.split('.').pop().toLowerCase(); return icons[ext] || '[FILE]'; };
+// ========== المتغير العام لصورة العدو ==========
+let currentEnemyImage = null;
 
-        const toast = document.getElementById('toast');
-        const showMsg = (msg, dur=3000) => { toast.textContent = msg; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), dur); };
-
-        const previewModal = document.getElementById('preview-modal');
-        const previewContent = document.getElementById('preview-content');
-        const previewTitle = document.getElementById('preview-title');
-        const previewDownload = document.getElementById('preview-download');
-
-        window.openPreview = async (file, title) => {
-            previewTitle.textContent = title; previewDownload.href = file;
-            previewContent.innerHTML = '<p style="color:#999;">جاري قراءة المحتوى</p>';
-            previewModal.classList.add('active');
-            const ext = file.split('.').pop().toLowerCase();
-            try {
-                const res = await fetch(file);
-                if(!res.ok) throw new Error('تعذر الوصول للملف');
-                const text = await res.text();
-                if(['html','htm'].includes(ext)) previewContent.innerHTML = `<iframe srcdoc="${text.replace(/"/g, '"')}"></iframe>`;
-                else if(['txt','json','js','css','py','md'].includes(ext)) previewContent.innerHTML = `<pre>${text.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre>`;
-                else if(['png','jpg','jpeg','svg','gif','webp'].includes(ext)) previewContent.innerHTML = `<img src="${file}" alt="${title}">`;
-                else previewContent.innerHTML = `<p style="color:#ccc;">لا يمكن عرض هذا النوع من الملفات مباشرة</p>`;
-            } catch(err) { previewContent.innerHTML = `<p style="color:#ff4d4d;">خطأ في العرض</p>`; }
+// ========== قراءة صورة العدو مباشرة من IndexedDB ==========
+async function loadEnemyImageFromIndexedDB() {
+    return new Promise((resolve) => {
+        const request = indexedDB.open('CheetahGameDB', 1);
+        
+        request.onerror = () => {
+            console.log('⚠️ لا يمكن الوصول إلى IndexedDB');
+            resolve(null);
         };
-        window.closePreview = () => { previewModal.classList.remove('active'); previewContent.innerHTML = ''; };
-        previewModal.addEventListener('click', e => { if(e.target === previewModal) closePreview(); });
+        
+        request.onsuccess = () => {
+            const db = request.result;
+            const transaction = db.transaction(['enemy'], 'readonly');
+            const store = transaction.objectStore('enemy');
+            const getRequest = store.get('main');
+            
+            getRequest.onsuccess = () => {
+                if (getRequest.result && getRequest.result.data) {
+                    currentEnemyImage = getRequest.result.data;
+                    console.log('✅ تم تحميل صورة العدو من IndexedDB');
+                } else {
+                    console.log('⚠️ لا توجد صورة عدو في IndexedDB');
+                }
+                resolve(currentEnemyImage);
+            };
+            
+            getRequest.onerror = () => {
+                console.log('⚠️ فشل قراءة صورة العدو');
+                resolve(null);
+            };
+        };
+    });
+}
 
-        const canvas = document.getElementById('canvas');
-        const world = document.getElementById('world');
-        const zoomLevelEl = document.getElementById('zoom-level');
-        let panX = -600, panY = -600, scale = 0.8;
-        const MIN_SCALE = 0.3, MAX_SCALE = 3;
-        let isDragging = false, startX, startY, startPanX, startPanY;
-        let velX = 0, velY = 0, lastMoveTime = 0, animId;
-        let pinchStartDist = 0, pinchStartScale = 0, pinchCenter = {x:0, y:0};
+// بدء تحميل الصورة فوراً
+loadEnemyImageFromIndexedDB();
 
-        let mapBounds = { minX: 0, maxX: 500, minY: 0, maxY: 500 };
+const getIcon = f => { if(!f) return '[LINK]'; const ext = f.split('.').pop().toLowerCase(); return icons[ext] || '[FILE]'; };
 
-        const isInteractable = el => el.closest('.entity-btn, .close-preview, a, video, .preview-modal, input, button, iframe, pre, img, .zoom-btn, .raw-enemy-entity');
+const toast = document.getElementById('toast');
+const showMsg = (msg, dur=3000) => { toast.textContent = msg; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), dur); };
 
-        function updateTransform() {
-            world.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
-            zoomLevelEl.textContent = Math.round(scale * 100) + '%';
-        }
+const previewModal = document.getElementById('preview-modal');
+const previewContent = document.getElementById('preview-content');
+const previewTitle = document.getElementById('preview-title');
+const previewDownload = document.getElementById('preview-download');
 
-        function zoomAtPoint(factor, clientX, clientY) {
-            const rect = canvas.getBoundingClientRect();
-            const mouseX = clientX - rect.left, mouseY = clientY - rect.top;
-            const prevScale = scale;
-            scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale * factor));
-            panX = mouseX - (mouseX - panX) * (scale / prevScale);
-            panY = mouseY - (mouseY - panY) * (scale / prevScale);
-            updateTransform();
-        }
-        window.zoomIn = () => zoomAtPoint(1.2, window.innerWidth/2, window.innerHeight/2);
-        window.zoomOut = () => zoomAtPoint(0.833, window.innerWidth/2, window.innerHeight/2);
-        window.resetZoom = () => { scale=1; panX=0; panY=0; updateTransform(); };
+window.openPreview = async (file, title) => {
+    previewTitle.textContent = title; previewDownload.href = file;
+    previewContent.innerHTML = '<p style="color:#999;">جاري قراءة المحتوى</p>';
+    previewModal.classList.add('active');
+    const ext = file.split('.').pop().toLowerCase();
+    try {
+        const res = await fetch(file);
+        if(!res.ok) throw new Error('تعذر الوصول للملف');
+        const text = await res.text();
+        if(['html','htm'].includes(ext)) previewContent.innerHTML = `<iframe srcdoc="${text.replace(/"/g, '"')}"></iframe>`;
+        else if(['txt','json','js','css','py','md'].includes(ext)) previewContent.innerHTML = `<pre>${text.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre>`;
+        else if(['png','jpg','jpeg','svg','gif','webp'].includes(ext)) previewContent.innerHTML = `<img src="${file}" alt="${title}">`;
+        else previewContent.innerHTML = `<p style="color:#ccc;">لا يمكن عرض هذا النوع من الملفات مباشرة</p>`;
+    } catch(err) { previewContent.innerHTML = `<p style="color:#ff4d4d;">خطأ في العرض</p>`; }
+};
+window.closePreview = () => { previewModal.classList.remove('active'); previewContent.innerHTML = ''; };
+previewModal.addEventListener('click', e => { if(e.target === previewModal) closePreview(); });
 
-        canvas.addEventListener('wheel', e => {
-            if(isInteractable(e.target)) return;
-            e.preventDefault();
-            zoomAtPoint(e.deltaY < 0 ? 1.1 : 0.9, e.clientX, e.clientY);
-        }, {passive:false});
+const canvas = document.getElementById('canvas');
+const world = document.getElementById('world');
+const zoomLevelEl = document.getElementById('zoom-level');
+let panX = -600, panY = -600, scale = 0.8;
+const MIN_SCALE = 0.3, MAX_SCALE = 3;
+let isDragging = false, startX, startY, startPanX, startPanY;
+let velX = 0, velY = 0, lastMoveTime = 0, animId;
+let pinchStartDist = 0, pinchStartScale = 0, pinchCenter = {x:0, y:0};
 
-        function startPan(e) {
-            if(isInteractable(e.target)) return;
-            isDragging = true;
-            const pt = e.touches ? e.touches[0] : e;
-            startX = pt.clientX; startY = pt.clientY;
-            startPanX = panX; startPanY = panY;
-            lastMoveTime = Date.now(); velX = 0; velY = 0;
-            cancelAnimationFrame(animId);
-            canvas.style.cursor = 'grabbing';
-        }
-        function movePan(e) {
-            if(!isDragging) return;
-            e.preventDefault();
-            const pt = e.touches ? e.touches[0] : e;
-            const dx = (pt.clientX - startX) / scale;
-            const dy = (pt.clientY - startY) / scale;
-            panX = startPanX + dx; panY = startPanY + dy;
-            const now = Date.now(), dt = now - lastMoveTime || 1;
-            velX = (pt.clientX - startX) / dt; velY = (pt.clientY - startY) / dt;
-            lastMoveTime = now;
-            updateTransform();
-        }
-        function endPan() {
-            if(!isDragging) return;
-            isDragging = false; canvas.style.cursor = 'grab';
-            animateMomentum();
-        }
-        function animateMomentum() {
-            if(Math.abs(velX)<0.1 && Math.abs(velY)<0.1) return;
-            velX *= 0; velY *= 0;
-            panX += velX * 16 / scale; panY += velY * 16 / scale;
-            updateTransform();
-            animId = requestAnimationFrame(animateMomentum);
-        }
+let mapBounds = { minX: 0, maxX: 500, minY: 0, maxY: 500 };
 
-        canvas.addEventListener('mousedown', startPan);
-        canvas.addEventListener('mousemove', movePan);
-        canvas.addEventListener('mouseup', endPan);
-        canvas.addEventListener('mouseleave', endPan);
+const isInteractable = el => el.closest('.entity-btn, .close-preview, a, video, .preview-modal, input, button, iframe, pre, img, .zoom-btn, .raw-enemy-entity');
 
-        canvas.addEventListener('touchstart', e => {
-            if(e.touches.length === 1 && !isInteractable(e.target)) { startPan(e); }
-            else if(e.touches.length === 2) {
-                e.preventDefault(); isDragging = false; cancelAnimationFrame(animId);
-                const t1=e.touches[0], t2=e.touches[1];
-                pinchStartDist = Math.hypot(t2.clientX-t1.clientX, t2.clientY-t1.clientY);
-                pinchStartScale = scale;
-                pinchCenter = { x:(t1.clientX+t2.clientX)/2, y:(t1.clientY+t2.clientY)/2 };
-            }
-        }, {passive:false});
+function updateTransform() {
+    world.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+    zoomLevelEl.textContent = Math.round(scale * 100) + '%';
+}
 
-        canvas.addEventListener('touchmove', e => {
-            if(e.touches.length === 2 && pinchStartDist > 0) {
-                e.preventDefault();
-                const t1=e.touches[0], t2=e.touches[1];
-                const dist = Math.hypot(t2.clientX-t1.clientX, t2.clientY-t1.clientY);
-                const newScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, pinchStartScale * (dist/pinchStartDist)));
-                const rect = canvas.getBoundingClientRect();
-                const cx = pinchCenter.x - rect.left, cy = pinchCenter.y - rect.top;
-                panX = cx - (cx - panX) * (newScale/scale);
-                panY = cy - (cy - panY) * (newScale/scale);
-                scale = newScale; updateTransform();
-            } else if(e.touches.length === 1) { movePan(e); }
-        }, {passive:false});
+function zoomAtPoint(factor, clientX, clientY) {
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = clientX - rect.left, mouseY = clientY - rect.top;
+    const prevScale = scale;
+    scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale * factor));
+    panX = mouseX - (mouseX - panX) * (scale / prevScale);
+    panY = mouseY - (mouseY - panY) * (scale / prevScale);
+    updateTransform();
+}
+window.zoomIn = () => zoomAtPoint(1.2, window.innerWidth/2, window.innerHeight/2);
+window.zoomOut = () => zoomAtPoint(0.833, window.innerWidth/2, window.innerHeight/2);
+window.resetZoom = () => { scale=1; panX=0; panY=0; updateTransform(); };
 
-        canvas.addEventListener('touchend', e => {
-            if(e.touches.length < 2) { pinchStartDist = 0; if(isDragging) endPan(); }
-        });
+canvas.addEventListener('wheel', e => {
+    if(isInteractable(e.target)) return;
+    e.preventDefault();
+    zoomAtPoint(e.deltaY < 0 ? 1.1 : 0.9, e.clientX, e.clientY);
+}, {passive:false});
 
+function startPan(e) {
+    if(isInteractable(e.target)) return;
+    isDragging = true;
+    const pt = e.touches ? e.touches[0] : e;
+    startX = pt.clientX; startY = pt.clientY;
+    startPanX = panX; startPanY = panY;
+    lastMoveTime = Date.now(); velX = 0; velY = 0;
+    cancelAnimationFrame(animId);
+    canvas.style.cursor = 'grabbing';
+}
+function movePan(e) {
+    if(!isDragging) return;
+    e.preventDefault();
+    const pt = e.touches ? e.touches[0] : e;
+    const dx = (pt.clientX - startX) / scale;
+    const dy = (pt.clientY - startY) / scale;
+    panX = startPanX + dx; panY = startPanY + dy;
+    const now = Date.now(), dt = now - lastMoveTime || 1;
+    velX = (pt.clientX - startX) / dt; velY = (pt.clientY - startY) / dt;
+    lastMoveTime = now;
+    updateTransform();
+}
+function endPan() {
+    if(!isDragging) return;
+    isDragging = false; canvas.style.cursor = 'grab';
+    animateMomentum();
+}
+function animateMomentum() {
+    if(Math.abs(velX)<0.1 && Math.abs(velY)<0.1) return;
+    velX *= 0; velY *= 0;
+    panX += velX * 16 / scale; panY += velY * 16 / scale;
+    updateTransform();
+    animId = requestAnimationFrame(animateMomentum);
+}
+
+canvas.addEventListener('mousedown', startPan);
+canvas.addEventListener('mousemove', movePan);
+canvas.addEventListener('mouseup', endPan);
+canvas.addEventListener('mouseleave', endPan);
+
+canvas.addEventListener('touchstart', e => {
+    if(e.touches.length === 1 && !isInteractable(e.target)) { startPan(e); }
+    else if(e.touches.length === 2) {
+        e.preventDefault(); isDragging = false; cancelAnimationFrame(animId);
+        const t1=e.touches[0], t2=e.touches[1];
+        pinchStartDist = Math.hypot(t2.clientX-t1.clientX, t2.clientY-t1.clientY);
+        pinchStartScale = scale;
+        pinchCenter = { x:(t1.clientX+t2.clientX)/2, y:(t1.clientY+t2.clientY)/2 };
+    }
+}, {passive:false});
+
+canvas.addEventListener('touchmove', e => {
+    if(e.touches.length === 2 && pinchStartDist > 0) {
+        e.preventDefault();
+        const t1=e.touches[0], t2=e.touches[1];
+        const dist = Math.hypot(t2.clientX-t1.clientX, t2.clientY-t1.clientY);
+        const newScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, pinchStartScale * (dist/pinchStartDist)));
+        const rect = canvas.getBoundingClientRect();
+        const cx = pinchCenter.x - rect.left, cy = pinchCenter.y - rect.top;
+        panX = cx - (cx - panX) * (newScale/scale);
+        panY = cy - (cy - panY) * (newScale/scale);
+        scale = newScale; updateTransform();
+    } else if(e.touches.length === 1) { movePan(e); }
+}, {passive:false});
+
+canvas.addEventListener('touchend', e => {
+    if(e.touches.length < 2) { pinchStartDist = 0; if(isDragging) endPan(); }
+});
+
+// ========== دالة spawn العدو ==========
 function spawnEnemyAtRandomLocation() {
-    const enemyImgData = localStorage.getItem('enemyImage');
-    if (!enemyImgData) return; 
-
+    let enemyImgData = currentEnemyImage;
+    
+    // إذا لم توجد الصورة، جرب localStorage القديم (احتياطي)
+    if (!enemyImgData) {
+        enemyImgData = localStorage.getItem('enemyImage');
+    }
+    
+    // إذا لم توجد صورة، استخدم الافتراضية
+    if (!enemyImgData) {
+        console.log('⚠️ لا توجد صورة عدو، سيتم استخدام الصورة الافتراضية');
+        const canvas = document.createElement('canvas');
+        canvas.width = 200;
+        canvas.height = 200;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#e74c3c';
+        ctx.beginPath();
+        ctx.arc(100, 100, 80, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 40px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('?', 100, 125);
+        enemyImgData = canvas.toDataURL();
+    }
+    
     const randomX = Math.floor(Math.random() * (mapBounds.maxX - mapBounds.minX + 1)) + mapBounds.minX;
     const randomY = Math.floor(Math.random() * (mapBounds.maxY - mapBounds.minY + 1)) + mapBounds.minY;
 
-    // إنشاء div بدلاً من img
     const enemyDiv = document.createElement('div');
     enemyDiv.className = 'raw-enemy-entity';
     
-    // استخدام background لعرض الصورة
-enemyDiv.style.background = `url('${enemyImgData}') no-repeat`;
-enemyDiv.style.backgroundSize = '125px 250px';
-enemyDiv.style.backgroundPosition = '0px 0px';
+    enemyDiv.style.background = `url('${enemyImgData}') no-repeat`;
+    enemyDiv.style.backgroundSize = '125px 250px';
+    enemyDiv.style.backgroundPosition = '0px 0px';
     
     enemyDiv.style.width = '120px';
     enemyDiv.style.height = '120px';
@@ -434,170 +495,175 @@ enemyDiv.style.backgroundPosition = '0px 0px';
     world.appendChild(enemyDiv);
 }
 
-        function startEnemySpawner() {
-            spawnEnemyAtRandomLocation();
-            setInterval(spawnEnemyAtRandomLocation, 5000);
-        }
+// ========== بدء spawner ==========
+function startEnemySpawner() {
+    setTimeout(() => {
+        const checkAndSpawn = () => {
+            if (currentEnemyImage) {
+                console.log('✅ بدء ظهور الأعداء');
+                spawnEnemyAtRandomLocation();
+                setInterval(spawnEnemyAtRandomLocation, 5000);
+            } else {
+                console.log('⏳ انتظار تحميل صورة العدو من IndexedDB...');
+                setTimeout(checkAndSpawn, 500);
+            }
+        };
+        checkAndSpawn();
+    }, 1000);
+}
 
-        async function init() {
-            try {
-                const res = await fetch('data_P.txt');
-                if(!res.ok) throw new Error(`HTTP ${res.status}`);
-                const text = await res.text();
-                
-                // ✅ إضافة: استخراج النص المحاط بـ <>
-                const allLines = text.split('\n');
-                let descriptionText = "هذه اللعبة فريدة في عالم الالعاب لكنها محدودة جدا. اذا اعجبتك اللعبة وتريد تطويرها فلك كامل الحرية. اللعبة متاحة للمجتمع وانت سوف يكون لك دور كبير في اسعاد مجتمع لاعبي اندي. فلو كنت شغوفا حمل كل ما يلزم من هذا المستودع وانطلق";
-                for (let line of allLines) {
-                    const match = line.match(/<([^>]+)>/);
-                    if (match) {
-                        descriptionText = match[1];
-                        break;
-                    }
-                }
-                const descElement = document.getElementById('dynamicDescription');
-                if (descElement) {
-                    descElement.textContent = descriptionText;
-                }
-                // ------------------------------------------------
-                
-                const lines = text.split('\n').map(l=>l.trim()).filter(l=>l!=='');
-                const data = [];
-                for(let i=0; i<lines.length; i++) {
-                    // تعديل regex للسماح بـ xxx بدون علامات تنصيص
-                    // النمط: p(x,y) s(w,h) متبوعاً إما بـ "نص" أو xxx
-                    let m = lines[i].match(/p\((-?\d+),(-?\d+)\)\s+s\((\d+),(\d+)\)\s+"([^"]+)"/);
-                    let isBackgroundOnly = false;
-                    let title = "";
-                    
-                    if (!m) {
-                        // إذا لم يجد النمط الأول، جرب البحث عن xxx بدون علامات تنصيص
-                        m = lines[i].match(/p\((-?\d+),(-?\d+)\)\s+s\((\d+),(\d+)\)\s+xxx/);
-                        if (m) {
-                            isBackgroundOnly = true;
-                            title = "xxx";
-                        }
-                    } else {
-                        title = m[5];
-                    }
-                    
-                    if(m && lines[i+1]) {
-                        const raw = lines[i+1]; 
-                        let file=raw, link=null, thumb=null;
-                        
-                        if(raw.includes('&&')) { 
-                            const p=raw.split('&&'); 
-                            link=p[0].trim(); 
-                            thumb=p[1].trim(); 
-                            file=link; 
-                        }
-                        
-                        data.push({
-                            x:+m[1], y:+m[2], 
-                            w:+m[3], h:+m[4], 
-                            title: title, 
-                            file, 
-                            isLink:!!link, 
-                            linkUrl:link, 
-                            thumbUrl:thumb,
-                            isBackgroundOnly: isBackgroundOnly
-                        });
-                        i++;
-                    }
-                }
-                showMsg("تم تحميل العناصر بنجاح");
-                
-                if (data.length > 0) {
-                    let allXs = data.map(d => d.x);
-                    let allYs = data.map(d => d.y);
-                    mapBounds.minX = Math.min(...allXs);
-                    mapBounds.maxX = Math.max(...allXs);
-                    mapBounds.minY = Math.min(...allYs);
-                    mapBounds.maxY = Math.max(...allYs);
-                }
-
-                const previewable = ['html','htm','txt','json','js','css','py','md'];
-                
-                data.forEach(d => {
-                    // التحقق إذا كان الكائن من نوع خلفية فقط (xxx)
-                    if (d.isBackgroundOnly) {
-                        // إنشاء div كخلفية فقط بدون أي تفاعل أو إطار
-                        const bgDiv = document.createElement('div');
-                        bgDiv.className = 'entity-background-only';
-                        bgDiv.style.left = d.x + 'px';
-                        bgDiv.style.top = d.y + 'px';
-                        bgDiv.style.width = d.w + 'px';
-                        bgDiv.style.height = d.h + 'px';
-                        bgDiv.style.backgroundImage = `url('${d.file}')`;
-                        bgDiv.style.backgroundSize = 'cover';
-                        bgDiv.style.backgroundPosition = 'center';
-                        bgDiv.style.backgroundRepeat = 'no-repeat';
-                        world.appendChild(bgDiv);
-                        return; // الخروج مبكراً، لا نضيف أي عناصر تفاعلية
-                    }
-                    
-                    // الكود الأصلي للكائنات العادية
-                    const el = document.createElement('div'); 
-                    el.className = 'entity';
-                    el.style.left = d.x + 'px'; 
-                    el.style.top = d.y + 'px'; 
-                    el.style.width = d.w + 'px'; 
-                    el.style.height = d.h + 'px'; 
-
-                    const isVid = /\.(mp4|webm|mov)$/i.test(d.file);
-                    const isImg = /\.(png|jpg|jpeg|gif|svg|webp)$/i.test(d.file);
-                    const ext = d.file.split('.').pop().toLowerCase();
-                    const isPrev = !d.isLink && !isImg && !isVid && previewable.includes(ext);
-
-                    let html = '';
-                    
-                    if(isVid) {
-                        html = `<video class="entity-media" controls preload="metadata"><source src="${d.file}" type="video/mp4"></video>
-                                <a href="${d.file}" download class="entity-btn download" onclick="event.stopPropagation()">تحميل الفيديو</a>`;
-                    }
-                    else if(isImg) {
-                        html = `<img src="${d.file}" class="entity-media" alt="${d.title}">
-                                <a href="${d.file}" download class="entity-btn download" onclick="event.stopPropagation()">تحميل الصورة</a>`;
-                    }
-                    else if(d.isLink) {
-                        html = `${d.thumbUrl ? `<img src="${d.thumbUrl}" class="entity-media" alt="thumb">` : ''}
-                                <a href="${d.linkUrl}" target="_blank" class="entity-btn link" onclick="event.stopPropagation()">دخول الرابط</a>`;
-                    }
-                    else if(isPrev) {
-                        html = `<button class="entity-btn preview" onclick="event.stopPropagation();openPreview('${d.file}','${d.title.replace(/'/g,"\\'")}')" style="margin-bottom:4px;">عرض المحتوى</button>
-                                <a href="${d.file}" download class="entity-btn download" onclick="event.stopPropagation()">تحميل الملف</a>`;
-                    }
-                    else {
-                        html = `<a href="${d.file}" download class="entity-btn download" onclick="event.stopPropagation()">تحميل الملف</a>`;
-                    }
-                    
-                    el.innerHTML = `<div class="entity-icon">${getIcon(d.file)}</div><div class="entity-title">${d.title}</div>${html}`;
-                    world.appendChild(el);
-                });
-
-                startEnemySpawner();
-                updateTransform();
-            } catch(err) { 
-                console.error(err);
-                showMsg("حدث خطأ أثناء تحميل البيانات"); 
+// ========== التهيئة الرئيسية ==========
+async function init() {
+    try {
+        const res = await fetch('data_P.txt');
+        if(!res.ok) throw new Error(`HTTP ${res.status}`);
+        const text = await res.text();
+        
+        const allLines = text.split('\n');
+        let descriptionText = "هذه اللعبة فريدة في عالم الالعاب لكنها محدودة جدا. اذا اعجبتك اللعبة وتريد تطويرها فلك كامل الحرية. اللعبة متاحة للمجتمع وانت سوف يكون لك دور كبير في اسعاد مجتمع لاعبي اندي. فلو كنت شغوفا حمل كل ما يلزم من هذا المستودع وانطلق";
+        for (let line of allLines) {
+            const match = line.match(/<([^>]+)>/);
+            if (match) {
+                descriptionText = match[1];
+                break;
             }
         }
-        document.addEventListener('DOMContentLoaded', init);
-        
-        const headerEl = document.getElementById('header');
-        const arrowBtn = document.getElementById('arrowBtn');
-
-        if (arrowBtn && headerEl) {
-            arrowBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                headerEl.classList.toggle('hide-header');
-                if (headerEl.classList.contains('hide-header')) {
-                    arrowBtn.innerHTML = "عرض القائمة";  
-                } else {
-                    arrowBtn.innerHTML = "اخفاء القائمة";  
-                }
-            });
+        const descElement = document.getElementById('dynamicDescription');
+        if (descElement) {
+            descElement.textContent = descriptionText;
         }
-    </script>
+        
+        const lines = text.split('\n').map(l=>l.trim()).filter(l=>l!=='');
+        const data = [];
+        for(let i=0; i<lines.length; i++) {
+            let m = lines[i].match(/p\((-?\d+),(-?\d+)\)\s+s\((\d+),(\d+)\)\s+"([^"]+)"/);
+            let isBackgroundOnly = false;
+            let title = "";
+            
+            if (!m) {
+                m = lines[i].match(/p\((-?\d+),(-?\d+)\)\s+s\((\d+),(\d+)\)\s+xxx/);
+                if (m) {
+                    isBackgroundOnly = true;
+                    title = "xxx";
+                }
+            } else {
+                title = m[5];
+            }
+            
+            if(m && lines[i+1]) {
+                const raw = lines[i+1]; 
+                let file=raw, link=null, thumb=null;
+                
+                if(raw.includes('&&')) { 
+                    const p=raw.split('&&'); 
+                    link=p[0].trim(); 
+                    thumb=p[1].trim(); 
+                    file=link; 
+                }
+                
+                data.push({
+                    x:+m[1], y:+m[2], 
+                    w:+m[3], h:+m[4], 
+                    title: title, 
+                    file, 
+                    isLink:!!link, 
+                    linkUrl:link, 
+                    thumbUrl:thumb,
+                    isBackgroundOnly: isBackgroundOnly
+                });
+                i++;
+            }
+        }
+        showMsg("تم تحميل العناصر بنجاح");
+        
+        if (data.length > 0) {
+            let allXs = data.map(d => d.x);
+            let allYs = data.map(d => d.y);
+            mapBounds.minX = Math.min(...allXs);
+            mapBounds.maxX = Math.max(...allXs);
+            mapBounds.minY = Math.min(...allYs);
+            mapBounds.maxY = Math.max(...allYs);
+        }
+
+        const previewable = ['html','htm','txt','json','js','css','py','md'];
+        
+        data.forEach(d => {
+            if (d.isBackgroundOnly) {
+                const bgDiv = document.createElement('div');
+                bgDiv.className = 'entity-background-only';
+                bgDiv.style.left = d.x + 'px';
+                bgDiv.style.top = d.y + 'px';
+                bgDiv.style.width = d.w + 'px';
+                bgDiv.style.height = d.h + 'px';
+                bgDiv.style.backgroundImage = `url('${d.file}')`;
+                bgDiv.style.backgroundSize = 'cover';
+                bgDiv.style.backgroundPosition = 'center';
+                bgDiv.style.backgroundRepeat = 'no-repeat';
+                world.appendChild(bgDiv);
+                return;
+            }
+            
+            const el = document.createElement('div'); 
+            el.className = 'entity';
+            el.style.left = d.x + 'px'; 
+            el.style.top = d.y + 'px'; 
+            el.style.width = d.w + 'px'; 
+            el.style.height = d.h + 'px'; 
+
+            const isVid = /\.(mp4|webm|mov)$/i.test(d.file);
+            const isImg = /\.(png|jpg|jpeg|gif|svg|webp)$/i.test(d.file);
+            const ext = d.file.split('.').pop().toLowerCase();
+            const isPrev = !d.isLink && !isImg && !isVid && previewable.includes(ext);
+
+            let html = '';
+            
+            if(isVid) {
+                html = `<video class="entity-media" controls preload="metadata"><source src="${d.file}" type="video/mp4"></video>
+                        <a href="${d.file}" download class="entity-btn download" onclick="event.stopPropagation()">تحميل الفيديو</a>`;
+            }
+            else if(isImg) {
+                html = `<img src="${d.file}" class="entity-media" alt="${d.title}">
+                        <a href="${d.file}" download class="entity-btn download" onclick="event.stopPropagation()">تحميل الصورة</a>`;
+            }
+            else if(d.isLink) {
+                html = `${d.thumbUrl ? `<img src="${d.thumbUrl}" class="entity-media" alt="thumb">` : ''}
+                        <a href="${d.linkUrl}" target="_blank" class="entity-btn link" onclick="event.stopPropagation()">دخول الرابط</a>`;
+            }
+            else if(isPrev) {
+                html = `<button class="entity-btn preview" onclick="event.stopPropagation();openPreview('${d.file}','${d.title.replace(/'/g,"\\'")}')" style="margin-bottom:4px;">عرض المحتوى</button>
+                        <a href="${d.file}" download class="entity-btn download" onclick="event.stopPropagation()">تحميل الملف</a>`;
+            }
+            else {
+                html = `<a href="${d.file}" download class="entity-btn download" onclick="event.stopPropagation()">تحميل الملف</a>`;
+            }
+            
+            el.innerHTML = `<div class="entity-icon">${getIcon(d.file)}</div><div class="entity-title">${d.title}</div>${html}`;
+            world.appendChild(el);
+        });
+
+        startEnemySpawner();
+        updateTransform();
+    } catch(err) { 
+        console.error(err);
+        showMsg("حدث خطأ أثناء تحميل البيانات"); 
+    }
+}
+document.addEventListener('DOMContentLoaded', init);
+
+const headerEl = document.getElementById('header');
+const arrowBtn = document.getElementById('arrowBtn');
+
+if (arrowBtn && headerEl) {
+    arrowBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        headerEl.classList.toggle('hide-header');
+        if (headerEl.classList.contains('hide-header')) {
+            arrowBtn.innerHTML = "عرض القائمة";  
+        } else {
+            arrowBtn.innerHTML = "اخفاء القائمة";  
+        }
+    });
+}
+</script>
 </body>
 </html>
