@@ -116,23 +116,24 @@ export class GameCore {
         this.init();
     }
     
-    init() {
-        this.loadImages();
-        if (this.mode === 'survival') this.bgMusic.src = 'sounds/survival_bg.mp3';
-        else if (this.mode === 'creative') this.bgMusic.src = 'sounds/creative_bg.mp3';
-        this.bgMusic.play().catch(err => console.log("بانتظار تفاعل المستخدم لتشغيل الصوت"));
-        
-        document.getElementById('mainMenu').style.display = 'none';
-        this.canvas.style.display = 'block';
-        document.getElementById('uiLayer').style.display = 'block';
-        if(this.mode === 'survival') document.getElementById('healthBarContainer').style.display = 'block';
-        
-        this.uiManager.updateBlockCounter(this.blockCG);
-        window.addEventListener('resize', () => this.resize());
-        this.resize();
-        this.bindControls();
-        requestAnimationFrame((t) => this.loop(t));
-    }
+// دالة init تبقى كما هي بدون تغيير (لأنها لا تحتاج await)
+init() {
+    this.loadImages();
+    if (this.mode === 'survival') this.bgMusic.src = 'sounds/survival_bg.mp3';
+    else if (this.mode === 'creative') this.bgMusic.src = 'sounds/creative_bg.mp3';
+    this.bgMusic.play().catch(err => console.log("بانتظار تفاعل المستخدم لتشغيل الصوت"));
+    
+    document.getElementById('mainMenu').style.display = 'none';
+    this.canvas.style.display = 'block';
+    document.getElementById('uiLayer').style.display = 'block';
+    if(this.mode === 'survival') document.getElementById('healthBarContainer').style.display = 'block';
+    
+    this.uiManager.updateBlockCounter(this.blockCG);
+    window.addEventListener('resize', () => this.resize());
+    this.resize();
+    this.bindControls();
+    requestAnimationFrame((t) => this.loop(t));
+}
     
     resize() {
         this.scale = Math.min(window.innerWidth / this.LOGIC_WIDTH, window.innerHeight / this.LOGIC_HEIGHT);
@@ -165,11 +166,22 @@ export class GameCore {
     console.log('Zoom changed to:', this.zoom);
 }
 
-    loadImages() {
-        if(this.storage.player) this.playerImg.src = this.storage.player;
-        if(this.storage.bg) this.bgImg.src = this.storage.bg;
-        if(this.storage.enemy) this.enemyImg.src = this.storage.enemy;
+// استبدل دالة loadImages الموجودة بهذه النسخة:
+loadImages() {
+    // استخدام الصور مباشرة من storage (ستكون جاهزة لأننا ننتظر في main.js)
+    if(this.storage.player) {
+        this.playerImg.src = this.storage.player;
     }
+    if(this.storage.bg) {
+        this.bgImg.src = this.storage.bg;
+    }
+    if(this.storage.enemy) {
+        this.enemyImg.src = this.storage.enemy;
+    }
+    
+    console.log('🖼️ تم تحميل الصور في اللعبة');
+}
+
     
     spawnEnemy() {
         if (this.mode !== 'survival' || this.isDead || !this.spawningEnabled) return;
