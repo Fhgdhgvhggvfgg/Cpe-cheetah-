@@ -127,26 +127,80 @@ updateBlockCounter(blockCount) {
         }
     }
 
-    setupImageLoader(id, previewId, key, imgObj) {
-        const loader = document.getElementById(id);
-        if(!loader) return;
-        loader.onchange = async (e) => {
-            const file = e.target.files[0]; 
-            if (!file) return;
-            if (key === 'playerImage') { const newName = file.name.split('.')[0]; this.storage.savePlayerName(newName); this.updatePlayerNameDisplay(); }
-            const reader = new FileReader();
-            const pCont = document.getElementById('progCont');
-            const pBar = document.getElementById('progBar');
-            reader.onloadstart = () => { if(pCont) pCont.style.display = 'block'; if(pBar) pBar.style.width = '100%'; };
-            reader.onload = (ev) => {
-                const dataUrl = ev.target.result;
-                try { this.storage.saveImage(key, dataUrl); const preview = document.getElementById(previewId); if(preview) preview.src = dataUrl; if(imgObj) imgObj.src = dataUrl; }
-                catch(err) { alert("الملف كبير جداً على ذاكرة المتصفح."); }
-                setTimeout(() => { if(pCont) pCont.style.display = 'none'; }, 600);
-            };
-            reader.readAsDataURL(file); 
+// استبدل دالة setupImageLoader بهذه النسخة:
+setupImageLoader(id, previewId, key, imgObj) {
+    const loader = document.getElementById(id);
+    if(!loader) return;
+    
+    loader.onchange = async (e) => {
+        const file = e.target.files[0]; 
+        if (!file) return;
+        
+        // الحد الأقصى 50 ميجابايت
+        const maxSize = 50 * 1024 * 1024;
+        if (file.size > maxSize) {
+            alert(`⚠️ الملف كبير جداً! الحد الأقصى 50 ميجابايت.\nحجم ملفك: ${(file.size / (1024*1024)).toFixed(2)} MB`);
+            return;
+        }
+        
+        if (key === 'playerImage') { 
+            const newName = file.name.split('.')[0]; 
+            this.storage.savePlayerName(newName); 
+            this.updatePlayerNameDisplay(); 
+        }
+        
+        const reader = new FileReader();
+        const pCont = document.getElementById('progCont');
+        const pBar = document.getElementById('progBar');
+        
+        reader.onloadstart = () => { 
+            if(pCont) pCont.style.display = 'block'; 
+            if(pBar) pBar.style.width = '100%'; 
         };
-    }
+        
+        reader.onload = async (ev) => {
+            const dataUrl = ev.target.result;
+            
+            try {
+                // حفظ في IndexedDB (تم التعديل هنا)
+                await this.storage.saveImage(key, dataUrl);
+                
+                const preview = document.getElementById(previewId); 
+                if(preview) preview.src = dataUrl; 
+                if(imgObj) imgObj.src = dataUrl;
+                
+                const info = await this.storage.getStorageInfo();
+                console.log(`✅ تم حفظ ${key} | المستخدم: ${info.totalUsedMB} MB`);
+                
+                // إظهار إشعار
+                const notification = document.createElement('div');
+                notification.textContent = `💾 تم حفظ الصورة | المستخدم: ${info.totalUsedMB} MB`;
+                notification.style.position = 'fixed';
+                notification.style.bottom = '80px';
+                notification.style.left = '50%';
+                notification.style.transform = 'translateX(-50%)';
+                notification.style.backgroundColor = 'rgba(0,0,0,0.8)';
+                notification.style.color = '#27ae60';
+                notification.style.padding = '10px 20px';
+                notification.style.borderRadius = '30px';
+                notification.style.fontSize = '14px';
+                notification.style.zIndex = '3000';
+                document.body.appendChild(notification);
+                setTimeout(() => notification.remove(), 3000);
+                
+            } catch(err) { 
+                console.error(err);
+                alert("❌ فشل حفظ الصورة. تأكد من وجود مساحة كافية."); 
+            }
+            
+            setTimeout(() => { 
+                if(pCont) pCont.style.display = 'none'; 
+            }, 600);
+        };
+        
+        reader.readAsDataURL(file); 
+    };
+}
 
     showProgressBar() { const pCont = document.getElementById('progCont'); const pBar = document.getElementById('progBar'); if(pCont) pCont.style.display = 'block'; if(pBar) pBar.style.width = '100%'; setTimeout(() => { if(pCont) pCont.style.display = 'none'; }, 600); }
 
