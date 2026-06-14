@@ -211,8 +211,9 @@ document.addEventListener('keydown', (e) => {
     if (e.code === 'KeyS' && e.repeat) {
         e.preventDefault();
     }
-    
-    // بعد حفظ صورة الخلفية، أرسل حدث
+});
+
+// بعد حفظ صورة الخلفية، أرسل حدث
 const originalSaveImage = storage.saveImage.bind(storage);
 storage.saveImage = async (key, dataUrl) => {
     await originalSaveImage(key, dataUrl);
@@ -220,8 +221,30 @@ storage.saveImage = async (key, dataUrl) => {
         window.dispatchEvent(new Event('bgImageChanged'));
     }
 };
+
+// زر تشغيل/إيقاف الموسيقى في القائمة الرئيسية
+const musicMenuBtn = document.getElementById('musicMenuToggleBtn');
+if (musicMenuBtn) {
+    musicMenuBtn.onclick = async () => {
+        const newState = !storage.music_c;
+        storage.music_c = newState;
+        localStorage.setItem('music_c', newState);
+        
+        if (window.currentGame) {
+            window.currentGame.music_c = newState;
+            if (newState && window.currentGame.bgMusic.src) {
+                window.currentGame.bgMusic.play().catch(e => console.log(e));
+            } else if (!newState && window.currentGame.bgMusic) {
+                window.currentGame.bgMusic.pause();
+            }
+        }
+        
+        musicMenuBtn.innerText = newState ? "🎵 موسيقى: ON" : "🔇 موسيقى: OFF";
+    };
     
-});
+    const savedMusic = localStorage.getItem('music_c') === 'true';
+    musicMenuBtn.innerText = savedMusic ? "🎵 موسيقى: ON" : "🔇 موسيقى: OFF";
+}
 
 // في نهاية main.js، بعد تعريف storage
 window.storage = storage;

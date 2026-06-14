@@ -119,9 +119,15 @@ export class GameCore {
 // دالة init تبقى كما هي بدون تغيير (لأنها لا تحتاج await)
 init() {
     this.loadImages();
-    if (this.mode === 'survival') this.bgMusic.src = 'sounds/survival_bg.mp3';
-    else if (this.mode === 'creative') this.bgMusic.src = 'sounds/creative_bg.mp3';
-    this.bgMusic.play().catch(err => console.log("بانتظار تفاعل المستخدم لتشغيل الصوت"));
+    
+    // تشغيل الموسيقى حسب حالة storage.music_c
+    if (this.storage.music_c) {
+        if (this.mode === 'survival') this.bgMusic.src = 'sounds/survival_bg.mp3';
+        else if (this.mode === 'creative') this.bgMusic.src = 'sounds/creative_bg.mp3';
+        
+        // محاولة التشغيل (قد تمنعها المتصفحات)
+        this.bgMusic.play().catch(err => console.log("بانتظار تفاعل المستخدم لتشغيل الصوت"));
+    }
     
     document.getElementById('mainMenu').style.display = 'none';
     this.canvas.style.display = 'block';
@@ -133,6 +139,22 @@ init() {
     this.resize();
     this.bindControls();
     requestAnimationFrame((t) => this.loop(t));
+}
+
+toggleMusic() {
+    this.music_c = !this.music_c;
+    this.storage.music_c = this.music_c;
+    localStorage.setItem('music_c', this.music_c);
+    
+    if (this.music_c) {
+        if (!this.bgMusic.src) {
+            if (this.mode === 'survival') this.bgMusic.src = 'sounds/survival_bg.mp3';
+            else if (this.mode === 'creative') this.bgMusic.src = 'sounds/creative_bg.mp3';
+        }
+        this.bgMusic.play().catch(e => console.log("خطأ", e));
+    } else {
+        this.bgMusic.pause();
+    }
 }
     
     resize() {
