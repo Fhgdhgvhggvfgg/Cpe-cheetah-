@@ -392,6 +392,7 @@
 
 
 <div id="mainMenu">
+<button id="musicMenuToggleBtn" class="menu-btn" style="background:var(--primary); position:fixed; top:10px; left:10px; width:80px; height:80px; border-radius:10px; font-size:15px; padding:0; margin:0; display:flex; align-items:center; justify-content:center; z-index:9999;">🎵</button>
     <div style="text-align: center; margin-bottom: 15px;">
 <img id="quickShowPlayer" style="max-width: none; border: 5px solid #ffffff; border-radius: 8px; display: none; background: url('player_f.png') no-repeat center center; background-size: cover;">
         <div id="frameValDisplay" style="color: #f39c12; font-size: 14px; margin-top: 5px; font-weight: bold;"></div>
@@ -525,7 +526,6 @@ window.addEventListener('load', async function() {
                 <span class="slider-label">حجم أزرار التحكم: 🎮 <span id="sizeVal">75</span>px</span>
                 <input type="range" id="btnSizeSlider" min="50" max="200" value="75">
                 
-                            <button id="musicMenuToggleBtn" class="menu-btn" style="background:var(--primary);">🎵 تشغيل/إيقاف الموسيقى</button>
                 
                     <span class="slider-label">تغيير سلوك الكتلة<span id="superModeStatus">🟢 مفعل</span></span>
     <button id="toggleSuperMode" class="custom-img-btn" style="width: 100%;">🔘 تبديل الوضع</button>
