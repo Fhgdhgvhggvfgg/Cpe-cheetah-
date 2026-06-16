@@ -312,7 +312,14 @@
     object-fit: contain;
     image-rendering: pixelated;
     pointer-events: none;
+    
+    /* منع ظهور قائمة التحميل والحفظ عند الضغط المطول */
+    -webkit-touch-callout: none; /* لمنع القائمة الافتراضية في iOS و Android Chrome */
+    -webkit-user-select: none;   /* منع اختيار العنصر */
+    user-select: none;
+    -webkit-user-drag: none;     /* منع سحب الصورة */
 }
+
 
 .control-btn:active {
     transform: scale(0.95);
@@ -841,6 +848,16 @@ window.addEventListener('bgImageChanged', () => {
     setTimeout(loadButtonImagesFromBg, 200);
 });
 </script>
+
+<script>
+// منع ظهور قائمة خيارات الصور عند الضغط المطول على أزرار التحكم
+document.querySelectorAll('.control-btn').forEach(btn => {
+    btn.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+    });
+});
+</script>
+
 
 </body>
 </html>
