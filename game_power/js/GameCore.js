@@ -15,6 +15,7 @@ export class GameCore {
         this.abilityCooldownRemaining = 0;
         this.abilityDurationRemaining = 0;
     
+    this.size_p_f = 50;
         this.staticBlocks = [];
         this.deadFrameOffsetY = 0;
         this.deadFrameRiseSpeed = 100;
@@ -637,31 +638,31 @@ activateSuperPower() {
         for (let i = 0; i < this.platforms.length; i++) {
             const p = this.platforms[i];
             const pL = p.x, pR = p.x + 60, pT = p.y, pB = p.y + 60;
-            if (nx + 45 > pL && nx - 45 < pR && ny + 45 > pT && ny - 45 < pB) {
-                const oL = (nx + 45) - pL;
-                const oR = pR - (nx - 45);
-                const oT = (ny + 45) - pT;
-                const oB = pB - (ny - 45);
+            if (nx + this.size_p_f > pL && nx - this.size_p_f < pR && ny + this.size_p_f > pT && ny - this.size_p_f < pB) {
+                const oL = (nx + this.size_p_f) - pL;
+                const oR = pR - (nx - this.size_p_f);
+                const oT = (ny + this.size_p_f) - pT;
+                const oB = pB - (ny - this.size_p_f);
                 const min = Math.min(oL, oR, oT, oB);
                 if (min === oT && this.velocityY > 0) { 
-                    ny = pT - 45; 
+                    ny = pT - this.size_p_f; 
                     this.velocityY = 0; 
                     this.jumpCount = 0; 
                 } else if (min === oB && this.velocityY < 0) { 
-                    ny = pB + 45; 
+                    ny = pB + this.size_p_f; 
                     this.velocityY = 0; 
                 } else if (min === oL) {
-                    nx = pL - 45;
+                    nx = pL - this.size_p_f;
                 } else if (min === oR) {
-                    nx = pR + 45;
+                    nx = pR + this.size_p_f;
                 }
             }
         }
         
         this.x = nx;
         this.y = ny;
-        if (this.x < this.leftBoundX) this.x = this.leftBoundX;
-        if (this.x > this.rightBoundX) this.x = this.rightBoundX;
+        if (this.x < this.leftBoundX + this.size_p_f) this.x = this.leftBoundX + this.size_p_f;
+        if (this.x > this.rightBoundX - this.size_p_f) this.x = this.rightBoundX - this.size_p_f;
         if (this.y >= this.groundY) { this.y = this.groundY; this.velocityY = 0; this.jumpCount = 0; }
         
         const isMoving = this.moveDir !== 0 && !this.isDashing && !this.isAttacking;
