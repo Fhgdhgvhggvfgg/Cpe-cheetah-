@@ -857,7 +857,7 @@ if (this.playerHealth <= 0) {
         this.ctx.translate(-this.renderCamX + (this.LOGIC_WIDTH / (2 * this.zoom)), -this.renderCamY + (this.LOGIC_HEIGHT / (2 * this.zoom)));
         
         if(this.bgImg.complete && this.bgImg.naturalWidth > 0) { 
-            const drawW = 1296 / this.zoom, drawH = 1728 / this.zoom;
+            const drawW = 1296 / this.zoom, drawH = 1944 / this.zoom;
             let startX = this.renderCamX - (this.LOGIC_WIDTH / (2 * this.zoom));
             let centerY = this.renderCamY - (drawH / 4);
             this.ctx.drawImage(this.bgImg, 0, 0, this.bgImg.width, this.bgImg.height / 2, startX + (drawW) - drawW, centerY, drawW, drawH / 2);
