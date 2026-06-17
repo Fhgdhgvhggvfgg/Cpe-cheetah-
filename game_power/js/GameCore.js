@@ -83,7 +83,7 @@ export class GameCore {
         this.jumpCount = 0;
         this.camX = this.x;
         this.camY = this.y;
-        this.leftBoundX = -1550;
+        this.leftBoundX = -1300;
         this.rightBoundX = 11000;
         this.boundaryLineWidth = 5;
         
@@ -660,8 +660,8 @@ activateSuperPower() {
         
         this.x = nx;
         this.y = ny;
-        if (this.x < -1550) this.x = -1550;
-        if (this.x > 11000) this.x = 11000;
+        if (this.x < this.leftBoundX) this.x = this.leftBoundX;
+        if (this.x > this.rightBoundX) this.x = this.rightBoundX;
         if (this.y >= this.groundY) { this.y = this.groundY; this.velocityY = 0; this.jumpCount = 0; }
         
         const isMoving = this.moveDir !== 0 && !this.isDashing && !this.isAttacking;
