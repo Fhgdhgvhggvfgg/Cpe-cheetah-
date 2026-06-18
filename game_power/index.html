@@ -598,25 +598,16 @@ window.addEventListener('load', async function() {
 
 <!-- أزرار تحتوي على img -->
 <div class="controls-move">
-    <button class="control-btn" id="rightBtn">
-        <img id="rightBtnImg" style="width: 100%; height: 100%; object-fit: contain;">
-    </button>
-    <button class="control-btn" id="leftBtn">
-        <img id="leftBtnImg" style="width: 100%; height: 100%; object-fit: contain;">
-    </button>
+    <button class="control-btn" id="rightBtn"></button>
+    <button class="control-btn" id="leftBtn"></button>
 </div>
 
 <div class="controls-actions">
-    <button class="control-btn" id="attackBtn">
-        <img id="attackBtnImg" style="width: 100%; height: 100%; object-fit: contain;">
-    </button>
-    <button class="control-btn" id="dashBtn">
-        <img id="dashBtnImg" style="width: 100%; height: 100%; object-fit: contain;">
-    </button>
-    <button class="control-btn" id="jumpBtn">
-        <img id="jumpBtnImg" style="width: 100%; height: 100%; object-fit: contain;">
-    </button>
+    <button class="control-btn" id="attackBtn"></button>
+    <button class="control-btn" id="dashBtn"></button>
+    <button class="control-btn" id="jumpBtn"></button>
 </div>
+
 
         
     </div>
@@ -807,15 +798,31 @@ async function loadButtonImagesFromBg() {
         const ctx = canvas.getContext('2d');
         ctx.imageSmoothingEnabled = false;
         
-        parts.forEach(part => {
-            if (part.x + btnWidth <= imgWidth && part.y + btnHeight <= imgHeight) {
-                ctx.clearRect(0, 0, btnWidth, btnHeight);
-                ctx.drawImage(bgImage, part.x, part.y, btnWidth, btnHeight, 0, 0, btnWidth, btnHeight);
-                
-                const imgElement = document.getElementById(part.id);
-                if (imgElement) imgElement.src = canvas.toDataURL();
-            }
-        });
+// تحديث الدالة لتعيين الصور كخلفيات للأزرار مباشرة بدلاً من وسم img
+parts.forEach(part => {
+    if (part.x + btnWidth <= imgWidth && part.y + btnHeight <= imgHeight) {
+        ctx.clearRect(0, 0, btnWidth, btnHeight);
+        ctx.drawImage(bgImage, part.x, part.y, btnWidth, btnHeight, 0, 0, btnWidth, btnHeight);
+        
+        const dataURL = canvas.toDataURL();
+        
+        // هنا السحر: نحصل على الزر نفسه (الـ Button) وليس الـ img بداخلها
+        const btnId = part.id.replace('Img', ''); // ستحول 'leftBtnImg' إلى 'leftBtn'
+        const btnElement = document.getElementById(btnId);
+        
+        if (btnElement) {
+            // نضع الصورة كخلفية للزر مباشرة
+            btnElement.style.backgroundImage = `url('${dataURL}')`;
+            btnElement.style.backgroundSize = '100% 100%';
+            btnElement.style.backgroundRepeat = 'no-repeat';
+            btnElement.style.backgroundPosition = 'center';
+            
+            // نضمن تفاعل البكسل الحاد
+            btnElement.style.imageRendering = 'pixelated';
+        }
+    }
+});
+
         
         console.log('✅ تم تحميل أزرار التحكم بنجاح');
         
