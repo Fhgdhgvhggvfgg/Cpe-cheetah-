@@ -710,7 +710,13 @@ if (this.playerHealth <= 0) {
                 }
                 let attackX = this.facingRight ? this.x + 80 : this.x - 80;
                 let attackDist = Math.sqrt((attackX - en.x)**2 + (this.y - en.y)**2);
-                if (this.isAttacking && attackDist < this.radius_dp) en.health -= this.damage_p * dt;
+let hitRadius = this.radius_dp + en.radius * 0.5; // منطقة الضرب = نصف قطر الضربة + نصف قطر البوس
+if (this.isAttacking && attackDist < hitRadius) {
+    en.health -= this.damage_p * dt;
+    en.speed = 70;
+} else {
+    en.speed = 200; // القيمة الأصلية من constructor
+}
             }
         }
         
