@@ -43,11 +43,7 @@ export class GameCore {
         this.storage = storage;
         this.uiManager = uiManager;
         this.canvas = document.getElementById('gameCanvas');
-this.ctx = this.canvas.getContext('2d', {
-    alpha: false,
-    desynchronized: true,
-    willReadFrequently: false
-});
+        this.ctx = this.canvas.getContext('2d');
         
         this.ctx.imageSmoothingEnabled = false;
         this.ctx.webkitImageSmoothingEnabled = false;
@@ -162,15 +158,12 @@ toggleMusic() {
     }
 }
     
-resize() {
-    this.scale = Math.min(window.innerWidth / this.LOGIC_WIDTH, window.innerHeight / this.LOGIC_HEIGHT);
-    this.canvas.width = this.LOGIC_WIDTH * this.scale;
-    this.canvas.height = this.LOGIC_HEIGHT * this.scale;
-    this.ctx.imageSmoothingEnabled = false;
-    
-    this.ctx.setTransform(1, 0, 0, 1, 0, 0);
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-}
+    resize() {
+        this.scale = Math.min(window.innerWidth / this.LOGIC_WIDTH, window.innerHeight / this.LOGIC_HEIGHT);
+        this.canvas.width = this.LOGIC_WIDTH * this.scale;
+        this.canvas.height = this.LOGIC_HEIGHT * this.scale;
+        this.ctx.imageSmoothingEnabled = false;
+    }
     
     updateZoom(newZoom) {
     // تحديد نطاق الزوم بين 1 و 4
@@ -863,8 +856,6 @@ if (this.isAttacking && attackDist < hitRadius) {
     
     draw() {
         const s = this.scale * this.zoom;
-            this.ctx.setTransform(1, 0, 0, 1, 0, 0);
-    this.ctx.clearRect(0, 0, this.LOGIC_WIDTH * this.scale, this.LOGIC_HEIGHT * this.scale);
         this.ctx.setTransform(s, 0, 0, s, 0, 0);
         this.ctx.imageSmoothingEnabled = false;
         this.ctx.clearRect(0, 0, this.LOGIC_WIDTH, this.LOGIC_HEIGHT);
