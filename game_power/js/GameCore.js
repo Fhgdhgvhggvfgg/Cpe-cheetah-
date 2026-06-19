@@ -43,7 +43,11 @@ export class GameCore {
         this.storage = storage;
         this.uiManager = uiManager;
         this.canvas = document.getElementById('gameCanvas');
-        this.ctx = this.canvas.getContext('2d');
+this.ctx = this.canvas.getContext('2d', {
+    alpha: false,
+    desynchronized: true,
+    willReadFrequently: false
+});
         
         this.ctx.imageSmoothingEnabled = false;
         this.ctx.webkitImageSmoothingEnabled = false;
