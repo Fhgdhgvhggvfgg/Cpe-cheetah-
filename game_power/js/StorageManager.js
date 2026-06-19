@@ -6,7 +6,17 @@ export class StorageManager {
         this.db = null;
         this.initPromise = null;
         
-        this.music_c = localStorage.getItem('music_c') === 'true';
+// نقرأ القيمة المخزنة أولاً
+let savedMusic = localStorage.getItem('music_c');
+
+if (savedMusic === null) {
+    savedMusic = 'true';
+    localStorage.setItem('music_c', 'true');
+}
+
+this.music_c = savedMusic === 'true';
+
+
         // الإعدادات العادية في localStorage
         this.blockCG = parseInt(localStorage.getItem('blockCG')) || 0;
         this.platforms = JSON.parse(localStorage.getItem('gamePlatforms') || "[]");
