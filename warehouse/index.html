@@ -148,12 +148,44 @@
             transition: background 0.2s, transform 0.2s;
             box-shadow: 0 4px 12px rgba(0,0,0,0.4);
         }        .zoom-btn:hover { background: var(--accent); color: #0a0a0f; transform: scale(1.1); }
+        
         #zoom-level {
             position: fixed; bottom: 24px; left: 24px; z-index: 100;
             padding: 8px 14px; background: var(--card);
             border: 1px solid var(--border); border-radius: 8px;
             font-size: 13px; color: var(--subtext);
+            display: flex; flex-direction: column; gap: 4px; align-items: center;
         }
+
+        /* تنسيق شريط الانتقال للإحداثيات الأسفل */
+        #teleport-controls {
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 100;
+            background: var(--card); border: 1px solid var(--border); padding: 8px 14px;
+            border-radius: 12px; display: flex; gap: 8px; align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4); pointer-events: auto;
+        }
+        #teleport-controls label {
+            color: var(--accent); font-size: 13px; font-weight: bold;
+        }
+        #teleport-controls input {
+            width: 75px; background: #111; border: 1px solid var(--border);
+            color: #fff; padding: 6px; border-radius: 6px; text-align: center;
+            font-size: 14px; outline: none;
+            
+            /* خواص صارمة لفرض الأرقام الإنجليزية والتراجع عن تحويل النظام للأرقام العربية */
+            font-family: 'Arial', 'Helvetica', sans-serif !important;
+            font-variant-numeric: lining-nums !important;
+            -webkit-font-feature-settings: "lnum" on !important;
+            font-feature-settings: "lnum" on !important;
+            direction: ltr !important;
+        }
+        #teleport-controls input:focus { border-color: var(--accent); }
+        #teleport-controls button {
+            background: var(--accent); color: #0a0a0f; border: none;
+            padding: 6px 14px; border-radius: 6px; font-weight: bold;
+            font-size: 13px; cursor: pointer; transition: background 0.2s;
+        }
+        #teleport-controls button:hover { background: #3388e0; }
 
         .preview-modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -182,7 +214,7 @@
         #preview-content img { max-width: 100%; border-radius: 8px; }
 
         #toast {
-            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+            position: fixed; bottom: 85px; left: 50%; transform: translateX(-50%);
             padding: 12px 24px; background: #222; border: 1px solid #444;
             border-radius: 10px; font-size: 14px; z-index: 300;
             opacity: 0; pointer-events: none; transition: opacity 0.4s, transform 0.4s;
@@ -211,6 +243,15 @@
     </div>
 
     <div id="canvas"><div id="world"></div></div>
+    
+    <div id="teleport-controls">
+        <label for="teleportX">X:</label>
+        <input type="text" id="teleportX" placeholder="0" value="0" inputmode="numeric" lang="en" dir="ltr">
+        <label for="teleportY">Y:</label>
+        <input type="text" id="teleportY" placeholder="0" value="0" inputmode="numeric" lang="en" dir="ltr">
+        <button onclick="teleportToCoordinates()">إدخال</button>
+    </div>
+
     <div id="zoom-controls">
         <button class="zoom-btn" onclick="zoomIn()">+</button>
         <button class="zoom-btn" onclick="resetZoom()">R</button>
@@ -240,44 +281,27 @@ const icons = {
     png: '🖼️', jpg: '🖼️', jpeg: '🖼️', svg: '🖼️', gif: '🖼️', webp: '🖼️' 
 };
 
-// ========== المتغير العام لصورة العدو ==========
 let currentEnemyImage = null;
 
-// ========== قراءة صورة العدو مباشرة من IndexedDB ==========
 async function loadEnemyImageFromIndexedDB() {
     return new Promise((resolve) => {
         const request = indexedDB.open('CheetahGameDB', 1);
-        
-        request.onerror = () => {
-            console.log('⚠️ لا يمكن الوصول إلى IndexedDB');
-            resolve(null);
-        };
-        
+        request.onerror = () => resolve(null);
         request.onsuccess = () => {
             const db = request.result;
             const transaction = db.transaction(['enemy'], 'readonly');
             const store = transaction.objectStore('enemy');
             const getRequest = store.get('main');
-            
             getRequest.onsuccess = () => {
                 if (getRequest.result && getRequest.result.data) {
                     currentEnemyImage = getRequest.result.data;
-                    console.log('✅ تم تحميل صورة العدو من IndexedDB');
-                } else {
-                    console.log('⚠️ لا توجد صورة عدو في IndexedDB');
                 }
                 resolve(currentEnemyImage);
             };
-            
-            getRequest.onerror = () => {
-                console.log('⚠️ فشل قراءة صورة العدو');
-                resolve(null);
-            };
+            getRequest.onerror = () => resolve(null);
         };
     });
 }
-
-// بدء تحميل الصورة فوراً
 loadEnemyImageFromIndexedDB();
 
 const getIcon = f => { if(!f) return '[LINK]'; const ext = f.split('.').pop().toLowerCase(); return icons[ext] || '[FILE]'; };
@@ -319,11 +343,32 @@ let pinchStartDist = 0, pinchStartScale = 0, pinchCenter = {x:0, y:0};
 
 let mapBounds = { minX: 0, maxX: 500, minY: 0, maxY: 500 };
 
-const isInteractable = el => el.closest('.entity-btn, .close-preview, a, video, .preview-modal, input, button, iframe, pre, img, .zoom-btn, .raw-enemy-entity');
+const isInteractable = el => el.closest('.entity-btn, .close-preview, a, video, .preview-modal, input, button, iframe, pre, img, .zoom-btn, .raw-enemy-entity, #teleport-controls');
+
+// دالة تحديث خانات الإدخال تلقائياً بقيم المركز الحالي للخارطة وبصيغة أرقام إنجليزية
+function updateInputsWithCurrentCenter() {
+    const xInput = document.getElementById('teleportX');
+    const yInput = document.getElementById('teleportY');
+    
+    if (document.activeElement === xInput || document.activeElement === yInput) return;
+
+    if (xInput && yInput) {
+        const centerX = window.innerWidth / 2;
+        const centerY = window.innerHeight / 2;
+
+        const currentX = (centerX - panX) / scale;
+        const currentY = (centerY - panY) / scale;
+
+        // إدخال القيمة بشكل صريح كعدد صحيح إنجليزي
+        xInput.value = Math.round(currentX).toString();
+        yInput.value = Math.round(currentY).toString();
+    }
+}
 
 function updateTransform() {
     world.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
     zoomLevelEl.textContent = Math.round(scale * 100) + '%';
+    updateInputsWithCurrentCenter();
 }
 
 function zoomAtPoint(factor, clientX, clientY) {
@@ -338,6 +383,26 @@ function zoomAtPoint(factor, clientX, clientY) {
 window.zoomIn = () => zoomAtPoint(1.2, window.innerWidth/2, window.innerHeight/2);
 window.zoomOut = () => zoomAtPoint(0.833, window.innerWidth/2, window.innerHeight/2);
 window.resetZoom = () => { scale=1; panX=0; panY=0; updateTransform(); };
+
+window.teleportToCoordinates = () => {
+    const xInput = document.getElementById('teleportX');
+    const yInput = document.getElementById('teleportY');
+    
+    if(!xInput || !yInput) return;
+    
+    // تحليل القيمة بشكل يضمن عدم تعطلها إذا كتبت أرقام من لوحة المفاتيح
+    const targetX = parseFloat(xInput.value) || 0;
+    const targetY = parseFloat(yInput.value) || 0;
+    
+    const centerX = window.innerWidth / 2;
+    const centerY = window.innerHeight / 2;
+    
+    panX = centerX - (targetX * scale);
+    panY = centerY - (targetY * scale);
+    
+    updateTransform();
+    showMsg(`X: ${Math.round(targetX)}, Y: ${Math.round(targetY)} تم الانتقال إلى الإحداثيات`);
+};
 
 canvas.addEventListener('wheel', e => {
     if(isInteractable(e.target)) return;
@@ -414,30 +479,15 @@ canvas.addEventListener('touchend', e => {
     if(e.touches.length < 2) { pinchStartDist = 0; if(isDragging) endPan(); }
 });
 
-// ========== دالة spawn العدو ==========
 function spawnEnemyAtRandomLocation() {
     let enemyImgData = currentEnemyImage;
-    
-    // إذا لم توجد الصورة، جرب localStorage القديم (احتياطي)
+    if (!enemyImgData) enemyImgData = localStorage.getItem('enemyImage');
     if (!enemyImgData) {
-        enemyImgData = localStorage.getItem('enemyImage');
-    }
-    
-    // إذا لم توجد صورة، استخدم الافتراضية
-    if (!enemyImgData) {
-        console.log('⚠️ لا توجد صورة عدو، سيتم استخدام الصورة الافتراضية');
         const canvas = document.createElement('canvas');
-        canvas.width = 200;
-        canvas.height = 200;
+        canvas.width = 200; canvas.height = 200;
         const ctx = canvas.getContext('2d');
-        ctx.fillStyle = '#e74c3c';
-        ctx.beginPath();
-        ctx.arc(100, 100, 80, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = 'white';
-        ctx.font = 'bold 40px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText('?', 100, 125);
+        ctx.fillStyle = '#e74c3c'; ctx.beginPath(); ctx.arc(100, 100, 80, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = 'white'; ctx.font = 'bold 40px Arial'; ctx.textAlign = 'center'; ctx.fillText('?', 100, 125);
         enemyImgData = canvas.toDataURL();
     }
     
@@ -446,65 +496,46 @@ function spawnEnemyAtRandomLocation() {
 
     const enemyDiv = document.createElement('div');
     enemyDiv.className = 'raw-enemy-entity';
-    
     enemyDiv.style.background = `url('${enemyImgData}') no-repeat`;
     enemyDiv.style.backgroundSize = '125px 250px';
     enemyDiv.style.backgroundPosition = '0px 0px';
-    
-    enemyDiv.style.width = '120px';
-    enemyDiv.style.height = '120px';
-    enemyDiv.style.left = randomX + 'px';
-    enemyDiv.style.top = randomY + 'px';
-    enemyDiv.style.transition = 'opacity 0.2s, transform 0.2s';
-    enemyDiv.style.cursor = 'pointer';
+    enemyDiv.style.width = '120px'; enemyDiv.style.height = '120px';
+    enemyDiv.style.left = randomX + 'px'; enemyDiv.style.top = randomY + 'px';
     
     let isDestroyed = false;
-
     const autoDestroyTimeout = setTimeout(() => {
         if (!isDestroyed) {
             isDestroyed = true;
-            enemyDiv.style.opacity = '0';
-            enemyDiv.style.transform = 'scale(0)';
+            enemyDiv.style.opacity = '0'; enemyDiv.style.transform = 'scale(0)';
             setTimeout(() => enemyDiv.remove(), 200);
         }
     }, 40000);
 
     const disappear = (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        
+        e.stopPropagation(); e.preventDefault();
         if (isDestroyed) return;
         isDestroyed = true;
-        
         clearTimeout(autoDestroyTimeout);
-
         let currentBlocks = parseInt(localStorage.getItem('blockCG')) || 0;
         currentBlocks += 1;
         localStorage.setItem('blockCG', currentBlocks);
-        
         showMsg("تم القضاء على العدو! عدد الكتل هو " + currentBlocks);
-
-        enemyDiv.style.opacity = '0';
-        enemyDiv.style.transform = 'scale(0)';
+        enemyDiv.style.opacity = '0'; enemyDiv.style.transform = 'scale(0)';
         setTimeout(() => enemyDiv.remove(), 200); 
     };
 
     enemyDiv.addEventListener('click', disappear);
     enemyDiv.addEventListener('touchstart', disappear, {passive: false});
-
     world.appendChild(enemyDiv);
 }
 
-// ========== بدء spawner ==========
 function startEnemySpawner() {
     setTimeout(() => {
         const checkAndSpawn = () => {
             if (currentEnemyImage) {
-                console.log('✅ بدء ظهور الأعداء');
                 spawnEnemyAtRandomLocation();
                 setInterval(spawnEnemyAtRandomLocation, 5000);
             } else {
-                console.log('⏳ انتظار تحميل صورة العدو من IndexedDB...');
                 setTimeout(checkAndSpawn, 500);
             }
         };
@@ -512,7 +543,6 @@ function startEnemySpawner() {
     }, 1000);
 }
 
-// ========== التهيئة الرئيسية ==========
 async function init() {
     try {
         const res = await fetch('data_P.txt');
@@ -520,56 +550,32 @@ async function init() {
         const text = await res.text();
         
         const allLines = text.split('\n');
-        let descriptionText = "هذه اللعبة فريدة في عالم الالعاب لكنها محدودة جدا. اذا اعجبتك اللعبة وتريد تطويرها فلك كامل الحرية. اللعبة متاحة للمجتمع وانت سوف يكون لك دور كبير في اسعاد مجتمع لاعبي اندي. فلو كنت شغوفا حمل كل ما يلزم من هذا المستودع وانطلق";
+        let descriptionText = "هذه اللعبة فريدة في عالم الالعاب لكنها محدودة جدا. اذا اعجبتك اللعبة وتريد تطويرها فلك كامل الحرية...";
         for (let line of allLines) {
             const match = line.match(/<([^>]+)>/);
-            if (match) {
-                descriptionText = match[1];
-                break;
-            }
+            if (match) { descriptionText = match[1]; break; }
         }
         const descElement = document.getElementById('dynamicDescription');
-        if (descElement) {
-            descElement.textContent = descriptionText;
-        }
+        if (descElement) descElement.textContent = descriptionText;
         
         const lines = text.split('\n').map(l=>l.trim()).filter(l=>l!=='');
         const data = [];
         for(let i=0; i<lines.length; i++) {
             let m = lines[i].match(/p\((-?\d+),(-?\d+)\)\s+s\((\d+),(\d+)\)\s+"([^"]+)"/);
-            let isBackgroundOnly = false;
-            let title = "";
+            let isBackgroundOnly = false; let title = "";
             
             if (!m) {
                 m = lines[i].match(/p\((-?\d+),(-?\d+)\)\s+s\((\d+),(\d+)\)\s+xxx/);
-                if (m) {
-                    isBackgroundOnly = true;
-                    title = "xxx";
-                }
-            } else {
-                title = m[5];
-            }
+                if (m) { isBackgroundOnly = true; title = "xxx"; }
+            } else { title = m[5]; }
             
             if(m && lines[i+1]) {
-                const raw = lines[i+1]; 
-                let file=raw, link=null, thumb=null;
-                
+                const raw = lines[i+1]; let file=raw, link=null, thumb=null;
                 if(raw.includes('&&')) { 
-                    const p=raw.split('&&'); 
-                    link=p[0].trim(); 
-                    thumb=p[1].trim(); 
-                    file=link; 
+                    const p=raw.split('&&'); link=p[0].trim(); thumb=p[1].trim(); file=link; 
                 }
-                
                 data.push({
-                    x:+m[1], y:+m[2], 
-                    w:+m[3], h:+m[4], 
-                    title: title, 
-                    file, 
-                    isLink:!!link, 
-                    linkUrl:link, 
-                    thumbUrl:thumb,
-                    isBackgroundOnly: isBackgroundOnly
+                    x:+m[1], y:+m[2], w:+m[3], h:+m[4], title, file, isLink:!!link, linkUrl:link, thumbUrl:thumb, isBackgroundOnly
                 });
                 i++;
             }
@@ -577,12 +583,9 @@ async function init() {
         showMsg("تم تحميل العناصر بنجاح");
         
         if (data.length > 0) {
-            let allXs = data.map(d => d.x);
-            let allYs = data.map(d => d.y);
-            mapBounds.minX = Math.min(...allXs);
-            mapBounds.maxX = Math.max(...allXs);
-            mapBounds.minY = Math.min(...allYs);
-            mapBounds.maxY = Math.max(...allYs);
+            let allXs = data.map(d => d.x); let allYs = data.map(d => d.y);
+            mapBounds.minX = Math.min(...allXs); mapBounds.maxX = Math.max(...allXs);
+            mapBounds.minY = Math.min(...allYs); mapBounds.maxY = Math.max(...allYs);
         }
 
         const previewable = ['html','htm','txt','json','js','css','py','md'];
@@ -591,24 +594,17 @@ async function init() {
             if (d.isBackgroundOnly) {
                 const bgDiv = document.createElement('div');
                 bgDiv.className = 'entity-background-only';
-                bgDiv.style.left = d.x + 'px';
-                bgDiv.style.top = d.y + 'px';
-                bgDiv.style.width = d.w + 'px';
-                bgDiv.style.height = d.h + 'px';
+                bgDiv.style.left = d.x + 'px'; bgDiv.style.top = d.y + 'px';
+                bgDiv.style.width = d.w + 'px'; bgDiv.style.height = d.h + 'px';
                 bgDiv.style.backgroundImage = `url('${d.file}')`;
-                bgDiv.style.backgroundSize = 'cover';
-                bgDiv.style.backgroundPosition = 'center';
-                bgDiv.style.backgroundRepeat = 'no-repeat';
                 world.appendChild(bgDiv);
                 return;
             }
             
             const el = document.createElement('div'); 
             el.className = 'entity';
-            el.style.left = d.x + 'px'; 
-            el.style.top = d.y + 'px'; 
-            el.style.width = d.w + 'px'; 
-            el.style.height = d.h + 'px'; 
+            el.style.left = d.x + 'px'; el.style.top = d.y + 'px'; 
+            el.style.width = d.w + 'px'; el.style.height = d.h + 'px'; 
 
             const isVid = /\.(mp4|webm|mov)$/i.test(d.file);
             const isImg = /\.(png|jpg|jpeg|gif|svg|webp)$/i.test(d.file);
@@ -616,24 +612,19 @@ async function init() {
             const isPrev = !d.isLink && !isImg && !isVid && previewable.includes(ext);
 
             let html = '';
-            
             if(isVid) {
                 html = `<video class="entity-media" controls preload="metadata"><source src="${d.file}" type="video/mp4"></video>
                         <a href="${d.file}" download class="entity-btn download" onclick="event.stopPropagation()">تحميل الفيديو</a>`;
-            }
-            else if(isImg) {
+            } else if(isImg) {
                 html = `<img src="${d.file}" class="entity-media" alt="${d.title}">
                         <a href="${d.file}" download class="entity-btn download" onclick="event.stopPropagation()">تحميل الصورة</a>`;
-            }
-            else if(d.isLink) {
+            } else if(d.isLink) {
                 html = `${d.thumbUrl ? `<img src="${d.thumbUrl}" class="entity-media" alt="thumb">` : ''}
                         <a href="${d.linkUrl}" target="_blank" class="entity-btn link" onclick="event.stopPropagation()">دخول الرابط</a>`;
-            }
-            else if(isPrev) {
+            } else if(isPrev) {
                 html = `<button class="entity-btn preview" onclick="event.stopPropagation();openPreview('${d.file}','${d.title.replace(/'/g,"\\'")}')" style="margin-bottom:4px;">عرض المحتوى</button>
                         <a href="${d.file}" download class="entity-btn download" onclick="event.stopPropagation()">تحميل الملف</a>`;
-            }
-            else {
+            } else {
                 html = `<a href="${d.file}" download class="entity-btn download" onclick="event.stopPropagation()">تحميل الملف</a>`;
             }
             
@@ -657,11 +648,7 @@ if (arrowBtn && headerEl) {
     arrowBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         headerEl.classList.toggle('hide-header');
-        if (headerEl.classList.contains('hide-header')) {
-            arrowBtn.innerHTML = "عرض القائمة";  
-        } else {
-            arrowBtn.innerHTML = "اخفاء القائمة";  
-        }
+        arrowBtn.innerHTML = headerEl.classList.contains('hide-header') ? "عرض القائمة" : "اخفاء القائمة";
     });
 }
 </script>
