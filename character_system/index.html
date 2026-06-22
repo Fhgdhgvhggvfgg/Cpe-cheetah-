@@ -913,12 +913,7 @@ drawEnemy() {
                 }
             }
             
-            this.ctx.strokeStyle = "#ff3366";
-            this.ctx.lineWidth = 3;
-            this.ctx.beginPath();
-            this.ctx.moveTo(0, this.LOGIC_HEIGHT / 2);
-            this.ctx.lineTo(this.LOGIC_WIDTH, this.LOGIC_HEIGHT / 2);
-            this.ctx.stroke();
+
         }
         
         drawPlayer() {
@@ -932,11 +927,11 @@ drawEnemy() {
             
             if(this.playerName && this.playerName !== 'undefined') {
                 this.ctx.fillStyle = "rgba(255,255,255,0.9)";
-                this.ctx.font = "bold 18px Segoe UI";
+                this.ctx.font = "bold 30px Segoe UI";
                 this.ctx.textAlign = "center";
                 this.ctx.shadowBlur = 4;
                 this.ctx.shadowColor = "black";
-                this.ctx.fillText(this.playerName, 0, -85);
+                this.ctx.fillText(this.playerName, 0, -160);
             }
             
             if(this.playerImg.complete && this.playerImg.naturalWidth > 0) {
