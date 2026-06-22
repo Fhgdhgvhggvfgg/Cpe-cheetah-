@@ -9,6 +9,55 @@
             user-select: none;
             -webkit-tap-highlight-color: transparent;
         }
+        
+        /* شريط التحميل أثناء الحفظ */
+.save-progress-container {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.85);
+    padding: 15px 25px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.15);
+    z-index: 2000;
+    display: none;
+    min-width: 280px;
+    backdrop-filter: blur(10px);
+}
+.save-progress-container.active {
+    display: block;
+}
+.save-progress-label {
+    color: #fff;
+    font-size: 14px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+}
+.save-progress-bar-track {
+    width: 100%;
+    height: 4px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+.save-progress-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #f39c12, #2ecc71);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+.save-progress-status {
+    color: #aaa;
+    font-size: 12px;
+    margin-top: 6px;
+    text-align: center;
+}
+.save-progress-status.success { color: #2ecc71; }
+.save-progress-status.error { color: #e74c3c; }
+
         body {
             margin: 0;
             min-height: 100vh;
@@ -570,25 +619,67 @@ html += `
         
 async applySelection() {
     const overlay = document.getElementById('modalOverlay');
+    const progressContainer = document.getElementById('saveProgress');
+    const progressFill = document.getElementById('saveProgressFill');
+    const progressLabel = document.getElementById('saveLabel');
+    const progressPercent = document.getElementById('savePercent');
+    const statusText = document.getElementById('saveStatus');
+    
+    // إظهار شريط التقدم
+    progressContainer.classList.add('active');
+    progressFill.style.width = '0%';
+    progressPercent.textContent = '0%';
+    statusText.textContent = '⏳ جاري التجهيز...';
+    statusText.className = 'save-progress-status';
+    
+    let totalItems = 0;
+    let completedItems = 0;
+    
+    // حساب عدد العناصر المراد حفظها
+    if (this.selectedItems[0]) totalItems++;
+    if (this.selectedItems[1]) totalItems++;
+    if (this.selectedItems[2]) totalItems++;
+    
+    if (totalItems === 0) {
+        progressContainer.classList.remove('active');
+        overlay.classList.remove('active');
+        return;
+    }
+    
+    const updateProgress = (step, message) => {
+        completedItems++;
+        const percent = Math.round((completedItems / totalItems) * 100);
+        progressFill.style.width = percent + '%';
+        progressPercent.textContent = percent + '%';
+        statusText.textContent = message;
+        progressLabel.textContent = '💾 جاري حفظ البيانات...';
+    };
+    
     let playerChanged = false;
     let bgChanged = false;
     let enemyChanged = false;
+    let hasError = false;
     
     // اختيار اللاعب (تبويب 0)
     if (this.selectedItems[0]) {
         const name = this.selectedItems[0];
         const imgPath = this.getImagePath(0, name);
         try {
+            statusText.textContent = `📥 تحميل صورة ${name}...`;
+            progressLabel.textContent = `👤 تحميل: ${name}`;
+            
             const img = new Image();
             img.src = imgPath;
             await new Promise((r, rej) => {
                 img.onload = r;
                 img.onerror = () => rej(new Error('فشل تحميل الصورة'));
-                setTimeout(rej, 5000);
+                setTimeout(rej, 30000);
             });
             
             this.playerImg = img;
             this.playerName = name;
+            
+            statusText.textContent = `💾 حفظ ${name} في localStorage...`;
             
             // حفظ في localStorage
             try {
@@ -600,23 +691,28 @@ async applySelection() {
                 const dataUrl = canvas.toDataURL('image/png');
                 localStorage.setItem('playerImage', dataUrl);
                 localStorage.setItem('playerName', name);
-                console.log('💾 تم حفظ الشخصية في localStorage');
             } catch(e) {
                 console.warn('⚠️ فشل حفظ الشخصية في localStorage:', e);
             }
             
+            statusText.textContent = `💾 حفظ ${name} في قاعدة البيانات...`;
+            
             // حفظ في IndexedDB
             try {
                 await this.saveImageToStore('player', 'main', imgPath);
-                console.log('💾 تم حفظ الشخصية في IndexedDB');
             } catch(e) {
                 console.warn('⚠️ فشل حفظ الشخصية في IndexedDB:', e);
             }
             
             playerChanged = true;
+            updateProgress(completedItems, `✅ تم حفظ ${name}`);
             console.log(`✅ تم استبدال الشخصية بـ: ${name}`);
         } catch(e) {
+            hasError = true;
             console.error('❌ فشل تحميل الصورة:', e);
+            statusText.textContent = `❌ فشل تحميل ${name}`;
+            statusText.className = 'save-progress-status error';
+            updateProgress(completedItems, `❌ فشل: ${name}`);
         }
     }
     
@@ -625,15 +721,20 @@ async applySelection() {
         const name = this.selectedItems[1];
         const imgPath = this.getImagePath(1, name);
         try {
+            statusText.textContent = `📥 تحميل خلفية ${name}...`;
+            progressLabel.textContent = `🏟️ تحميل: ${name}`;
+            
             const img = new Image();
             img.src = imgPath;
             await new Promise((r, rej) => {
                 img.onload = r;
                 img.onerror = () => rej(new Error('فشل تحميل الخلفية'));
-                setTimeout(rej, 5000);
+                setTimeout(rej, 30000);
             });
             
             this.bgImg = img;
+            
+            statusText.textContent = `💾 حفظ ${name} في localStorage...`;
             
             // حفظ في localStorage
             try {
@@ -644,23 +745,28 @@ async applySelection() {
                 ctx.drawImage(img, 0, 0);
                 const dataUrl = canvas.toDataURL('image/png');
                 localStorage.setItem('bgImage', dataUrl);
-                console.log('💾 تم حفظ الساحة في localStorage');
             } catch(e) {
                 console.warn('⚠️ فشل حفظ الساحة في localStorage:', e);
             }
             
+            statusText.textContent = `💾 حفظ ${name} في قاعدة البيانات...`;
+            
             // حفظ في IndexedDB
             try {
                 await this.saveImageToStore('background', 'main', imgPath);
-                console.log('💾 تم حفظ الساحة في IndexedDB');
             } catch(e) {
                 console.warn('⚠️ فشل حفظ الساحة في IndexedDB:', e);
             }
             
             bgChanged = true;
+            updateProgress(completedItems, `✅ تم حفظ ${name}`);
             console.log(`✅ تم استبدال الساحة بـ: ${name}`);
         } catch(e) {
+            hasError = true;
             console.error('❌ فشل تحميل الخلفية:', e);
+            statusText.textContent = `❌ فشل تحميل ${name}`;
+            statusText.className = 'save-progress-status error';
+            updateProgress(completedItems, `❌ فشل: ${name}`);
         }
     }
     
@@ -669,16 +775,21 @@ async applySelection() {
         const name = this.selectedItems[2];
         const imgPath = this.getImagePath(2, name);
         try {
+            statusText.textContent = `📥 تحميل عدو ${name}...`;
+            progressLabel.textContent = `👾 تحميل: ${name}`;
+            
             const img = new Image();
             img.src = imgPath;
             await new Promise((r, rej) => {
                 img.onload = r;
                 img.onerror = () => rej(new Error('فشل تحميل العدو'));
-                setTimeout(rej, 5000);
+                setTimeout(rej, 30000);
             });
             
             this.enemyImg = img;
             this.enemyName = name;
+            
+            statusText.textContent = `💾 حفظ ${name} في localStorage...`;
             
             // حفظ في localStorage
             try {
@@ -690,32 +801,54 @@ async applySelection() {
                 const dataUrl = canvas.toDataURL('image/png');
                 localStorage.setItem('enemyImage', dataUrl);
                 localStorage.setItem('enemyName', name);
-                console.log('💾 تم حفظ العدو في localStorage');
             } catch(e) {
                 console.warn('⚠️ فشل حفظ العدو في localStorage:', e);
             }
             
+            statusText.textContent = `💾 حفظ ${name} في قاعدة البيانات...`;
+            
             // حفظ في IndexedDB
             try {
                 await this.saveImageToStore('enemy', 'main', imgPath);
-                console.log('💾 تم حفظ العدو في IndexedDB');
             } catch(e) {
                 console.warn('⚠️ فشل حفظ العدو في IndexedDB:', e);
             }
             
             enemyChanged = true;
+            updateProgress(completedItems, `✅ تم حفظ ${name}`);
             console.log(`✅ تم استبدال العدو بـ: ${name}`);
         } catch(e) {
+            hasError = true;
             console.error('❌ فشل تحميل العدو:', e);
+            statusText.textContent = `❌ فشل تحميل ${name}`;
+            statusText.className = 'save-progress-status error';
+            updateProgress(completedItems, `❌ فشل: ${name}`);
         }
     }
     
-    // إعادة تعيين الرسوم لتحديث الشاشة فوراً
+    // تحديث الحالة النهائية
+    if (!hasError) {
+        statusText.textContent = '✅ تم حفظ جميع البيانات بنجاح!';
+        statusText.className = 'save-progress-status success';
+        progressFill.style.width = '100%';
+        progressPercent.textContent = '100%';
+        progressLabel.textContent = '✅ اكتمل الحفظ!';
+    } else {
+        statusText.textContent = '⚠️ تم الحفظ مع بعض الأخطاء';
+        statusText.className = 'save-progress-status error';
+    }
+    
+    // إعادة تعيين الرسوم
     if (playerChanged || bgChanged || enemyChanged) {
         this.currentFrame = 0;
         this.walkFrame = 1;
         this.animTimer = 0;
     }
+    
+    // إخفاء شريط التقدم بعد 2 ثانية
+    setTimeout(() => {
+        progressContainer.classList.remove('active');
+    }, 2000);
     
     overlay.classList.remove('active');
 }
@@ -1016,5 +1149,16 @@ drawEnemy() {
     
     window.addEventListener('load', () => new GameViewer());
 </script>
+<!-- شريط تقدم الحفظ -->
+<div class="save-progress-container" id="saveProgress">
+    <div class="save-progress-label">
+        <span id="saveLabel">💾 جاري حفظ البيانات...</span>
+        <span id="savePercent">0%</span>
+    </div>
+    <div class="save-progress-bar-track">
+        <div class="save-progress-bar-fill" id="saveProgressFill"></div>
+    </div>
+    <div class="save-progress-status" id="saveStatus">⏳ جاري المعالجة...</div>
+</div>
 </body>
 </html>
