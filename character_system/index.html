@@ -75,16 +75,18 @@
             padding: 20px;
         }
         .modal-overlay.active { display: flex; }
-        .modal {
-            background: #1a1a2e;
-            border-radius: 20px;
-            padding: 25px;
-            max-width: 900px;
-            width: 100%;
-            max-height: 80vh;
-            overflow-y: auto;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
+.modal {
+    background: #1a1a2e;
+    border-radius: 20px;
+    padding: 25px;
+    max-width: 900px;
+    width: 100%;
+    max-height: 80vh;
+    border: 1px solid rgba(255,255,255,0.2);
+    display: flex;
+    flex-direction: column;
+}
+
         .modal h2 { color: #f39c12; text-align: center; margin-bottom: 20px; }
         .modal-close {
             background: #e74c3c;
@@ -229,9 +231,9 @@
             <button class="modal-tab" data-tab="2">👾 الأعداء</button>
         </div>
         
-        <div id="modalContent">
-            <div class="modal-loading">⏳ جاري التحميل...</div>
-        </div>
+<div id="modalContent" style="flex:1; overflow-y:auto; margin:10px 0;">
+    <div class="modal-loading">⏳ جاري التحميل...</div>
+</div>
         
         <div class="modal-actions">
             <button class="modal-apply" id="modalApply">✅ تطبيق</button>
