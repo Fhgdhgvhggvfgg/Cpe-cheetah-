@@ -496,48 +496,50 @@ openDB() {
             return `images/${folders[category]}/${name}.png`;
         }
         
-        async renderModal() {
-            const content = document.getElementById('modalContent');
-            const tab = this.selectedTab;
-            
-            // الحصول على قائمة الأسماء من البيانات المقروءة
-            const categories = ['players', 'cities', 'enemies'];
-            const categoryKey = categories[tab];
-            const items = this.imageData[categoryKey] || [];
-            const selected = this.selectedItems[tab];
-            
-            if (!items || items.length === 0) {
-                content.innerHTML = '<div class="modal-loading">📂 لا توجد صور في هذه القائمة</div>';
-                return;
-            }
-            
-            let html = '<div class="modal-grid">';
-            
-            for (const name of items) {
-                const imgPath = this.getImagePath(tab, name);
-                const isSelected = (selected === name);
-                
-                html += `
-                    <div class="modal-item ${isSelected ? 'selected' : ''}" data-name="${name}">
-                        <img src="${imgPath}" alt="${name}" 
-                             onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Crect width=%22100%22 height=%22100%22 fill=%22%23333%22/%3E%3Ctext x=%2250%22 y=%2255%22 text-anchor=%22middle%22 fill=%22%23999%22 font-size=%2212%22 font-family=%22Arial%22%3E${name}%3C/text%3E%3C/svg%3E'">
-                        <span class="name">${name}</span>
-                    </div>
-                `;
-            }
-            
-            html += '</div>';
-            content.innerHTML = html;
-            
-            content.querySelectorAll('.modal-item').forEach(el => {
-                el.onclick = () => {
-                    const name = el.dataset.name;
-                    content.querySelectorAll('.modal-item').forEach(i => i.classList.remove('selected'));
-                    el.classList.add('selected');
-                    this.selectedItems[tab] = name;
-                };
-            });
-        }
+async renderModal() {
+    const content = document.getElementById('modalContent');
+    const tab = this.selectedTab;
+    
+    const categories = ['players', 'cities', 'enemies'];
+    const categoryKey = categories[tab];
+    const items = this.imageData[categoryKey] || [];
+    const selected = this.selectedItems[tab];
+    
+    if (!items || items.length === 0) {
+        content.innerHTML = '<div class="modal-loading">📂 لا توجد صور في هذه القائمة</div>';
+        return;
+    }
+    
+    let html = '<div class="modal-grid">';
+    
+    for (const name of items) {
+        // الصورة المرافقة تبدأ بـ _ (مثل _razan.png)
+        const previewPath = `images/${categories[tab]}/_${name}.png`;
+        // الصورة الأصلية للاستخدام الفعلي
+        const actualPath = `images/${categories[tab]}/${name}.png`;
+        const isSelected = (selected === name);
+        
+        html += `
+            <div class="modal-item ${isSelected ? 'selected' : ''}" data-name="${name}" data-path="${actualPath}">
+                <img src="${previewPath}" alt="${name}" 
+                     onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Crect width=%22100%22 height=%22100%22 fill=%22%23333%22/%3E%3Ctext x=%2250%22 y=%2255%22 text-anchor=%22middle%22 fill=%22%23999%22 font-size=%2212%22 font-family=%22Arial%22%3E${name}%3C/text%3E%3C/svg%3E'">
+                <span class="name">${name}</span>
+            </div>
+        `;
+    }
+    
+    html += '</div>';
+    content.innerHTML = html;
+    
+    content.querySelectorAll('.modal-item').forEach(el => {
+        el.onclick = () => {
+            const name = el.dataset.name;
+            content.querySelectorAll('.modal-item').forEach(i => i.classList.remove('selected'));
+            el.classList.add('selected');
+            this.selectedItems[tab] = name;
+        };
+    });
+}
         
 async applySelection() {
     const overlay = document.getElementById('modalOverlay');
