@@ -590,19 +590,26 @@ async renderModal() {
     
     let html = '<div class="modal-grid">';
     
-    for (const name of items) {
-        // الصورة المرافقة تبدأ بـ _ (مثل _razan.png)
-        const previewPath = `images/${categories[tab]}/_${name}.png`;
-        // الصورة الأصلية للاستخدام الفعلي
-        const actualPath = `images/${categories[tab]}/${name}.png`;
-        const isSelected = (selected === name);
+    for (let name of items) {
+        // تنظيف الاسم إذا كان يحتوي على أي رموز قديمة في البداية لمنع التكرار
+        let cleanName = name;
+        if (cleanName.startsWith('_') || cleanName.startsWith('#') || cleanName.startsWith('-')) {
+            cleanName = cleanName.substring(1);
+        }
         
-html += `
-    <div class="modal-item ${isSelected ? 'selected' : ''}" data-name="${name}" data-path="${actualPath}" style="background-image: url('${previewPath}'); background-size: cover; background-position: center;">
-        <span class="name">${name}</span>
-    </div>
-`;
+        // الصورة المصغرة تبدأ بالشرطة العادية - الآن بناءً على ملفاتك الجديدة
+        const previewPath = `images/${categories[tab]}/-${cleanName}.png`;
+        // الصورة الأصلية الكاملة بدون رموز
+        const actualPath = `images/${categories[tab]}/${cleanName}.png`;
+        const isSelected = (selected === cleanName || selected === name);
+        
+        html += `
+            <div class="modal-item ${isSelected ? 'selected' : ''}" data-name="${cleanName}" data-path="${actualPath}" style="background-image: url('${previewPath}'); background-size: cover; background-position: center;">
+                <span class="name">${cleanName}</span>
+            </div>
+        `;
     }
+
     
     html += '</div>';
     content.innerHTML = html;
