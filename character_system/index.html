@@ -119,24 +119,51 @@
             gap: 15px;
             margin-top: 15px;
         }
-        .modal-item {
-            background: rgba(255,255,255,0.05);
-            border-radius: 10px;
-            padding: 50px;
-            text-align: center;
-            cursor: pointer;
-            transition: 0.2s;
-            border: 2px solid transparent;
-        }
-        .modal-item:hover { background: rgba(255,255,255,0.1); }
-        .modal-item.selected { border-color: #f39c12; background: rgba(243,156,18,0.2); }
-        .modal-item img {
-            width: 200%;
-            height: 160px;
-            object-fit: contain;
-            border-radius: 2px;
-            background: #0a0a2a;
-        }
+.modal-item {
+    background: rgba(255,255,255,0.05);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    border-radius: 10px;
+    padding: 15px;
+    text-align: center;
+    cursor: pointer;
+    transition: 0.2s;
+    border: 2px solid transparent;
+    min-height: 180px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.modal-item:hover { 
+    background: rgba(255,255,255,0.1);
+    background-size: cover;
+    background-position: center;
+}
+
+.modal-item.selected { 
+    border-color: #f39c12; 
+    background: rgba(243,156,18,0.2);
+    background-size: cover;
+    background-position: center;
+}
+
+.modal-item img {
+    display: none;  /* إخفاء عنصر img */
+}
+
+.modal-item .name {
+    color: #fff;
+    font-size: 14px;
+    margin-top: 5px;
+    display: block;
+    background: rgba(0,0,0,0.7);
+    padding: 4px 12px;
+    border-radius: 12px;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+}
         .modal-item .name {
             color: #ccc;
             font-size: 11px;
@@ -519,13 +546,11 @@ async renderModal() {
         const actualPath = `images/${categories[tab]}/${name}.png`;
         const isSelected = (selected === name);
         
-        html += `
-            <div class="modal-item ${isSelected ? 'selected' : ''}" data-name="${name}" data-path="${actualPath}">
-                <img src="${previewPath}" alt="${name}" 
-                     onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Crect width=%22100%22 height=%22100%22 fill=%22%23333%22/%3E%3Ctext x=%2250%22 y=%2255%22 text-anchor=%22middle%22 fill=%22%23999%22 font-size=%2212%22 font-family=%22Arial%22%3E${name}%3C/text%3E%3C/svg%3E'">
-                <span class="name">${name}</span>
-            </div>
-        `;
+html += `
+    <div class="modal-item ${isSelected ? 'selected' : ''}" data-name="${name}" data-path="${actualPath}" style="background-image: url('${previewPath}'); background-size: cover; background-position: center;">
+        <span class="name">${name}</span>
+    </div>
+`;
     }
     
     html += '</div>';
