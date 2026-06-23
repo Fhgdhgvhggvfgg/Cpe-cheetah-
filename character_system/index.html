@@ -1109,20 +1109,6 @@ drawEnemy() {
             this.drawGround();
             this.drawPlayer();
             
-            if(this.isAttacking) {
-                this.ctx.save();
-                this.ctx.beginPath();
-                let offsetX = this.facingRight ? 100 : -100;
-                this.ctx.arc(this.playerScreenX + offsetX, this.playerScreenY, 120, 0, Math.PI * 2);
-                this.ctx.fillStyle = "rgba(231,76,60,0.35)";
-                this.ctx.fill();
-                this.ctx.strokeStyle = "#ff6600";
-                this.ctx.lineWidth = 4;
-                this.ctx.beginPath();
-                this.ctx.arc(this.playerScreenX + offsetX, this.playerScreenY, 120, 0, Math.PI * 2);
-                this.ctx.stroke();
-                this.ctx.restore();
-            }
             
             this.ctx.setTransform(1, 0, 0, 1, 0, 0);
             this.ctx.font = "12px monospace";
