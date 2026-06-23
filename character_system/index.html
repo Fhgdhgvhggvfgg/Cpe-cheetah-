@@ -315,7 +315,7 @@ this.enemyName = localStorage.getItem('enemyName') || 'dron';
             this.attackTimer = 0;
             
             this.groundMoving = true;
-            this.groundSpeed = 300;
+            this.groundSpeed = 600;
             this.groundOffsetX = 0;
             
             this.currentFrame = 0;
@@ -1014,13 +1014,14 @@ drawEnemy() {
         }
         
         drawGround() {
-            const groundY = -3600;
+            const groundY = -3550;
             const groundHeight = this.LOGIC_HEIGHT * 7.5;
             
             if(this.bgImg && this.bgImg.complete && this.bgImg.naturalWidth > 0) {
                 const sourceY = this.bgImg.height / 2;
                 const sourceHeight = this.bgImg.height / 2;
-                const tileWidth = this.bgImg.width * 5;
+
+const tileWidth = 7080;  // قيمة ثابتة مناسبة
                 
                 const startX = -(this.groundOffsetX % tileWidth);
                 
