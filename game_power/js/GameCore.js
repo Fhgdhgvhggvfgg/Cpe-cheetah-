@@ -5,6 +5,8 @@ import { InputHandler } from './InputHandler.js';
 export class GameCore {
     constructor(mode, storage, uiManager) {
     	
+    this.damageFlashTime = 0; // مؤقت للوميض الأحمر
+    
     this.power_b = 25;
     this.canUseSpecial = true;
         this.attackHoldTimeout = null;
@@ -689,6 +691,7 @@ activateSuperPower() {
                 }
                 if (dist < this.radius + en.radius) {
                     this.playerHealth -= 20 * dt;
+                    this.damageFlashTime = 0.1; // يظهر التأثير لمدة 0.1 ثانية
                     this.uiManager.updateHealth(this.playerHealth, this.maxHealth);
 if (this.playerHealth <= 0) { 
     this.isDead = true; 
@@ -724,6 +727,12 @@ if (this.isAttacking && attackDist < hitRadius) {
         const FOLLOW_SPEED = 0.15;
         this.camX += (this.x - this.camX) * FOLLOW_SPEED;
         this.camY += (this.y - this.camY) * FOLLOW_SPEED;
+        
+        
+        // أضف هذا السطر في نهاية fixedUpdate قبل إغلاق القوس
+    if (this.damageFlashTime > 0) {
+        this.damageFlashTime -= dt;
+    }
         
         this.checkAndHandleEnemyDeath();
     }
@@ -773,39 +782,65 @@ if (this.isAttacking && attackDist < hitRadius) {
         requestAnimationFrame((t) => this.loop(t));
     }
     
-    drawPlayer() {
-        this.ctx.save(); 
-        // استخدام موضع الرسم المستوف (الناعم)
-        this.ctx.translate(this.renderX, this.renderY);
-        if (this.isDead) { this.ctx.translate(0, this.deadFrameOffsetY); this.ctx.globalAlpha = 0.6; }
-        if (this.storage.playerName && this.storage.playerName !== 'undefined') {
-            this.ctx.save();
-            this.ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
-            this.ctx.font = "bold 18px Segoe UI";
-            this.ctx.textAlign = "center";
-            this.ctx.shadowBlur = 4;
-            this.ctx.shadowColor = "black";
-            this.ctx.fillText(this.storage.playerName, 0, -85); 
-            this.ctx.restore();
-        }
-        if(!this.facingRight) this.ctx.scale(-1, 1);
-        if(this.playerImg.complete && this.playerImg.naturalWidth > 0) {
-            const framesX = 8, framesY = 2;
-            const frameW = this.playerImg.naturalWidth / framesX;
-            const frameH = this.playerImg.naturalHeight / framesY;
-            const frameCol = this.currentFrame % framesX;
-            const frameRow = Math.floor(this.currentFrame / framesX) % framesY;
-            const frameX = frameCol * frameW;
-            const frameY = frameRow * frameH;
-            this.ctx.drawImage(this.playerImg, frameX, frameY, frameW, frameH, -75, -75, 150, 150);
-        } else {
-            this.ctx.fillStyle = "#f39c12";
-            this.ctx.beginPath();
-            this.ctx.arc(0, 0, 45, 0, Math.PI * 2);
-            this.ctx.fill();
-        }
+drawPlayer() {
+    this.ctx.save(); 
+    // استخدام موضع الرسم المستوف (الناعم)
+    this.ctx.translate(this.renderX, this.renderY);
+    
+    if (this.isDead) { 
+        this.ctx.translate(0, this.deadFrameOffsetY); 
+        this.ctx.globalAlpha = 0.6; 
+    }
+    
+    if (this.storage.playerName && this.storage.playerName !== 'undefined') {
+        this.ctx.save();
+        this.ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+        this.ctx.font = "bold 18px Segoe UI";
+        this.ctx.textAlign = "center";
+        this.ctx.shadowBlur = 4;
+        this.ctx.shadowColor = "black";
+        this.ctx.fillText(this.storage.playerName, 0, -85); 
         this.ctx.restore();
     }
+    
+    if(!this.facingRight) this.ctx.scale(-1, 1);
+    
+if(this.playerImg.complete && this.playerImg.naturalWidth > 0) {
+        const framesX = 8, framesY = 2;
+        const frameW = this.playerImg.naturalWidth / framesX;
+        const frameH = this.playerImg.naturalHeight / framesY;
+        const frameCol = this.currentFrame % framesX;
+        const frameRow = Math.floor(this.currentFrame / framesX) % framesY;
+        const frameX = frameCol * frameW;
+        const frameY = frameRow * frameH;
+        
+        // --- بداية كود تحول اللون للأحمر ---
+
+     if (this.damageFlashTime > 0 && !this.isDead) {
+            // تطبيق فلتر يجعل كل شيء أحمر (hue-rotate يحول الألوان، saturate يشبعها)
+            // brightness(0.5) يقلل السطوع قليلاً ليعطي طابع الضرر
+            this.ctx.filter = 'sepia(1) saturate(3) hue-rotate(-50deg) brightness(0.7)'; 
+        } else {
+            this.ctx.filter = 'none';
+        }
+        // --- نهاية كود تحول اللون ---
+
+        // رسم صورة اللاعب (ستظهر حمراء إذا كان الفلتر مفعلاً)
+        this.ctx.drawImage(this.playerImg, frameX, frameY, frameW, frameH, -75, -75, 150, 150);
+        
+        // إعادة الفلتر للوضع الطبيعي فوراً حتى لا يؤثر على الرسومات الأخرى
+        this.ctx.filter = 'none';
+    } else {
+        // في حال عدم وجود صورة (الدائرة الاحتياطية)
+        // نجعل الدائرة حمراء أيضاً عند الضرر
+        this.ctx.fillStyle = (this.damageFlashTime > 0) ? "#ff0000" : "#f39c12";
+        this.ctx.beginPath();
+        this.ctx.arc(0, 0, 45, 0, Math.PI * 2);
+        this.ctx.fill();
+    }
+    
+    this.ctx.restore();
+}
     
     drawBoundaryLines() {
         this.ctx.save();
