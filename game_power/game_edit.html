@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="favicon.png">
+    <meta charset="UTF-8">
+    <meta name="viewport"  content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-select=none">
+   <title>Cheetah Power - Game Project</title>
+   <meta name="description" content="You can add any image you want and turn it into a character to play with">
+    <style>
+        :root { --primary: #3498db; --success: #27ae60; --danger: #e74c3c; --warning: #f39c12; --dark: #1a1a1a; --repo-orange: #d38345; }
+        body { margin: 0; padding: 0; background: #000; color: white; font-family: 'Segoe UI', sans-serif; height: 100vh; width: 100vw; overflow: hidden; touch-action: none; }
+#mainMenu div, #customizerOverlay div { 
+    background: #007bff66; 
+    padding: 3px 10px; 
+    border-radius: 10px; 
+    border: 2px solid #ffffff; 
+    margin: 10px auto; 
+    width: fit-content; /* يرتكز على عرض النص */
+    display: block;    /* لضمان عمل fit-content */
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; } /* تم تصحيح القيمة من 10 إلى 1 */
+}
+
+.fade-in-element {
+    /* 1s مدة الحركة، 2s مدة التأخير قبل البدء */
+    animation: fadeIn 1s ease-in-out 1s forwards;
+    opacity: 0; /* يبدأ مخفياً */
+}
+
+
+        .custom-img-btn {
+    /* تطبيق الصورة كخلفية */
+    pointer-events: auto !important;
+    background: url('button.png') no-repeat center center !important;
+    background-size: 100% 100% !important;
+    
+    /* إزالة الخلفيات السابقة والحدود */
+    background-color: transparent !important;
+    border: none !important;
+    
+    /* تنسيق النص */
+    color: white !important;
+    font-weight: bold;
+    padding: 8px 20px;
+    cursor: pointer;
+    
+    /* أبعاد الأزرار (يمكنك تعديلها لتناسب صورتك) */
+    min-width: 80px;
+    height: 40px;
+    
+    /* لضمان دقة الصورة إذا كانت بكسل آرت */
+    image-rendering: pixelated;
+    
+    /* تأثير عند الضغط */
+    transition: transform 0.1s;
+}
+
+.custom-img-btn:active {
+    transform: scale(0.9);
+    filter: brightness(0.8);
+}
+
+        /* القائمة الرئيسية - قابلة للسحب عمودياً */
+/* القائمة الرئيسية - إضافة الخلفية */
+/* القائمة الرئيسية - إزالة التنعيم وجعل البكسلات حادة */
+#mainMenu {
+    position: fixed;
+    inset: 0;
+    background: url('menu.png') no-repeat center center;
+    background-size: cover; 
+    z-index: 100;
+
+    /* --- السحر هنا لإزالة الضبابية --- */
+    image-rendering: pixelated;       /* للمتصفحات الحديثة */
+    image-rendering: crisp-edges;    /* لمتصفحات فايرفوكس */
+    -ms-interpolation-mode: nearest-neighbor; /* لمتصفحات IE القديمة */
+    
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+}
+
+
+        
+        /* تخصيص شريط التمرير */
+        #mainMenu::-webkit-scrollbar {
+            width: 4px;
+        }
+        #mainMenu::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+        #mainMenu::-webkit-scrollbar-thumb {
+            background: #e74c3c;
+            border-radius: 10px;
+        }
+        
+        .menu-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100%;
+            padding: 40px 20px;
+            box-sizing: border-box;
+        }
+        
+#customizerOverlay {
+    position: fixed;
+    inset: 0;
+    /* دمج صورة المنيو مع طبقة تعتيم خفيفة جداً لضمان رؤية الأزرار */
+    background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('menu.png') no-repeat center center;
+    background-size: cover; 
+    
+    display: none;
+    z-index: 200;
+    backdrop-filter: blur(8px); /* تنعيم خلفية القائمة */
+    image-rendering: pixelated;
+    
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+}
+
+        
+        #customizerOverlay::-webkit-scrollbar {
+            width: 4px;
+        }
+        #customizerOverlay::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+        #customizerOverlay::-webkit-scrollbar-thumb {
+            background: #3498db;
+            border-radius: 10px;
+        }
+        
+        .config-card {
+            background: var(--dark);
+            padding: 30px;
+            border-radius: 25px;
+            border: 1px solid #333;
+            width: 90%;
+            max-width: 450px;
+            margin: 40px auto;
+            text-align: center;
+        }
+        
+        .repo-btn { background: var(--repo-orange); color: white; padding: 15px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; font-weight: bold; margin-bottom: 20px; width: 100%; box-sizing: border-box; }
+.menu-btn {
+    /* وضع الصورة وتجبر المتصفح عليها */
+    background: url('button.png') no-repeat center center !important;
+    background-size: 100% 100% !important;
+    
+    /* إزالة الحدود والألوان */
+    border: none !important;
+    background-color: transparent !important;
+    
+    /* تنسيق النص ليظهر فوق الصورة */
+    color: white !important;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px black;
+    
+    width: 200px; /* يمكنك تعديل العرض حسب حجم صورتك */
+    height: 60px;  /* يمكنك تعديل الطول حسب حجم صورتك */
+    display: block;
+    margin: 10px auto;
+    cursor: pointer;
+    image-rendering: pixelated; /* للحفاظ على جودة البكسل */
+}
+
+        .menu-btn:active { transform: scale(0.97); }
+        
+        #gameCanvas { display: none; background: #000; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+
+        
+        .top-bar {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            right: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            pointer-events: none;
+        }
+        
+.top-btn-group {
+    display: flex;
+    flex-direction: column; /* هذا السطر هو المسؤول عن جعلها عمودية */
+    gap: 10px;              /* المسافة بين الأزرار */
+    align-items: center;    /* محاذاة الأزرار في المنتصف */
+    position: fixed;        /* لجعلها ثابتة في مكانها */
+    top: 45px;              /* المسافة من الأعلى */
+    right: 20px;            /* المسافة من اليمين (يمكنك تغييرها لـ left إذا أردت) */
+    z-index: 1000;          /* لضمان ظهورها فوق كل شيء */
+}
+
+        #exitBtn, #clearBtn {
+            padding: 8px 15px;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            pointer-events: auto;
+            cursor: pointer;
+        }
+        #exitBtn { background: var(--danger); }
+        #clearBtn { background: var(--warning); }
+        
+#killCounterGame {
+    position: fixed;         /* تثبيت مكانه على الشاشة */
+    top: 20px;               /* المسافة من الأعلى */
+    left: 50px;              /* المسافة من اليسار */
+    z-index: 1000;           /* ليكون فوق كل طبقات اللعبة */
+    
+    background: rgba(0,0,0,0.75);
+    padding: 8px 18px;
+    border-radius: 30px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #e74c3c;
+    border: 1px solid rgba(231,76,60,0.6);
+    backdrop-filter: blur(5px);
+    pointer-events: auto;
+    font-family: monospace;
+    letter-spacing: 1px;
+    box-shadow: 0 0 10px rgba(231,76,60,0.3);
+    
+    display: block !important; /* إجبار الظهور */
+}
+
+#blockCounterGame {
+    position: fixed;
+    top: 64px;
+    left: 50px;
+    z-index: 1000;
+    
+    background: rgba(0,0,0,0.75);
+    padding: 8px 18px 8px 40px;
+    border-radius: 30px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #e74c3c;
+    border: 1px solid rgba(231,76,60,0.6);
+    backdrop-filter: blur(5px);
+    pointer-events: auto;
+    font-family: monospace;
+    letter-spacing: 1px;
+    box-shadow: 0 0 10px rgba(231,76,60,0.3);
+    
+    display: block !important;
+}
+
+#blockCounterGame::before {
+    content: ""; /* مربع أبيض مؤقت حتى تحمل الصورة */
+    font-size: 16px;
+}
+
+
+
+#killCounterGame::before {
+    content: "⚔️ ";
+    font-size: 16px;
+}
+
+        
+/* مجموعة الحركة (يمين + يسار) - في منتصف أسفل الشاشة */
+.controls-move {
+    position: absolute;
+    bottom: 10px;
+    left: 20%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    pointer-events: auto;
+    z-index: 100;
+}
+
+/* مجموعة الأزرار الثلاثة (هجوم، اندفاع، قفز) - في أسفل يمين الشاشة */
+.controls-actions {
+    position: absolute;
+    bottom: 10px;
+    right: 20px;
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    pointer-events: auto;
+    z-index: 100;
+}
+
+.control-btn {
+    width: 75px;
+    height: 75px;
+    background: rgba(0,0,0,0.0);
+    border: 2px solid rgba(0,0,0,0.0);
+    border-radius: 0px;
+    cursor: pointer;
+    padding: 1px;
+    pointer-events: auto;
+}
+
+.control-btn img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    image-rendering: pixelated;
+    pointer-events: none;
+    
+    /* منع ظهور قائمة التحميل والحفظ عند الضغط المطول */
+    -webkit-touch-callout: none; /* لمنع القائمة الافتراضية في iOS و Android Chrome */
+    -webkit-user-select: none;   /* منع اختيار العنصر */
+    user-select: none;
+    -webkit-user-drag: none;     /* منع سحب الصورة */
+}
+
+
+.control-btn:active {
+    transform: scale(0.95);
+    border-color: #f39c12;
+}
+
+#uiLayer {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    pointer-events: none;  /* هذا يمنع الأزرار من العمل إذا لم تكن محددة */
+    display: none;
+}
+
+.controls {
+    pointer-events: auto !important;  /* تأكد أن منطقة الأزرار تستقبل الأحداث */
+}
+        .control-btn:active { transform: scale(0.95); background: rgba(255,255,255,0.2); }
+        
+        #healthBarContainer { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); width: 200px; height: 10px; background: #222; border-radius: 5px; overflow: hidden; display: none; }
+        #healthBar { height: 100%; background: var(--danger); width: 100%; transition: 0.2s; }
+        
+        .preview-container { display: flex; gap: 15px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
+        .preview-wrapper { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .preview-label { font-size: 14px; font-weight: bold; color: #bbb; }
+        .preview-box { width: 80px; height: 80px; border: 2px dashed #444; border-radius: 15px; overflow: hidden; background: #000; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; }
+        .preview-box img { max-width: 90%; max-height: 90%; object-fit: contain; }
+        .preview-box:active { transform: scale(0.95); }
+
+        .progress-container { width: 100%; background-color: #333; border-radius: 10px; margin: 10px 0; display: none; }
+        .progress-bar { width: 0%; height: 8px; background-color: var(--success); border-radius: 10px; transition: width 0.1s; box-shadow: 0 0 10px var(--success); }
+        
+        .slider-container { margin: 20px 0; text-align: right; }
+        .slider-label { font-size: 14px; color: #bbb; display: block; margin-bottom: 8px; }
+        input[type="range"] { width: 100%; cursor: pointer; accent-color: var(--primary); }
+
+        input[type="file"] { display: none; }
+        #killCountDisplay { color: #e74c3c; font-weight: bold; font-size: 18px; margin-bottom: 15px; white-space: pre-wrap; text-align: center; }
+        
+        .info-badge { position: fixed; bottom: 10px; left: 10px; background: rgba(0,0,0,0.6); padding: 5px 10px; border-radius: 8px; font-size: 10px; color: #888; z-index: 300; pointer-events: none; }
+        
+        .player-name-badge {
+            background: rgba(52, 152, 219, 0.2);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #3498db;
+            font-weight: bold;
+            border-right: 3px solid #3498db;
+            margin-bottom: 15px;
+            text-align: right;
+        }
+        
+        /* مؤشر السحب */
+        .scroll-hint {
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            direction: ltr;
+        }
+        .scroll-hint::before {
+            content: "👆 ";
+        }
+    </style>
+</head>
+<body>
+
+<div id="startScreen" style="position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; align-items: center; justify-content: center; flex-direction: column;">    
+    <img src="favicon.png" alt="Game Logo" class="fade-in-element" style="max-width: 220px; margin-bottom: 20px; image-rendering: pixelated;">    
+    <h1 class="fade-in-element" style="color: white; margin-bottom: 20px;">keven 01</h1>
+    <button id="startBtn" class="menu-btn fade-in-element" style="background: url('button.png') no-repeat center/contain !important; width: 150px; height: 50px; cursor: pointer;">ابدأ اللعب</button>
+</div>
+
+
+
+
+<div id="mainMenu">
+<button id="musicMenuToggleBtn" class="menu-btn" style="background:var(--primary); position:fixed; top:10px; left:10px; width:80px; height:80px; border-radius:10px; font-size:15px; padding:0; margin:0; display:flex; align-items:center; justify-content:center; z-index:9999;">🎵</button>
+    <div style="text-align: center; margin-bottom: 15px;">
+<img id="quickShowPlayer" style="max-width: none; border: 5px solid #ffffff; border-radius: 8px; display: none; background: url('player_f.png') no-repeat center center; background-size: cover;">
+        <div id="frameValDisplay" style="color: #f39c12; font-size: 14px; margin-top: 5px; font-weight: bold;"></div>
+    </div>
+
+<script>
+window.addEventListener('load', async function() {
+    // انتظر حتى يتوفر storage
+    let retries = 0;
+    while (!window.storage && retries < 50) {
+        await new Promise(r => setTimeout(r, 100));
+        retries++;
+    }
+    
+    // الحصول على صورة اللاعب من IndexedDB أو localStorage
+    let imgData = null;
+    if (window.storage) {
+        await window.storage.waitForImages();
+        imgData = window.storage.player;
+    }
+    
+    // إذا لم توجد في IndexedDB، جرب localStorage
+    if (!imgData) {
+        imgData = localStorage.getItem('playerImage');
+    }
+    
+    const imgTag = document.getElementById('quickShowPlayer');
+    const textTag = document.getElementById('frameValDisplay');
+    
+    const totalKills = localStorage.getItem('totalKills') || 0;
+
+    if (imgData && imgTag) {
+        if (!document.getElementById('engineTitle')) {
+            const title = document.createElement('h1');
+            title.id = 'engineTitle';
+            title.innerText = 'Cheetah Engine';
+            title.style.fontSize = '32px';
+            title.style.fontWeight = 'bold';
+            title.style.marginBottom = '15px';
+            title.style.color = '#ffffff'; 
+            title.style.textAlign = 'center';
+            imgTag.parentNode.insertBefore(title, imgTag);
+        }
+
+        const boxSize = 250; 
+        imgTag.style.display = 'block'; 
+        imgTag.style.margin = '0 auto'; 
+        imgTag.style.width = boxSize + 'px';  
+        imgTag.style.height = boxSize + 'px';
+
+        // صورتين: الخلفية (player_f.png) في الأسفل، وصورة اللاعب في الأعلى
+        imgTag.style.background = `
+            url('${imgData}') no-repeat 0px 0px,
+            url('player_f.png') no-repeat center center
+        `;
+        imgTag.style.backgroundSize = '2000px 500px, cover';
+        imgTag.style.backgroundPosition = '0px 0px, center';
+        
+        // إخفاء src لأننا نستخدم background الآن
+        imgTag.removeAttribute('src');
+        
+        if (!document.getElementById('killCountDisplay')) {
+            const killText = document.createElement('div');
+            killText.id = 'killCountDisplay';
+            killText.innerText = "عدد القتل: " + totalKills;
+            killText.style.fontSize = '20px';
+            killText.style.color = '#e74c3c';
+            killText.style.textAlign = 'center';
+            killText.style.marginTop = '10px';
+            killText.style.fontWeight = 'bold';
+            imgTag.parentNode.insertBefore(killText, imgTag.nextSibling);
+        }
+        
+        if (!document.getElementById('loadingNotice')) {
+            const loadingText = document.createElement('div');
+            loadingText.id = 'loadingNotice';
+            loadingText.innerText = "ازرار التحكم في كومبيوتر: a و d للحركة يمينا ويسارا. w للقفز و s للضرب و e للاندفاع.";
+            loadingText.style.textAlign = 'center';
+            loadingText.style.color = '#ffffff';
+            loadingText.style.marginTop = '20px';
+            loadingText.style.fontSize = '14px';
+            imgTag.parentNode.appendChild(loadingText);
+        }
+    }
+}); 
+</script>
+
+<div style="color: white; text-align: center; font-weight: bold; margin-top: 10px;">قد يتأخر تحميل صور الساحة وواجهة شخصية اللاعب لذا ادخل للعب واخرج عدة مرات. </div>
+
+    <button id="survivalBtn" class="menu-btn">طور البقاء (survival) </button>
+            <button class="menu-btn" style="background:var(--success)" id="creativeBtn">وضع البناء (Creative)</button>
+            <button class="menu-btn" style="background:var(--primary)" id="openCustomizer">تغيير صور الساحة🏞️🏃👾</button>
+            <!-- زر نسخ بيانات الساحة -->
+<button id="copyLevelDataBtn" class="menu-btn" style="background: linear-gradient(135deg, #f39c12, #e67e22); width:100%; margin-top:10px;">
+    📋 نسخ بيانات الساحة (كتل + موقع اللاعب)
+</button>
+
+<!-- منطقة عرض البيانات المنسوخة -->
+<div id="levelDataDisplay" style="
+    display: none;
+    background: rgba(0,0,0,0.8);
+    border: 1px solid #f39c12;
+    border-radius: 12px;
+    padding: 12px;
+    margin-top: 10px;
+    max-height: 250px;
+    overflow-y: auto;
+    text-align: left;
+    direction: ltr;
+    font-family: monospace;
+    font-size: 12px;
+    color: #2ecc71;
+    white-space: pre-wrap;
+    word-break: break-all;
+"></div>
+
+<button id="copyDataToClipboardBtn" class="menu-btn" style="background: linear-gradient(135deg, #3498db, #2980b9); width:100%; margin-top:5px; display:none;">
+    📋 نسخ إلى الحافظة
+</button>
+
+<!-- ====== زر استيراد بيانات الساحة ====== -->
+<button id="importLevelDataBtn" class="menu-btn" style="background: linear-gradient(135deg, #8e44ad, #6c3483); width:100%; margin-top:10px;">
+    📥 استيراد بيانات الساحة (لصق النص)
+</button>
+
+<!-- منطقة اللصق -->
+<div id="importArea" style="display: none; margin-top: 10px;">
+    <textarea id="importTextArea" style="
+        width: 100%;
+        height: 200px;
+        background: rgba(0,0,0,0.8);
+        border: 2px solid #8e44ad;
+        border-radius: 12px;
+        color: #2ecc71;
+        font-family: monospace;
+        font-size: 12px;
+        padding: 10px;
+        resize: vertical;
+        box-sizing: border-box;
+        direction: ltr;
+        text-align: left;
+    " placeholder="الصق هنا البيانات بهذا التنسيق:
+player:400,1400
+{
+-200,1200
+0,1200
+200,1200
+}"></textarea>
+    
+    <div style="display: flex; gap: 10px; margin-top: 8px;">
+        <button id="applyImportBtn" class="menu-btn" style="background: linear-gradient(135deg, #27ae60, #229954); flex:1;">
+            ✅ تطبيق
+        </button>
+        <button id="cancelImportBtn" class="menu-btn" style="background: linear-gradient(135deg, #e74c3c, #c0392b); flex:1;">
+            ❌ إلغاء
+        </button>
+    </div>
+    
+    <div id="importResult" style="
+        margin-top: 8px;
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-size: 13px;
+        display: none;
+        text-align: center;
+    "></div>
+</div>
+
+<a href="https://fhgdhgvhggvfgg.github.io/Cpe-cheetah-/warehouse/index.html" target="_blank" class="menu-btn" style="background:var(--primary); text-decoration: none; display: flex; align-items: center; justify-content: center;">عتاد اللعبة واخر الاخبار</a>
+
+
+
+
+        </div>
+    </div>
+
+    <div id="customizerOverlay">
+        <div class="config-card">
+        
+        <!-- أضف هذا قبل زر حفظ وتحديث -->
+<!-- أضف هذا قبل زر حفظ وتحديث -->
+
+
+            <h2 style="margin-top:0;">Studio Cheetah</h2>
+            
+            <div id="playerNameDisplay" class="player-name-badge" style="display: none;"></div>
+            <a href="https://fhgdhgvhggvfgg.github.io/Cpe-cheetah-/character_system/?hl=ar-EG" target="_blank" class="repo-btn">تغيير الشخصية والساحة والعدو</a>
+            <a href="https://fhgdhgvhggvfgg.github.io/Cpe-cheetah-/warehouse/index.html" target="_blank" class="repo-btn">مستودع عتاد اللعبة لخدمة المطور الشغوف</a>
+            <a href="https://fhgdhgvhggvfgg.github.io/Cpe-cheetah-/assets" target="_blank" class="repo-btn">تحميل التصاميم الجاهزة</a>
+            <a href="https://fhgdhgvhggvfgg.github.io/Cpe-cheetah-/photo_edit/" target="_blank" class="repo-btn"> اصنع رسوميات للاعب</a>
+            <div class="preview-container">
+                <div class="preview-wrapper">
+                    <label for="playerLoader"><div class="preview-box"><img id="playerPreview" src=""></div></label>
+                    <span class="preview-label">اللاعب 🏃  </span>
+                </div>
+                <div class="preview-wrapper">
+                    <label for="enemyLoader"><div class="preview-box"><img id="enemyPreview" src=""></div></label>
+                    <span class="preview-label">العدو 👾</span>
+                </div>
+                <div class="preview-wrapper">
+                    <label for="bgLoader"><div class="preview-box"><img id="bgPreview" src=""></div></label>
+                    <span class="preview-label">الساحة 🏞️</span>
+                </div>
+            </div>
+            
+            <div class="slider-container">
+                <span class="slider-label">حجم أزرار التحكم: 🎮 <span id="sizeVal">75</span>px</span>
+                <input type="range" id="btnSizeSlider" min="50" max="300" value="75">
+                
+                
+                    <span class="slider-label">تغيير سلوك الكتلة<span id="superModeStatus">🟢 مفعل</span></span>
+    <button id="toggleSuperMode" class="custom-img-btn" style="width: 100%;">🔘 تبديل الوضع</button>
+    <div style="font-size:  12px; color: #aaa; margin-top: 5px;">غير سلوكها ان كنت تريدها ان تنفجر او تكون جامدة</div> 
+            </div>
+            
+<div class="slider-container">
+    <span class="slider-label">مسافة التقريب 👁️ <span id="zoomVal">1.5</span></span>
+    <input type="range" id="zoomSlider" min="1" max="4" step="0.1" value="1">
+</div>
+
+            <div class="progress-container" id="progCont">
+                <div class="progress-bar" id="progBar"></div>
+            </div>
+            
+            <input type="file" id="playerLoader" accept="image/*">
+            <input type="file" id="enemyLoader" accept="image/*">
+            <input type="file" id="bgLoader" accept="image/*">
+            
+            <button class="menu-btn" style="background:var(--success); width:100%;" id="saveAndReload">💾 حفظ وتحديث</button>
+            <button class="menu-btn" style="background:var(--danger); width:100%;" id="closeCustomizer">❌ إلغاء</button>
+            
+            <div class="scroll-hint">اسحب للأعلى والأسفل</div>
+        </div>
+    </div>
+
+    <div id="uiLayer">
+        <button id="zoomInBtn" class="custom-img-btn" style="background: #27ae60; width: 40px; height: 40px; min-width: 20px; padding: 0; font-size: 20px; pointer-events: auto;">+</button>
+<span id="zoomValueDisplay" style="color: white; font-weight: bold; text-align: center; background: rgba(0,0,0,0.5); padding: 4px 8px; border-radius: 8px; font-size: 12px; pointer-events: auto;">1.5x</span>
+
+<script>
+(function() {
+    var span = document.getElementById('zoomValueDisplay');
+    if (span) {
+        var savedZoom = localStorage.getItem('gameZoom');
+        var currentZoom = savedZoom ? parseFloat(savedZoom) : 1.5;
+        span.innerText = currentZoom.toFixed(1) + 'x';
+    }
+})();
+</script>
+    <button id="zoomOutBtn" class="custom-img-btn" style="background: #e74c3c; width: 40px; height: 40px; min-width: 20px; padding: 0; font-size: 20px; pointer-events: auto;">-</button>
+        <div id="healthBarContainer"><div id="healthBar"></div></div>
+        
+        <div class="top-bar">
+<div class="top-btn-group" style="pointer-events: auto;">
+    <button id="pauseBtn" class="custom-img-btn">إيقاف</button>
+    <button id="clearBtn" class="custom-img-btn">مسح</button>
+    <button id="exitBtn" class="custom-img-btn">خروج</button>
+    
+
+</div>
+
+<!-- العدادين الجديدين للقدرة الخارقة -->
+<div id="abilityCooldownTimer" style="position: fixed; top: 120px; left: 50px; z-index: 1000; background: rgba(0,0,0,0.75); padding: 5px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; color: #3498db; border: 1px solid #3498db; backdrop-filter: blur(5px); pointer-events: auto; font-family: monospace; display: none;">
+    🔋: <span id="cooldownSeconds">0</span>  </div>
+
+<div id="abilityDurationTimer" style="position: fixed; top: 148px; left: 50px; z-index: 1000; background: rgba(0,0,0,0.75); padding: 5px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; color: #e74c3c; border: 1px solid #e74c3c; backdrop-filter: blur(5px); pointer-events: auto; font-family: monospace; display: none;">
+    ⚡ <span id="durationSeconds">0</span>  </div>
+            <div id="killCounterGame">0</div>
+            <div id="blockCounterGame">0</div>
+        </div>
+        
+
+<!-- أزرار تحتوي على img -->
+<div class="controls-move">
+    <button class="control-btn" id="rightBtn"></button>
+    <button class="control-btn" id="leftBtn"></button>
+</div>
+
+<div class="controls-actions">
+    <button class="control-btn" id="attackBtn"></button>
+    <button class="control-btn" id="dashBtn"></button>
+    <button class="control-btn" id="jumpBtn"></button>
+</div>
+
+
+        
+    </div>
+    
+
+    <canvas id="gameCanvas"></canvas>
+
+    <script type="module" src="js/main.js"></script>
+    
+<script>
+// نظام مؤقتات القدرة الخارقة - يتوقف عند الضغط على استئناف
+(function() {
+    let abilityCooldownRemaining = 0;
+    let abilityDurationRemaining = 0;
+    
+    const cooldownTimer = document.getElementById('abilityCooldownTimer');
+    const durationTimer = document.getElementById('abilityDurationTimer');
+    const cooldownSpan = document.getElementById('cooldownSeconds');
+    const durationSpan = document.getElementById('durationSeconds');
+    
+    function updateDisplay() {
+        if (cooldownTimer && cooldownSpan) {
+            if (abilityCooldownRemaining > 0) {
+                cooldownTimer.style.display = 'block';
+                cooldownSpan.innerText = Math.ceil(abilityCooldownRemaining);
+            } else {
+                cooldownTimer.style.display = 'none';
+            }
+        }
+        
+        if (durationTimer && durationSpan) {
+            if (abilityDurationRemaining > 0) {
+                durationTimer.style.display = 'block';
+                durationSpan.innerText = Math.ceil(abilityDurationRemaining);
+            } else {
+                durationTimer.style.display = 'none';
+            }
+        }
+    }
+    
+    window.setAbilityTimers = function(cooldown, duration) {
+        abilityCooldownRemaining = cooldown;
+        abilityDurationRemaining = duration;
+        updateDisplay();
+    };
+    
+    // دالة تحديث المؤقتات - تتوقف عندما تكون اللعبة متوقفة
+    window.updateAbilityTimers = function(dt) {
+        // فقط قم بتحديث المؤقتات إذا كانت اللعبة غير متوقفة
+        if (!window.isGamePaused) {
+            let changed = false;
+            if (abilityCooldownRemaining > 0) {
+                abilityCooldownRemaining -= dt;
+                if (abilityCooldownRemaining < 0) abilityCooldownRemaining = 0;
+                changed = true;
+            }
+            if (abilityDurationRemaining > 0) {
+                abilityDurationRemaining -= dt;
+                if (abilityDurationRemaining < 0) abilityDurationRemaining = 0;
+                changed = true;
+            }
+            if (changed) updateDisplay();
+        }
+    };
+    
+    // حلقة تحديث تلقائية
+    let lastTime = 0;
+    function loop(now) {
+        if (lastTime > 0) {
+            const dt = Math.min(0.033, (now - lastTime) / 1000);
+            if (window.updateAbilityTimers) window.updateAbilityTimers(dt);
+        }
+        lastTime = now;
+        requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+})();
+
+// مراقبة متغيرات اللعبة
+setInterval(function() {
+    if (window.currentGame) {
+        if (typeof window.currentGame.abilityCooldownRemaining !== 'undefined') {
+            window.setAbilityTimers(
+                window.currentGame.abilityCooldownRemaining,
+                window.currentGame.abilityDurationRemaining
+            );
+        }
+    }
+}, 100);
+</script>
+    <script>
+// للتجربة فقط - يظهر العدادين بعد 3 ثوان من تحميل الصفحة
+setTimeout(function() {
+    var cooldown = document.getElementById('abilityCooldownTimer');
+    var duration = document.getElementById('abilityDurationTimer');
+    if (cooldown) cooldown.style.display = 'block';
+    if (duration) duration.style.display = 'block';
+    document.getElementById('cooldownSeconds').innerText = '100';
+    document.getElementById('durationSeconds').innerText = '30';
+}, 3000);
+</script>
+
+<script>
+    const startScreen = document.getElementById('startScreen');
+    const startBtn = document.getElementById('startBtn');
+    const mainMenu = document.getElementById('mainMenu');
+
+    // إخفاء القائمة الرئيسية افتراضياً حتى يضغط المستخدم على الزر
+    if (mainMenu) {
+        mainMenu.style.display = 'none';
+    }
+
+    // التحقق مما إذا كان المستخدم قد ضغط على الزر سابقاً
+    if (sessionStorage.getItem('gameStarted')) {
+        startScreen.style.display = 'none';
+        if (mainMenu) mainMenu.style.display = 'block';
+    }
+
+    // عند الضغط على زر ابدأ اللعب
+    startBtn.addEventListener('click', function() {
+        startScreen.style.opacity = '0';
+        startScreen.style.transition = 'opacity 0.5s';
+        
+        sessionStorage.setItem('gameStarted', 'true');
+        
+        setTimeout(() => {
+            startScreen.style.display = 'none';
+            if (mainMenu) mainMenu.style.display = 'block';
+        }, 500);
+    });
+</script>
+
+
+<script>
+// تحسين تحميل أزرار التحكم من صورة الخلفية - يتم التحميل فوراً
+async function loadButtonImagesFromBg() {
+    // انتظر حتى يتوفر storage
+    let retries = 0;
+    while (!window.storage && retries < 50) {
+        await new Promise(r => setTimeout(r, 100));
+        retries++;
+    }
+    
+    // انتظر تحميل الصور من IndexedDB
+    let bgImageSrc = null;
+    if (window.storage) {
+        await window.storage.waitForImages();
+        bgImageSrc = window.storage.bg;
+    }
+    
+    // إذا لم توجد في IndexedDB، جرب localStorage
+    if (!bgImageSrc) {
+        bgImageSrc = localStorage.getItem('bgImage');
+    }
+    
+    if (!bgImageSrc) {
+        console.log('⚠️ لا توجد صورة خلفية لتحميل الأزرار، سيتم المحاولة مرة أخرى بعد 1 ثانية');
+        setTimeout(loadButtonImagesFromBg, 1000);
+        return;
+    }
+    
+    const bgImage = new Image();
+    bgImage.crossOrigin = 'Anonymous';
+    
+    bgImage.onload = function() {
+        const imgWidth = this.width;
+        const imgHeight = this.height;
+        
+        const scaleX = imgWidth / 810;
+        const scaleY = imgHeight / 1215;
+        
+        const btnWidth = 40 * scaleX;
+        const btnHeight = 40 * scaleY;
+        
+        const startY = imgHeight - btnHeight;
+        
+        const parts = [
+            { x: 0 * scaleX,      y: startY, id: 'leftBtnImg' },
+            { x: 40 * scaleX,     y: startY, id: 'rightBtnImg' },
+            { x: 80 * scaleX,     y: startY, id: 'jumpBtnImg' },
+            { x: 120 * scaleX,    y: startY, id: 'dashBtnImg' },
+            { x: 160 * scaleX,    y: startY, id: 'attackBtnImg' }
+        ];
+        
+        const canvas = document.createElement('canvas');
+        canvas.width = btnWidth;
+        canvas.height = btnHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = false;
+        
+// تحديث الدالة لتعيين الصور كخلفيات للأزرار مباشرة بدلاً من وسم img
+parts.forEach(part => {
+    if (part.x + btnWidth <= imgWidth && part.y + btnHeight <= imgHeight) {
+        ctx.clearRect(0, 0, btnWidth, btnHeight);
+        ctx.drawImage(bgImage, part.x, part.y, btnWidth, btnHeight, 0, 0, btnWidth, btnHeight);
+        
+        const dataURL = canvas.toDataURL();
+        
+        // هنا السحر: نحصل على الزر نفسه (الـ Button) وليس الـ img بداخلها
+        const btnId = part.id.replace('Img', ''); // ستحول 'leftBtnImg' إلى 'leftBtn'
+        const btnElement = document.getElementById(btnId);
+        
+        if (btnElement) {
+            // نضع الصورة كخلفية للزر مباشرة
+            btnElement.style.backgroundImage = `url('${dataURL}')`;
+            btnElement.style.backgroundSize = '100% 100%';
+            btnElement.style.backgroundRepeat = 'no-repeat';
+            btnElement.style.backgroundPosition = 'center';
+            
+            // نضمن تفاعل البكسل الحاد
+            btnElement.style.imageRendering = 'pixelated';
+        }
+    }
+});
+
+        
+        console.log('✅ تم تحميل أزرار التحكم بنجاح');
+        
+        // إظهار الأزرار بعد التحميل (اختياري)
+        document.querySelectorAll('.control-btn img').forEach(img => {
+            img.style.opacity = '1';
+        });
+    };
+    
+    bgImage.onerror = () => {
+        console.log('⚠️ فشل تحميل صورة الخلفية للأزرار، سيتم المحاولة مرة أخرى');
+        setTimeout(loadButtonImagesFromBg, 1000);
+    };
+    
+    bgImage.src = bgImageSrc;
+}
+
+// بدء تحميل الأزرار فوراً (قبل أن يضغط المستخدم على زر اللعب)
+loadButtonImagesFromBg();
+
+// استمع لتغيرات الصور (عند تغيير الخلفية من القائمة)
+window.addEventListener('storage', (e) => {
+    if (e.key === 'bgImage' || e.key === 'bgImageUpdated') {
+        setTimeout(loadButtonImagesFromBg, 200);
+    }
+});
+
+// أيضاً استمع لحدث custom عند تغيير الصورة من داخل اللعبة
+window.addEventListener('bgImageChanged', () => {
+    setTimeout(loadButtonImagesFromBg, 200);
+});
+</script>
+
+<script>
+// منع ظهور قائمة خيارات الصور عند الضغط المطول على أزرار التحكم
+document.querySelectorAll('.control-btn').forEach(btn => {
+    btn.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+    });
+});
+</script>
+
+<script>
+// ============================================================
+// 📋 نسخ بيانات الساحة (بالتنسيق المطلوب)
+// ============================================================
+
+(function() {
+    const copyBtn = document.getElementById('copyLevelDataBtn');
+    const displayDiv = document.getElementById('levelDataDisplay');
+    const copyClipboardBtn = document.getElementById('copyDataToClipboardBtn');
+    
+    if (!copyBtn) return;
+    
+    // دالة لجلب البيانات
+    async function getLevelData() {
+        // 1. جلب الكتل من localStorage
+        let platforms = [];
+        try {
+            const saved = localStorage.getItem('gamePlatforms');
+            if (saved) {
+                platforms = JSON.parse(saved);
+            }
+        } catch(e) { platforms = []; }
+        
+        // 2. جلب موقع اللاعب
+        let playerX = parseFloat(localStorage.getItem('playerLastX')) || 400;
+        let playerY = parseFloat(localStorage.getItem('playerLastY')) || 1400;
+        
+        return {
+            platforms,
+            playerX,
+            playerY
+        };
+    }
+    
+    // دالة لتنسيق البيانات بالتنسيق المطلوب
+    function formatLevelData(data) {
+        let text = '';
+        
+        // السطر الأول: player:x,y
+        text += `player:${Math.round(data.playerX)},${Math.round(data.playerY)}\n`;
+        
+        // فتح القوس
+        text += '{\n';
+        
+        // الكتل
+        if (data.platforms.length === 0) {
+            text += '  // لا توجد كتل\n';
+        } else {
+            // ترتيب الكتل حسب x ثم y
+            const sorted = [...data.platforms].sort((a, b) => a.x - b.x || a.y - b.y);
+            sorted.forEach((p) => {
+                text += `${Math.round(p.x)},${Math.round(p.y)}\n`;
+            });
+        }
+        
+        // إغلاق القوس
+        text += '}';
+        
+        return text;
+    }
+    
+    // دالة عرض البيانات
+    async function showLevelData() {
+        const data = await getLevelData();
+        const formatted = formatLevelData(data);
+        
+        displayDiv.style.display = 'block';
+        displayDiv.textContent = formatted;
+        copyClipboardBtn.style.display = 'block';
+        
+        // حفظ البيانات في متغير لاستخدامها في النسخ
+        displayDiv.dataset.rawData = formatted;
+    }
+    
+    // زر عرض البيانات
+    copyBtn.onclick = function(e) {
+        e.preventDefault();
+        showLevelData();
+    };
+    
+    // زر نسخ إلى الحافظة
+    copyClipboardBtn.onclick = function(e) {
+        e.preventDefault();
+        const rawData = displayDiv.dataset.rawData || displayDiv.textContent;
+        
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(rawData).then(() => {
+                const originalText = copyClipboardBtn.textContent;
+                copyClipboardBtn.textContent = '✅ تم النسخ!';
+                copyClipboardBtn.style.background = 'linear-gradient(135deg, #27ae60, #229954)';
+                setTimeout(() => {
+                    copyClipboardBtn.textContent = originalText;
+                    copyClipboardBtn.style.background = 'linear-gradient(135deg, #3498db, #2980b9)';
+                }, 2000);
+            }).catch(() => {
+                // طريقة بديلة للنسخ
+                const textarea = document.createElement('textarea');
+                textarea.value = rawData;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                
+                const originalText = copyClipboardBtn.textContent;
+                copyClipboardBtn.textContent = '✅ تم النسخ!';
+                copyClipboardBtn.style.background = 'linear-gradient(135deg, #27ae60, #229954)';
+                setTimeout(() => {
+                    copyClipboardBtn.textContent = originalText;
+                    copyClipboardBtn.style.background = 'linear-gradient(135deg, #3498db, #2980b9)';
+                }, 2000);
+            });
+        } else {
+            // طريقة بديلة للمتصفحات القديمة
+            const textarea = document.createElement('textarea');
+            textarea.value = rawData;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            
+            const originalText = copyClipboardBtn.textContent;
+            copyClipboardBtn.textContent = '✅ تم النسخ!';
+            copyClipboardBtn.style.background = 'linear-gradient(135deg, #27ae60, #229954)';
+            setTimeout(() => {
+                copyClipboardBtn.textContent = originalText;
+                copyClipboardBtn.style.background = 'linear-gradient(135deg, #3498db, #2980b9)';
+            }, 2000);
+        }
+    };
+    
+})();
+</script>
+<script>
+// ============================================================
+// 📥 استيراد بيانات الساحة (للتنسيق: player:x,y { x,y ... })
+// ============================================================
+
+(function() {
+    const importBtn = document.getElementById('importLevelDataBtn');
+    const importArea = document.getElementById('importArea');
+    const importTextArea = document.getElementById('importTextArea');
+    const applyBtn = document.getElementById('applyImportBtn');
+    const cancelBtn = document.getElementById('cancelImportBtn');
+    const importResult = document.getElementById('importResult');
+    
+    if (!importBtn) return;
+    
+    importBtn.onclick = function(e) {
+        e.preventDefault();
+        if (importArea.style.display === 'none') {
+            importArea.style.display = 'block';
+            importTextArea.focus();
+            importResult.style.display = 'none';
+        } else {
+            importArea.style.display = 'none';
+        }
+    };
+    
+    cancelBtn.onclick = function(e) {
+        e.preventDefault();
+        importArea.style.display = 'none';
+        importTextArea.value = '';
+        importResult.style.display = 'none';
+    };
+    
+    function parseLevelData(text) {
+        const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+        
+        let playerX = null;
+        let playerY = null;
+        let platforms = [];
+        let insideBraces = false;
+        
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            
+            if (line.startsWith('player:')) {
+                const coords = line.replace('player:', '').trim();
+                const parts = coords.split(',');
+                if (parts.length === 2) {
+                    playerX = parseFloat(parts[0]);
+                    playerY = parseFloat(parts[1]);
+                    if (isNaN(playerX) || isNaN(playerY)) {
+                        return { error: '❌ خطأ في تنسيق موقع اللاعب: يجب أن يكون player:x,y' };
+                    }
+                } else {
+                    return { error: '❌ خطأ في تنسيق موقع اللاعب: يجب أن يكون player:x,y' };
+                }
+                continue;
+            }
+            
+            if (line === '{') {
+                insideBraces = true;
+                continue;
+            }
+            
+            if (line === '}') {
+                insideBraces = false;
+                continue;
+            }
+            
+            if (insideBraces) {
+                if (line.startsWith('//')) continue;
+                
+                const parts = line.split(',');
+                if (parts.length === 2) {
+                    const x = parseFloat(parts[0]);
+                    const y = parseFloat(parts[1]);
+                    if (!isNaN(x) && !isNaN(y)) {
+                        platforms.push({ x, y });
+                    } else {
+                        return { error: `❌ خطأ في تنسيق الكتلة: "${line}" يجب أن تكون x,y` };
+                    }
+                } else {
+                    if (line.length > 0 && !line.startsWith('//')) {
+                        return { error: `❌ خطأ في تنسيق الكتلة: "${line}" يجب أن تكون x,y` };
+                    }
+                }
+            }
+        }
+        
+        if (playerX === null || playerY === null) {
+            return { error: '❌ لم يتم العثور على موقع اللاعب. تأكد من وجود السطر player:x,y' };
+        }
+        
+        return {
+            playerX,
+            playerY,
+            platforms,
+            count: platforms.length
+        };
+    }
+    
+    function applyData(data) {
+        // ============================================
+        // 1. تحديث localStorage (البيانات الرئيسية)
+        // ============================================
+        localStorage.setItem('playerLastX', data.playerX);
+        localStorage.setItem('playerLastY', data.playerY);
+        localStorage.setItem('gamePlatforms', JSON.stringify(data.platforms));
+        
+        // ============================================
+        // 2. تحديث كائن storage في window
+        // ============================================
+        if (window.storage) {
+            window.storage.lastX = data.playerX;
+            window.storage.lastY = data.playerY;
+            window.storage.platforms = data.platforms;
+            
+            // حفظ في StorageManager أيضاً
+            if (typeof window.storage.savePlayerPosition === 'function') {
+                window.storage.savePlayerPosition(data.playerX, data.playerY);
+            }
+            if (typeof window.storage.savePlatforms === 'function') {
+                window.storage.savePlatforms(data.platforms);
+            }
+        }
+        
+        // ============================================
+        // 3. تحديث اللعبة إذا كانت مفتوحة (مباشرة)
+        // ============================================
+        if (window.currentGame) {
+            // تحديث موقع اللاعب
+            window.currentGame.x = data.playerX;
+            window.currentGame.y = data.playerY;
+            window.currentGame.camX = data.playerX;
+            window.currentGame.camY = data.playerY;
+            window.currentGame.prevX = data.playerX;
+            window.currentGame.prevY = data.playerY;
+            window.currentGame.renderX = data.playerX;
+            window.currentGame.renderY = data.playerY;
+            
+            // تحديث الكتل (المنصات)
+            window.currentGame.platforms = data.platforms;
+            
+            // تحديث التخزين في GameCore
+            if (window.currentGame.storage) {
+                window.currentGame.storage.platforms = data.platforms;
+            }
+            
+            console.log('✅ تم تحديث اللعبة مباشرة!');
+        }
+        
+        // ============================================
+        // 4. تحديث واجهة المستخدم
+        // ============================================
+        // تحديث عداد البلوكات
+        const blockCounter = document.getElementById('blockCounterGame');
+        if (blockCounter) {
+            blockCounter.textContent = data.platforms.length;
+        }
+        
+        // تحديث عبر UIManager
+        if (window.uiManager) {
+            window.uiManager.updateBlockCounter(data.platforms.length);
+        }
+        
+        // ============================================
+        // 5. عرض رسالة النجاح
+        // ============================================
+        showResult(
+            `✅ تم التحديث بنجاح!\n` +
+            `📍 موقع اللاعب: (${data.playerX}, ${data.playerY})\n` +
+            `🧱 عدد الكتل: ${data.platforms.length}\n` +
+            (window.currentGame ? '🎮 تم تحديث اللعبة مباشرة!' : '🔄 ادخل للعبة لترى التغييرات'),
+            '#27ae60'
+        );
+        
+        // إغلاق منطقة اللصق بعد 2.5 ثانية
+        setTimeout(() => {
+            importArea.style.display = 'none';
+            importTextArea.value = '';
+        }, 2500);
+    }
+    
+    function showResult(message, color = '#f39c12') {
+        importResult.style.display = 'block';
+        importResult.textContent = message;
+        importResult.style.color = color;
+        importResult.style.border = `1px solid ${color}`;
+        importResult.style.backgroundColor = 'rgba(0,0,0,0.6)';
+        importResult.style.padding = '10px';
+        importResult.style.borderRadius = '8px';
+        importResult.style.whiteSpace = 'pre-wrap';
+        importResult.style.textAlign = 'right';
+    }
+    
+    applyBtn.onclick = function(e) {
+        e.preventDefault();
+        
+        const text = importTextArea.value;
+        if (!text.trim()) {
+            showResult('⚠️ الرجاء لصق البيانات أولاً!', '#f39c12');
+            return;
+        }
+        
+        const result = parseLevelData(text);
+        
+        if (result.error) {
+            showResult(result.error, '#e74c3c');
+            return;
+        }
+        
+        applyData(result);
+    };
+    
+    importTextArea.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.key === 'Enter') {
+            e.preventDefault();
+            applyBtn.click();
+        }
+    });
+    
+})();
+</script>
+</body>
+</html>
