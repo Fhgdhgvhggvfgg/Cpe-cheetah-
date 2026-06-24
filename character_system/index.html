@@ -998,7 +998,7 @@ drawEnemy() {
                 
                 this.ctx.drawImage(this.bgImg, 
                     0, 0, this.bgImg.width, sourceHeight,
-                    0, 0, this.LOGIC_WIDTH, skyHeight * 1.3);
+                    0, -35, this.LOGIC_WIDTH, skyHeight * 1.3);
             } else {
                 const grad = this.ctx.createLinearGradient(0, 0, 0, this.LOGIC_HEIGHT / 2);
                 grad.addColorStop(0, '#1a1a2e');
