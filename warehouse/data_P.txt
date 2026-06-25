@@ -5,6 +5,8 @@ p(-600,100) s(200,200) xxx
 keven_smile.png
 p(-350,200) s(100,100) xxx
 cheetah_smile.png
+p(1800,-150) s(340,340) xxx
+keven_biker.png
 p(1000,0) s(900,900) xxx
 01_b.png
 p(1100,1300) s(700,700) xxx
@@ -41,8 +43,8 @@ p(1300,-100) s(450,560) "معرض الشخصيات والصور"
 https://fhgdhgvhggvfgg.github.io/Cpe-cheetah-/assets/&&exhibition.png
 p(1650,560) s(450,560) "تعديل بيانات اللعبة"
 https://fhgdhgvhggvfgg.github.io/Cpe-cheetah-/game_power/edit_data/&&edit_data_f.png
-p(1650,1250) s(450,560) "تحديث keven الدراج 🏍️ "
-https://fhgdhgvhggvfgg.github.io/Cpe-cheetah-/assets/&&keven_biker.png
+p(1650,1250) s(450,560) "اضافة ميزة نسخ واستيراد الابنية"
+https://fhgdhgvhggvfgg.github.io/Cpe-cheetah-/game_power/game_edit&&edit_map.png
 p(1000,1700) s(450,450) " سيرفر دسكورد لمجتمع لعبة unhappy raccoon الذي لم يتلقى الدعم الكافي للحفاض على اللعبة"
 https://discord.gg/ae8tNcb2X&&unhappy_raccoon.png
 p(1000,2150) s(450,270) "وهذا رابط اللعبة للايفون والاندرويد"
