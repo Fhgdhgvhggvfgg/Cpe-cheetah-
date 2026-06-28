@@ -31,26 +31,62 @@
             display: block;
         }
 
-        /* شريط التحميل */
-        #loading-bar-container {
+        /* شريط التحميل + زر الإلغاء */
+        #loading-bar-wrapper {
             width: 100%;
-            height: 5px;
-            background-color: #e0e0e0;
+            height: 40px;
+            background: rgba(0, 0, 0, 0.7);
             position: absolute;
             bottom: 0;
             left: 0;
             right: 0;
-            opacity: 0;
-            transition: opacity 0.3s ease;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+            box-sizing: border-box;
+            gap: 10px;
         }
-        #loading-bar-container.active {
-            opacity: 1;
+        #loading-bar-wrapper.active {
+            display: flex;
+        }
+        #loading-bar-container {
+            flex: 1;
+            height: 5px;
+            background-color: #555;
+            border-radius: 3px;
+            overflow: hidden;
         }
         #loading-bar {
             width: 0%;
             height: 100%;
-            background: linear-gradient(90deg, #4a4a4a, #888);
+            background: linear-gradient(90deg, #4a4a4a, #fff);
             transition: width 0.3s ease;
+            border-radius: 3px;
+        }
+        #cancel-btn {
+            background: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 12px;
+            font-size: 13px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background 0.3s;
+        }
+        #cancel-btn:hover {
+            background: #cc0000;
+        }
+        #cancel-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        #loading-percent {
+            color: white;
+            font-size: 13px;
+            min-width: 40px;
+            text-align: center;
         }
 
         .controls {
@@ -91,8 +127,13 @@
 
     <div id="image-container">
         <img id="main-image" src="" alt="صورة">
-        <div id="loading-bar-container">
-            <div id="loading-bar"></div>
+        <!-- شريط التحميل مع زر الإلغاء -->
+        <div id="loading-bar-wrapper">
+            <div id="loading-bar-container">
+                <div id="loading-bar"></div>
+            </div>
+            <span id="loading-percent">0%</span>
+            <button id="cancel-btn">إلغاء</button>
         </div>
     </div>
 
@@ -107,28 +148,57 @@
     <script>
         let imageNames = [];
         let currentIndex = 0;
-        let loadingTimeout = null;
+        let currentLoadingImg = null;
+        let loadingInterval = null;
+        let isCancelled = false;
 
         const imgElement = document.getElementById('main-image');
         const prevBtn = document.getElementById('prev-btn');
         const nextBtn = document.getElementById('next-btn');
         const counter = document.getElementById('counter');
         const loading = document.getElementById('loading');
-        const loadingBarContainer = document.getElementById('loading-bar-container');
+        const loadingBarWrapper = document.getElementById('loading-bar-wrapper');
         const loadingBar = document.getElementById('loading-bar');
+        const loadingPercent = document.getElementById('loading-percent');
+        const cancelBtn = document.getElementById('cancel-btn');
 
         function showLoadingBar(show) {
             if (show) {
-                loadingBarContainer.classList.add('active');
+                loadingBarWrapper.classList.add('active');
                 loadingBar.style.width = '0%';
+                loadingPercent.textContent = '0%';
+                cancelBtn.disabled = false;
             } else {
-                loadingBarContainer.classList.remove('active');
+                loadingBarWrapper.classList.remove('active');
                 loadingBar.style.width = '0%';
+                loadingPercent.textContent = '0%';
+                cancelBtn.disabled = true;
             }
         }
 
         function updateLoadingBar(progress) {
             loadingBar.style.width = progress + '%';
+            loadingPercent.textContent = Math.round(progress) + '%';
+        }
+
+        function cancelLoading() {
+            if (currentLoadingImg) {
+                isCancelled = true;
+                currentLoadingImg.src = ''; // إلغاء التحميل
+                currentLoadingImg = null;
+            }
+            if (loadingInterval) {
+                clearInterval(loadingInterval);
+                loadingInterval = null;
+            }
+            showLoadingBar(false);
+            loading.textContent = '⏹️ تم إلغاء التحميل';
+            loading.style.color = '#ff8800';
+            loading.style.display = 'block';
+            
+            // تفعيل الأزرار
+            prevBtn.disabled = (currentIndex === 0);
+            nextBtn.disabled = (currentIndex === imageNames.length - 1);
         }
 
         function updateImage() {
@@ -143,9 +213,21 @@
                 return;
             }
 
+            // إلغاء أي تحميل سابق
+            if (currentLoadingImg) {
+                currentLoadingImg.src = '';
+                currentLoadingImg = null;
+            }
+            if (loadingInterval) {
+                clearInterval(loadingInterval);
+                loadingInterval = null;
+            }
+            isCancelled = false;
+
             // تعطيل الأزرار مؤقتاً
             prevBtn.disabled = true;
             nextBtn.disabled = true;
+            cancelBtn.disabled = false;
 
             // إظهار شريط التحميل
             showLoadingBar(true);
@@ -153,9 +235,10 @@
             let isLoaded = false;
 
             // محاكاة تقدم التحميل
-            const interval = setInterval(() => {
-                if (isLoaded) {
-                    clearInterval(interval);
+            loadingInterval = setInterval(() => {
+                if (isLoaded || isCancelled) {
+                    clearInterval(loadingInterval);
+                    loadingInterval = null;
                     return;
                 }
                 progress += Math.random() * 8 + 5;
@@ -165,11 +248,16 @@
 
             // تحميل الصورة
             const img = new Image();
+            currentLoadingImg = img;
             
             img.onload = function() {
+                if (isCancelled) return;
                 isLoaded = true;
-                clearInterval(interval);
-                clearTimeout(loadingTimeout);
+                if (loadingInterval) {
+                    clearInterval(loadingInterval);
+                    loadingInterval = null;
+                }
+                currentLoadingImg = null;
                 
                 // اكتمال التحميل
                 updateLoadingBar(100);
@@ -195,9 +283,13 @@
             };
             
             img.onerror = function() {
+                if (isCancelled) return;
                 isLoaded = true;
-                clearInterval(interval);
-                clearTimeout(loadingTimeout);
+                if (loadingInterval) {
+                    clearInterval(loadingInterval);
+                    loadingInterval = null;
+                }
+                currentLoadingImg = null;
                 showLoadingBar(false);
                 loading.textContent = '❌ فشل تحميل الصورة: ' + imageNames[currentIndex];
                 loading.style.color = 'red';
@@ -208,20 +300,10 @@
             
             // بدء تحميل الصورة
             img.src = imageNames[currentIndex] + '.png';
-            
-            // مهلة 10 ثواني
-            loadingTimeout = setTimeout(() => {
-                if (!isLoaded) {
-                    clearInterval(interval);
-                    showLoadingBar(false);
-                    loading.textContent = '❌ انتهت مهلة تحميل الصورة';
-                    loading.style.color = 'red';
-                    loading.style.display = 'block';
-                    prevBtn.disabled = (currentIndex === 0);
-                    nextBtn.disabled = (currentIndex === imageNames.length - 1);
-                }
-            }, 10000);
         }
+
+        // زر الإلغاء
+        cancelBtn.addEventListener('click', cancelLoading);
 
         // قراءة الأسماء من ملف data_commec.txt
         fetch('data_commec.txt')
@@ -253,14 +335,14 @@
 
         // أزرار التنقل
         prevBtn.addEventListener('click', () => {
-            if (currentIndex > 0) {
+            if (currentIndex > 0 && !prevBtn.disabled) {
                 currentIndex--;
                 updateImage();
             }
         });
 
         nextBtn.addEventListener('click', () => {
-            if (currentIndex < imageNames.length - 1) {
+            if (currentIndex < imageNames.length - 1 && !nextBtn.disabled) {
                 currentIndex++;
                 updateImage();
             }
