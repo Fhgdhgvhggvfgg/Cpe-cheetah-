@@ -23,12 +23,36 @@
             border-radius: 12px;
             overflow: hidden;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            position: relative;
         }
         img {
             width: 100%;
             height: auto;
             display: block;
         }
+
+        /* شريط التحميل */
+        #loading-bar-container {
+            width: 100%;
+            height: 5px;
+            background-color: #e0e0e0;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        #loading-bar-container.active {
+            opacity: 1;
+        }
+        #loading-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #4a4a4a, #888);
+            transition: width 0.3s ease;
+        }
+
         .controls {
             display: flex;
             gap: 15px;
@@ -44,7 +68,7 @@
             border-radius: 6px;
             transition: background-color 0.3s;
         }
-        button:hover {
+        button:hover:not(:disabled) {
             background-color: #333;
         }
         button:disabled {
@@ -67,6 +91,9 @@
 
     <div id="image-container">
         <img id="main-image" src="" alt="صورة">
+        <div id="loading-bar-container">
+            <div id="loading-bar"></div>
+        </div>
     </div>
 
     <div class="controls">
@@ -80,12 +107,29 @@
     <script>
         let imageNames = [];
         let currentIndex = 0;
+        let loadingTimeout = null;
 
         const imgElement = document.getElementById('main-image');
         const prevBtn = document.getElementById('prev-btn');
         const nextBtn = document.getElementById('next-btn');
         const counter = document.getElementById('counter');
         const loading = document.getElementById('loading');
+        const loadingBarContainer = document.getElementById('loading-bar-container');
+        const loadingBar = document.getElementById('loading-bar');
+
+        function showLoadingBar(show) {
+            if (show) {
+                loadingBarContainer.classList.add('active');
+                loadingBar.style.width = '0%';
+            } else {
+                loadingBarContainer.classList.remove('active');
+                loadingBar.style.width = '0%';
+            }
+        }
+
+        function updateLoadingBar(progress) {
+            loadingBar.style.width = progress + '%';
+        }
 
         function updateImage() {
             if (imageNames.length === 0) {
@@ -95,22 +139,88 @@
                 prevBtn.disabled = true;
                 nextBtn.disabled = true;
                 loading.textContent = "⚠️ لا توجد صور لعرضها";
+                showLoadingBar(false);
                 return;
             }
 
-            // تحديث مصدر الصورة
-            imgElement.src = imageNames[currentIndex] + '.png';
-            imgElement.alt = "صورة " + (currentIndex + 1);
+            // تعطيل الأزرار مؤقتاً
+            prevBtn.disabled = true;
+            nextBtn.disabled = true;
 
-            // تحديث العداد
-            counter.textContent = (currentIndex + 1) + " / " + imageNames.length;
+            // إظهار شريط التحميل
+            showLoadingBar(true);
+            let progress = 0;
+            let isLoaded = false;
 
-            // تحديث حالة الأزرار
-            prevBtn.disabled = (currentIndex === 0);
-            nextBtn.disabled = (currentIndex === imageNames.length - 1);
+            // محاكاة تقدم التحميل
+            const interval = setInterval(() => {
+                if (isLoaded) {
+                    clearInterval(interval);
+                    return;
+                }
+                progress += Math.random() * 8 + 5;
+                if (progress > 90) progress = 90;
+                updateLoadingBar(progress);
+            }, 100);
 
-            // إخفاء رسالة التحميل
-            loading.style.display = 'none';
+            // تحميل الصورة
+            const img = new Image();
+            
+            img.onload = function() {
+                isLoaded = true;
+                clearInterval(interval);
+                clearTimeout(loadingTimeout);
+                
+                // اكتمال التحميل
+                updateLoadingBar(100);
+                
+                // عرض الصورة
+                imgElement.src = img.src;
+                imgElement.alt = "صورة " + (currentIndex + 1);
+                
+                // تحديث العداد
+                counter.textContent = (currentIndex + 1) + " / " + imageNames.length;
+                
+                // تفعيل الأزرار
+                prevBtn.disabled = (currentIndex === 0);
+                nextBtn.disabled = (currentIndex === imageNames.length - 1);
+                
+                // إخفاء شريط التحميل بعد 300ms
+                setTimeout(() => {
+                    showLoadingBar(false);
+                }, 300);
+                
+                // إخفاء رسالة التحميل
+                loading.style.display = 'none';
+            };
+            
+            img.onerror = function() {
+                isLoaded = true;
+                clearInterval(interval);
+                clearTimeout(loadingTimeout);
+                showLoadingBar(false);
+                loading.textContent = '❌ فشل تحميل الصورة: ' + imageNames[currentIndex];
+                loading.style.color = 'red';
+                loading.style.display = 'block';
+                prevBtn.disabled = (currentIndex === 0);
+                nextBtn.disabled = (currentIndex === imageNames.length - 1);
+            };
+            
+            // بدء تحميل الصورة
+            img.src = imageNames[currentIndex] + '.png';
+            
+            // مهلة 10 ثواني
+            loadingTimeout = setTimeout(() => {
+                if (!isLoaded) {
+                    clearInterval(interval);
+                    showLoadingBar(false);
+                    loading.textContent = '❌ انتهت مهلة تحميل الصورة';
+                    loading.style.color = 'red';
+                    loading.style.display = 'block';
+                    prevBtn.disabled = (currentIndex === 0);
+                    nextBtn.disabled = (currentIndex === imageNames.length - 1);
+                }
+            }, 10000);
         }
 
         // قراءة الأسماء من ملف data_commec.txt
@@ -122,7 +232,6 @@
                 return response.text();
             })
             .then(data => {
-                // تقسيم النص إلى سطور وتصفية الأسطر الفارغة
                 imageNames = data.split('\n')
                     .map(line => line.trim())
                     .filter(line => line !== '');
@@ -139,6 +248,7 @@
                 console.error('خطأ:', error);
                 loading.textContent = '❌ خطأ في تحميل البيانات: ' + error.message;
                 loading.style.color = 'red';
+                showLoadingBar(false);
             });
 
         // أزرار التنقل
