@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>معرض الصور</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #faf8f5;
+            font-family: sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        #image-container {
+            width: 90%;
+            max-width: 600px;
+            margin-bottom: 20px;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        .controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        button {
+            padding: 10px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4a4a4a;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #333;
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        #counter {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+        #loading {
+            font-size: 18px;
+            color: #666;
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="image-container">
+        <img id="main-image" src="" alt="صورة">
+    </div>
+
+    <div class="controls">
+        <button id="prev-btn" disabled>السابق</button>
+        <span id="counter">0 / 0</span>
+        <button id="next-btn" disabled>التالي</button>
+    </div>
+
+    <div id="loading">جاري تحميل الصور...</div>
+
+    <script>
+        let imageNames = [];
+        let currentIndex = 0;
+
+        const imgElement = document.getElementById('main-image');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const counter = document.getElementById('counter');
+        const loading = document.getElementById('loading');
+
+        function updateImage() {
+            if (imageNames.length === 0) {
+                imgElement.alt = "لا توجد صور";
+                imgElement.src = "";
+                counter.textContent = "0 / 0";
+                prevBtn.disabled = true;
+                nextBtn.disabled = true;
+                loading.textContent = "⚠️ لا توجد صور لعرضها";
+                return;
+            }
+
+            // تحديث مصدر الصورة
+            imgElement.src = imageNames[currentIndex] + '.png';
+            imgElement.alt = "صورة " + (currentIndex + 1);
+
+            // تحديث العداد
+            counter.textContent = (currentIndex + 1) + " / " + imageNames.length;
+
+            // تحديث حالة الأزرار
+            prevBtn.disabled = (currentIndex === 0);
+            nextBtn.disabled = (currentIndex === imageNames.length - 1);
+
+            // إخفاء رسالة التحميل
+            loading.style.display = 'none';
+        }
+
+        // قراءة الأسماء من ملف data_commec.txt
+        fetch('data_commec.txt')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('لم يتم العثور على ملف data_commec.txt');
+                }
+                return response.text();
+            })
+            .then(data => {
+                // تقسيم النص إلى سطور وتصفية الأسطر الفارغة
+                imageNames = data.split('\n')
+                    .map(line => line.trim())
+                    .filter(line => line !== '');
+
+                if (imageNames.length === 0) {
+                    loading.textContent = '⚠️ ملف data_commec.txt فارغ';
+                    return;
+                }
+
+                currentIndex = 0;
+                updateImage();
+            })
+            .catch(error => {
+                console.error('خطأ:', error);
+                loading.textContent = '❌ خطأ في تحميل البيانات: ' + error.message;
+                loading.style.color = 'red';
+            });
+
+        // أزرار التنقل
+        prevBtn.addEventListener('click', () => {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateImage();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentIndex < imageNames.length - 1) {
+                currentIndex++;
+                updateImage();
+            }
+        });
+    </script>
+</body>
+</html>
