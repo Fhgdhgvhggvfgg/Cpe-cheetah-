@@ -54,4 +54,4 @@ https://cheetah_art.codeberg.page/Cheetah_engine/game_power/&&codeberg.png
 p(500,1750) s(450,500) "قصة keven الحقيقية. وكيف خسر اطرافه 🔥🦾"
 keven_story.mp4
 p(500,2300) s(350,500) "قصة مصورة لعلاقة امير الشياطين jeff والجارية الملاك الفاتنة jeen"
-https://fhgdhgvhggvfgg.github.io/Cpe-cheetah-/commec/&&storage_update.png
+https://fhgdhgvhggvfgg.github.io/Cpe-cheetah-/commec/&&commec_story.png
