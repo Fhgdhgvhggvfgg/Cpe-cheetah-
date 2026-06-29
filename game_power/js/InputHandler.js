@@ -9,6 +9,19 @@ export class InputHandler {
             this.keys.add(key);
             if (this.game.isDead) return;
 
+// زر الإيقاف المؤقت (ESC) - استدعاء مباشر
+if (key === 'escape') {
+    this.game.isPaused = !this.game.isPaused;
+    const pauseBtn = document.getElementById('pauseBtn');
+    if (pauseBtn) {
+        pauseBtn.innerText = this.game.isPaused ? "استئناف" : "إيقاف";
+        pauseBtn.style.background = this.game.isPaused ? "var(--success)" : "var(--primary)";
+    }
+    if (window) {
+        window.isGamePaused = this.game.isPaused;
+    }
+}
+
 if (key === 'r') {
     this.game.updateZoom(this.game.zoom + 0.5);
 }
