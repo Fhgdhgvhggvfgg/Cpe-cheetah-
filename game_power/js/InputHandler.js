@@ -8,7 +8,14 @@ export class InputHandler {
             if (this.keys.has(key)) return; 
             this.keys.add(key);
             if (this.game.isDead) return;
-            
+
+if (key === 'r') {
+    this.game.updateZoom(this.game.zoom + 0.5);
+}
+
+if (key === 'f') {
+    this.game.updateZoom(this.game.zoom - 0.5);
+}
             if (key === 'a' || key === 'arrowleft') { 
                 this.game.moveDir = -1; 
                 this.game.facingRight = false; 
