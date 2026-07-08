@@ -534,7 +534,7 @@ function startEnemySpawner() {
         const checkAndSpawn = () => {
             if (currentEnemyImage) {
                 spawnEnemyAtRandomLocation();
-                setInterval(spawnEnemyAtRandomLocation, 5000);
+                setInterval(spawnEnemyAtRandomLocation, 20);
             } else {
                 setTimeout(checkAndSpawn, 500);
             }
