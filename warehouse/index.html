@@ -341,7 +341,8 @@ let isDragging = false, startX, startY, startPanX, startPanY;
 let velX = 0, velY = 0, lastMoveTime = 0, animId;
 let pinchStartDist = 0, pinchStartScale = 0, pinchCenter = {x:0, y:0};
 
-let mapBounds = { minX: 0, maxX: 500, minY: 0, maxY: 500 };
+let mapBounds = { minX: -600, maxX: 2300, minY: -600, maxY: 2300 };
+let enemySpawnBounds = null;
 
 const isInteractable = el => el.closest('.entity-btn, .close-preview, a, video, .preview-modal, input, button, iframe, pre, img, .zoom-btn, .raw-enemy-entity, #teleport-controls');
 
@@ -534,7 +535,7 @@ function startEnemySpawner() {
         const checkAndSpawn = () => {
             if (currentEnemyImage) {
                 spawnEnemyAtRandomLocation();
-                setInterval(spawnEnemyAtRandomLocation, 20);
+                setInterval(spawnEnemyAtRandomLocation, 2000);
             } else {
                 setTimeout(checkAndSpawn, 500);
             }
@@ -549,20 +550,40 @@ async function init() {
         if(!res.ok) throw new Error(`HTTP ${res.status}`);
         const text = await res.text();
         
-        const allLines = text.split('\n');
-        let descriptionText = "هذه اللعبة فريدة في عالم الالعاب لكنها محدودة جدا. اذا اعجبتك اللعبة وتريد تطويرها فلك كامل الحرية...";
-        for (let line of allLines) {
-            const match = line.match(/<([^>]+)>/);
-            if (match) { descriptionText = match[1]; break; }
-        }
+const allLines = text.split('\n');
+let descriptionText = "هذه اللعبة فريدة في عالم الالعاب لكنها محدودة جدا. اذا اعجبتك اللعبة وتريد تطويرها فلك كامل الحرية...";
+
+// قراءة الوصف ونطاق spawn
+for (let line of allLines) {
+    const matchDesc = line.match(/<([^>]+)>/);
+    if (matchDesc) { descriptionText = matchDesc[1]; continue; }
+    
+    const matchEn = line.match(/en\((-?\d+),(-?\d+)\)\((-?\d+),(-?\d+)\)/);
+    if (matchEn) {
+        const x1 = parseInt(matchEn[1]);
+        const x2 = parseInt(matchEn[2]);
+        const y1 = parseInt(matchEn[3]);
+        const y2 = parseInt(matchEn[4]);
+        
+        enemySpawnBounds = {
+            minX: Math.min(x1, x2),
+            maxX: Math.max(x1, x2),
+            minY: Math.min(y1, y2),
+            maxY: Math.max(y1, y2)
+        };
+        continue;
+    }
+}
         const descElement = document.getElementById('dynamicDescription');
         if (descElement) descElement.textContent = descriptionText;
         
         const lines = text.split('\n').map(l=>l.trim()).filter(l=>l!=='');
         const data = [];
-        for(let i=0; i<lines.length; i++) {
-            let m = lines[i].match(/p\((-?\d+),(-?\d+)\)\s+s\((\d+),(\d+)\)\s+"([^"]+)"/);
-            let isBackgroundOnly = false; let title = "";
+for(let i=0; i<lines.length; i++) {
+    // تخطي سطر en
+    if (lines[i].match(/en\(-?\d+,-?\d+\)\(-?\d+,-?\d+\)/)) continue;
+    
+    let m = lines[i].match(/p\((-?\d+),(-?\d+)\)\s+s\((\d+),(\d+)\)\s+"([^"]+)"/);            let isBackgroundOnly = false; let title = "";
             
             if (!m) {
                 m = lines[i].match(/p\((-?\d+),(-?\d+)\)\s+s\((\d+),(\d+)\)\s+xxx/);
@@ -582,11 +603,19 @@ async function init() {
         }
         showMsg("تم تحميل العناصر بنجاح");
         
-        if (data.length > 0) {
-            let allXs = data.map(d => d.x); let allYs = data.map(d => d.y);
-            mapBounds.minX = Math.min(...allXs); mapBounds.maxX = Math.max(...allXs);
-            mapBounds.minY = Math.min(...allYs); mapBounds.maxY = Math.max(...allYs);
-        }
+        // تعيين mapBounds حسب الأولوية
+if (enemySpawnBounds) {
+    mapBounds = { ...enemySpawnBounds };
+} else if (data.length > 0) {
+    let allXs = data.map(d => d.x); 
+    let allYs = data.map(d => d.y);
+    mapBounds.minX = Math.min(...allXs); 
+    mapBounds.maxX = Math.max(...allXs);
+    mapBounds.minY = Math.min(...allYs); 
+    mapBounds.maxY = Math.max(...allYs);
+}
+// وإلا استخدم القيم الافتراضية
+        
 
         const previewable = ['html','htm','txt','json','js','css','py','md'];
         
@@ -644,13 +673,7 @@ document.addEventListener('DOMContentLoaded', init);
 const headerEl = document.getElementById('header');
 const arrowBtn = document.getElementById('arrowBtn');
 
-if (arrowBtn && headerEl) {
-    arrowBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        headerEl.classList.toggle('hide-header');
-        arrowBtn.innerHTML = headerEl.classList.contains('hide-header') ? "عرض القائمة" : "اخفاء القائمة";
-    });
-}
+
 </script>
 </body>
 </html>
