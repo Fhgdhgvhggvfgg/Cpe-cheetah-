@@ -673,7 +673,14 @@ document.addEventListener('DOMContentLoaded', init);
 const headerEl = document.getElementById('header');
 const arrowBtn = document.getElementById('arrowBtn');
 
-
+// هذا هو الجزء المفقود الذي يشغل الزر
+if (arrowBtn && headerEl) {
+    arrowBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        headerEl.classList.toggle('hide-header');
+        arrowBtn.innerHTML = headerEl.classList.contains('hide-header') ? "عرض القائمة" : "اخفاء القائمة";
+    });
+}
 </script>
 </body>
 </html>
