@@ -18,5 +18,6 @@ kingdom_shoto
 #3#
 ghost
 vex
+mermaid
 dron
 eyes
