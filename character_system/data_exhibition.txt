@@ -9,6 +9,7 @@ mario
 #2#
 daiana_temple
 baghdad
+deep_cea
 minecraft
 ranav_ingdom
 steve_city
