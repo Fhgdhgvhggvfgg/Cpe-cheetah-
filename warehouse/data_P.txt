@@ -48,6 +48,8 @@ p(1650,1250) s(450,560) "اضافة ميزة نسخ واستيراد الابن�
 https://fhgdhgvhggvfgg.github.io/Cpe-cheetah-/game_power/game_edit&&edit_map.png
 p(1000,1700) s(450,450) " سيرفر دسكورد لمجتمع لعبة unhappy raccoon الذي لم يتلقى الدعم الكافي للحفاض على اللعبة"
 https://discord.gg/aPYbDMC9s8&&unhappy_raccoon.png
+p(1500,1850) s(450,515) "مودات minecraft في media fire"
+https://www.mediafire.com/folder/0beoyon807m2u/Minecraft+mods&&minecraft.png
 p(1000,2150) s(450,270) "وهذا رابط اللعبة للايفون والاندرويد"
 https://www.mediafire.com/folder/0pylhgjl3gxzy/unhappy+raccoon+download&&unhappy_raccoon_D.png
 p(0,1650) s(450,470) "هذا رابط اللعبة في مستودع احتياطي على codeberg"
