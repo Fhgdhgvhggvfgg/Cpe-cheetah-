@@ -36,8 +36,6 @@ p(-600,900) s(650,600) "رابط صفحة تويتر"
 https://x.com/Cheetah_iraq&&Xphoto.png
 p(850,0) s(400,460) "صفحة تصميم الشخصيات"
 https://fhgdhgvhggvfgg.github.io/Cpe-cheetah-/photo_edit/&&character_edit.png
-p(1100,470) s(450,500) "حقيقة مجتمع الfurry"
-https://fhgdhgvhggvfgg.github.io/Cpe-cheetah-/furry-I/index&&news_P.png
 p(1300,-100) s(450,560) "معرض الشخصيات والصور"
 https://fhgdhgvhggvfgg.github.io/Cpe-cheetah-/assets/&&exhibition.png
 p(1650,560) s(450,560) "تعديل بيانات اللعبة"
