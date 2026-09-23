@@ -12,3 +12,7 @@ p(1000,1750) s(450,500) "bradar اخ lora من كوكب اخر"
 bradar_animation.mp4
 p(1000,1100) s(450,500) "الهياكل العضمية 💀"
 skeleton_video.mp4
+p(0,450) s(450,500) " قصة jeff الشيطان"
+jeff_story.mp4
+p(500,450) s(350,500) "قصة مصورة لعلاقة امير الشياطين jeff والجارية الملاك الفاتنة jeen"
+https://fhgdhgvhggvfgg.github.io/Cpe-cheetah-/commec/&&commec_story.png
