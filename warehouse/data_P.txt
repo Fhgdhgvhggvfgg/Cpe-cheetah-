@@ -56,3 +56,5 @@ p(500,2300) s(350,500) "قصة مصورة لعلاقة امير الشياطين
 https://fhgdhgvhggvfgg.github.io/Cpe-cheetah-/commec/&&commec_story.png
 p(50000,50000) s(350,500) "xed"
 https://www.mediafire.com/file/t3qbywq7e66k6o0/xed.zip/file&&codeberg.png
+p(900,500) s(250,400) "صديقي العزيز nafyo تابعوه"
+https://www.tiktok.com/@nafyotoons?_r=1&_t=ZS-99yoM5UtuHF&&nafyo.png
