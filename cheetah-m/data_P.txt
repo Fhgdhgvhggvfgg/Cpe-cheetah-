@@ -10,3 +10,5 @@ p(0,1750) s(450,500) "قصة asia الشخصية التي تم استخراجه�
 asia_video.mp4
 p(1000,1750) s(450,500) "bradar اخ lora من كوكب اخر"
 bradar_animation.mp4
+p(1000,1100) s(450,500) "الهياكل العضمية 💀"
+skeleton_video.mp4
