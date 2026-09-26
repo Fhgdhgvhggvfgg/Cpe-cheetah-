@@ -18,3 +18,5 @@ p(500,450) s(350,500) "قصة مصورة لعلاقة امير الشياطين 
 https://fhgdhgvhggvfgg.github.io/Cpe-cheetah-/commec/&&commec_story.png
 p(900,450) s(350,500) " تطوير keven الى شكله الجديد"
 keven_u_video.mp4
+p(1350,450) s(450,500) "عصابة CCA المقنعين 🔥"
+CCA_bus.mp4
