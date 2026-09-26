@@ -22,3 +22,5 @@ p(1350,450) s(450,500) "عصابة CCA المقنعين 🔥"
 CCA_bus.mp4
 p(1900,450) s(450,910) "rora and keven is dance 🕺💃"
 lora_keven_dance.mp4
+p(1900,1450) s(450,500) "keven. plants king 👑"
+keven_mindustry_designing.mp4
