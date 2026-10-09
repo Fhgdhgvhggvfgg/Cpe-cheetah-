@@ -30,3 +30,5 @@ p(1500,1000) s(350,500) "jeen video."
 jeen_video.mp4
 p(1500,2100) s(350,500) "lora queen."
 lora_queen.mp4
+p(1900,2000) s(350,500) "فان ارت من صديقي كريم ."
+https://www.tiktok.com/@m.karim799?_r=1&_t=ZS-9APrfc5buKq&&fanart_2.png
