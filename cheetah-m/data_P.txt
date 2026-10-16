@@ -32,6 +32,8 @@ p(1500,1800) s(350,500) "lora queen."
 lora_queen.mp4
 p(2800,2000) s(350,500) "فان ارت من صديقي كريم ."
 https://www.tiktok.com/@m.karim799?_r=1&_t=ZS-9APrfc5buKq&&fanart_2.png
+p(3200,2000) s(350,500) "فان ارت محترم من صديقي 👍."
+https://www.tiktok.com/@assmazouaoui2?_r=1&_t=ZS-9AbPDtirbEa&&fanart_3.png
 p(1100,2300) s(350,500) "المتدربة asia الجديدة"
 asia_video.mp4
 p(800,2300) s(225,500) "القائدة lisa ابنة jeff و jeen"
