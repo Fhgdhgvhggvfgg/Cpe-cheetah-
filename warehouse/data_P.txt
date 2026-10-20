@@ -58,3 +58,5 @@ p(50000,50000) s(350,500) "xed"
 https://www.mediafire.com/file/t3qbywq7e66k6o0/xed.zip/file&&codeberg.png
 p(900,500) s(250,400) "صديقي العزيز nafyo تابعوه"
 https://www.tiktok.com/@nafyotoons?_r=1&_t=ZS-99yoM5UtuHF&&nafyo.png
+p(1200,500) s(300,400) "new character"
+https://www.tiktok.com/@noxl_cat?_r=1&_t=ZS-9AifQ7UDNLB&&jullya_t.png
