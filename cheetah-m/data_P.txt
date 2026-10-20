@@ -40,3 +40,5 @@ p(800,2300) s(225,500) "القائدة lisa ابنة jeff و jeen"
 lisa_video.mp4
 p(400,2300) s(350,500) "محارب الثلج الذي يجمد اعدائه ❄️💀"
 snow_warrior.mp4
+p(0,2300) s(350,500) "اصدارات المود"
+https://www.mediafire.com/folder/nywmuq6q30cn5/Code+repository&& mindustry-mods.png
