@@ -1,5 +1,7 @@
 <cheetah mindustry قصص وتشويق>
 en(2000,-600)(2000,-150)
+p(-1400,1200) s(3000,3000) xxx
+power_p.png
 p(500,1750) s(450,500) "قصة keven الحقيقية. وكيف خسر اطرافه 🔥🦾"
 keven_story.mp4
 p(500,1100) s(450,500) "اضافة valka الى اللعبة. ملكة الهياكل العضمية الشيطانة"
@@ -40,7 +42,7 @@ p(800,2300) s(225,500) "القائدة lisa ابنة jeff و jeen"
 lisa_video.mp4
 p(400,2300) s(350,500) "محارب الثلج الذي يجمد اعدائه ❄️💀"
 snow_warrior.mp4
-p(0,2300) s(350,500) "اصدارات المود"
+p(-250,2300) s(600,735) "اصدارات المود"
 https://www.mediafire.com/folder/nywmuq6q30cn5/Code+repository&& mindustry-mods.png
 p(3200,1450) s(350,500) "ammazing fanart 🔥🌩️☄️."
 https://www.tiktok.com/@noxl_cat?_r=1&_t=ZS-9AifQ7UDNLB&&fanart_4.png
