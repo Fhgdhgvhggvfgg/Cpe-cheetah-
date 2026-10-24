@@ -43,7 +43,9 @@ lisa_video.mp4
 p(400,2300) s(350,500) "محارب الثلج الذي يجمد اعدائه ❄️💀"
 snow_warrior.mp4
 p(-250,2300) s(600,735) "اصدارات المود"
-https://www.mediafire.com/folder/nywmuq6q30cn5/Code+repository&& mindustry-mods.png
+https://www.mediafire.com/folder/nywmuq6q30cn5/Code+repository&&mindustry-mods.png
+p(-250,3100) s(600,735) "مستودع اللعبة الرسمية الخاصة بالمطور"
+https://fhgdhgvhggvfgg.github.io/Cpe-cheetah-/game_power/&&photo_game.gif
 p(3200,1450) s(350,500) "ammazing fanart 🔥🌩️☄️."
 https://www.tiktok.com/@noxl_cat?_r=1&_t=ZS-9AifQ7UDNLB&&fanart_4.png
 p(3600,1450) s(350,700) "فان ارت مميز من افضل متابعيني😻"
