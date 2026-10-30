@@ -19,6 +19,8 @@ clothes1.png
 ziro.png
 clothes2.png
 clothes3.png
+clothes4.png
+clothes5.png
 #shoes
 shoes1.png
 ziro.png
