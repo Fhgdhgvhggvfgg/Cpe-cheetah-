@@ -64,7 +64,7 @@
             pointer-events: none;
         }
 
-        /* الأزرار بالأسفل */
+        /* مجموعة الأزرار بالأسفل */
         .buttons-group {
             display: flex;
             flex-direction: column;
@@ -72,17 +72,31 @@
             width: 100%;
         }
 
+        /* القائمة العمودية القابلة للتمرير (السحب) لأعلى وأسفل */
         .row-group {
             display: flex;
-            flex-wrap: wrap;
+            flex-direction: column;
             gap: 10px;
             width: 100%;
+            max-height: 200px;
+            overflow-y: auto;
+            padding-left: 5px;
+        }
+
+        /* تخصيص مظهر شريط التمرير */
+        .row-group::-webkit-scrollbar {
+            width: 6px;
+        }
+        .row-group::-webkit-scrollbar-thumb {
+            background-color: #ccc;
+            border-radius: 3px;
         }
 
         .btn {
-            flex: 1;
-            min-width: 120px;
-            padding: 12px;
+            width: 100%;
+            /* تحديد نسبة ثابتة للعرض إلى الارتفاع 4:1 (العرض أربعة أضعاف الارتفاع) */
+            aspect-ratio: 4 / 1;
+            
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
@@ -90,16 +104,29 @@
             border-radius: 6px;
             background-color: #007bff;
             color: white;
-            transition: background-color 0.2s;
+            transition: opacity 0.2s;
+            position: relative;
+            overflow: hidden;
+            background-size: cover;
+            background-position: center;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+            
+            /* توسيط النص داخل الزر ثابتاً */
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .btn:hover {
-            background-color: #0056b3;
+            opacity: 0.9;
         }
 
         .btn-save {
             background-color: #28a745;
             width: 100%;
+            aspect-ratio: auto; /* زر الحفظ يحافظ على ارتفاعه الطبيعي بالحشو */
+            padding: 12px;
+            text-shadow: none;
         }
 
         .btn-save:hover {
@@ -205,25 +232,23 @@
     </div>
 
     <script>
-        // تخزين الحقول وبياناتها بشكل ديناميكي (ترتيب الإضافة هو ترتيب الطبقات من الأسفل للأعلى)
-        let sections = []; // ستحتوي على كائنات مثل: { name: 'character', folder: 'character', images: [...] }
+        let sections = [];
 
         async function loadData() {
             try {
                 const response = await fetch('data_ch.txt');
                 const text = await response.text();
-                const lines = text.split('\n');
+                const lines = text.split(/\r?\n/);
 
                 let currentSec = null;
+                sections = [];
 
                 for (let line of lines) {
                     line = line.trim();
                     if (!line) continue;
 
-                    // إذا بدأت السطر بعلامة # فهي تعريف لحقل جديد
                     if (line.startsWith('#')) {
-                        let rawName = line.substring(1).trim(); // إزالة العلامة #
-                        // اسم المجلد سيكون مطابقاً لاسم الحقل (أو يمكنك تخصيصه)
+                        let rawName = line.substring(1).trim();
                         currentSec = {
                             key: rawName,
                             folder: rawName,
@@ -244,7 +269,6 @@
             }
         }
 
-        // بناء الأزرار في الواجهة بناءً على الحقول المقروءة من الملف
         function buildDynamicButtons() {
             const rowGroup = document.getElementById('dynamicButtonsRow');
             rowGroup.innerHTML = '';
@@ -254,6 +278,14 @@
                 btn.className = 'btn';
                 btn.textContent = `اختر ${sec.key}`;
                 btn.onclick = () => openModal(sec.key);
+
+                const iconPath = `${sec.folder}/${sec.key}.png`;
+                const testImg = new Image();
+                testImg.src = iconPath;
+                testImg.onload = function() {
+                    btn.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('${iconPath}')`;
+                };
+
                 rowGroup.appendChild(btn);
             });
         }
@@ -308,12 +340,10 @@
             }
         }
 
-        // دالة الدمج الديناميكية: ترسم الحقول بالترتيب من الأعلى للأسفل في الملف (الأسفل يرسم فوق ما سبقه)
         function updateCombinedView() {
             const finalImgElem = document.getElementById('final-image');
             const placeholder = document.getElementById('placeholder');
 
-            // جمع المسارات المحفوظة لكل حقل
             let selections = {};
             let hasAnyImage = false;
 
@@ -355,7 +385,6 @@
             function drawAllLayers() {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                // الرسم يتم بالتسلسل: الحقل الأول في الملف يُرسَم بالأسفل، وكل حقل تحته في الملف يُرسَم فوقه
                 sections.forEach(sec => {
                     if (loadedImages[sec.key]) {
                         ctx.drawImage(loadedImages[sec.key], 0, 0, canvas.width, canvas.height);
