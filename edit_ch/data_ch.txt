@@ -1,0 +1,10 @@
+#wing
+w1.png
+#character
+as1.png
+as2.png
+as3.png
+#body
+bs1.png
+bs2.png
+bs3.png
