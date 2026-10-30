@@ -4,6 +4,7 @@ ziro.png
 #hair
 hair1.png
 ziro.png
+hair2.png
 #handR
 hand1.png
 ziro.png
@@ -30,3 +31,4 @@ ziro.png
 #hair_front
 hair_front1.png
 ziro.png
+hair_front2.png
