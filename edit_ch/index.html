@@ -72,20 +72,19 @@
             width: 100%;
         }
 
-        /* قائمة أزرار الحقول المنفردة: مرتبة عمودياً وقابلة للسحب/التمرير للأعلى والأسفل */
         .row-group {
             display: flex;
             flex-direction: column;
             gap: 10px;
             width: 100%;
-            max-height: 220px; /* الارتفاع الأقصى للقائمة قبل ظهور شريط السحب */
-            overflow-y: auto;  /* تفعيل السحب/التمرير العمودي */
-            padding-left: 5px;  /* مساحة صغيرة لشريط التمرير */
+            max-height: 220px;
+            overflow-y: auto;
+            padding-left: 5px;
         }
 
         .btn {
             width: 100%;
-            aspect-ratio: 4 / 1; /* حجم ثابت بنسبة 4 عرض إلى 1 طول */
+            aspect-ratio: 4 / 1;
             font-size: 15px;
             font-weight: bold;
             cursor: pointer;
@@ -93,24 +92,32 @@
             border-radius: 6px;
             background-color: #007bff;
             color: white;
-            transition: background-color 0.2s;
+            transition: opacity 0.2s;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
             flex-shrink: 0;
+
+            /* خصائص لجعل الصورة تشغل مكان خلفية الزر بشكل متناسق */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.9), 0 0 4px rgba(0,0,0,0.9); /* تظليل قوي للنص ليكون واضحاً فوق الصورة */
         }
 
         .btn:hover {
-            background-color: #0056b3;
+            opacity: 0.9;
         }
 
         .btn-save {
             background-color: #28a745;
             width: 100%;
-            aspect-ratio: auto; /* زر الحفظ يحافظ على حجمه الطبيعي الطبيعي */
+            aspect-ratio: auto;
             padding: 12px;
             font-size: 16px;
+            background-image: none !important;
+            text-shadow: none;
         }
 
         .btn-save:hover {
@@ -216,8 +223,7 @@
     </div>
 
     <script>
-        // تخزين الحقول وبياناتها بشكل ديناميكي (ترتيب الإضافة هو ترتيب الطبقات من الأسفل للأعلى)
-        let sections = []; // ستحتوي على كائنات مثل: { name: 'character', folder: 'character', images: [...] }
+        let sections = []; 
 
         async function loadData() {
             try {
@@ -231,10 +237,8 @@
                     line = line.trim();
                     if (!line) continue;
 
-                    // إذا بدأت السطر بعلامة # فهي تعريف لحقل جديد
                     if (line.startsWith('#')) {
-                        let rawName = line.substring(1).trim(); // إزالة العلامة #
-                        // اسم المجلد سيكون مطابقاً لاسم الحقل (أو يمكنك تخصيصه)
+                        let rawName = line.substring(1).trim(); 
                         currentSec = {
                             key: rawName,
                             folder: rawName,
@@ -255,7 +259,7 @@
             }
         }
 
-        // بناء الأزرار في الواجهة بناءً على الحقول المقروءة من الملف
+        // بناء الأزرار واستهداف اسم المجلد ليكون صورة الخلفية للزر
         function buildDynamicButtons() {
             const rowGroup = document.getElementById('dynamicButtonsRow');
             rowGroup.innerHTML = '';
@@ -265,6 +269,10 @@
                 btn.className = 'btn';
                 btn.textContent = `اختر ${sec.key}`;
                 btn.onclick = () => openModal(sec.key);
+
+                // أخذ اسم المجلد أو الحقل (مثل handL أو hand) وجعله خلفية للزر
+                btn.style.backgroundImage = `url('${sec.folder}/${sec.folder}.png')`;
+
                 rowGroup.appendChild(btn);
             });
         }
@@ -319,12 +327,10 @@
             }
         }
 
-        // دالة الدمج الديناميكية: ترسم الحقول بالترتيب من الأعلى للأسفل في الملف (الأسفل يرسم فوق ما سبقه)
         function updateCombinedView() {
             const finalImgElem = document.getElementById('final-image');
             const placeholder = document.getElementById('placeholder');
 
-            // جمع المسارات المحفوظة لكل حقل
             let selections = {};
             let hasAnyImage = false;
 
@@ -366,7 +372,6 @@
             function drawAllLayers() {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                // الرسم يتم بالتسلسل: الحقل الأول في الملف يُرسَم بالأسفل، وكل حقل تحته في الملف يُرسَم فوقه
                 sections.forEach(sec => {
                     if (loadedImages[sec.key]) {
                         ctx.drawImage(loadedImages[sec.key], 0, 0, canvas.width, canvas.height);
@@ -400,12 +405,7 @@
                 return;
             }
 
-            const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-            let randomPart = '';
-            for (let i = 0; i < 7; i++) {
-                randomPart += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
-            const fileName = 'photo_c' + randomPart + '.png';
+            const fileName = 'photo_c' + Math.random().toString(36).substring(2, 9) + '.png';
 
             const link = document.createElement('a');
             link.download = fileName;
