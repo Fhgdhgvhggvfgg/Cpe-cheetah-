@@ -54,5 +54,5 @@ p(3200,900) s(350,500) "lora cute 🔥😻."
 https://www.tiktok.com/@noxl_cat?_r=1&_t=ZS-9AifQ7UDNLB&&lora_fanartC.png
 p(2800,900) s(350,500) "strong jeen 💪😼."
 https://www.tiktok.com/@nono_20115?_r=1&_t=ZS-9AuLm17jcfd&&jeen_fanartS.png
-p(0,-200) s(350,500) "strong jeen 💪😼."
-https://fhgdhgvhggvfgg.github.io/Cpe-cheetah-/edit_ch/index.html&&lora_fanartC.png
+p(0,-200) s(350,500) "صممي شخصيتكي الفهدة💕."
+https://fhgdhgvhggvfgg.github.io/Cpe-cheetah-/edit_ch/index.html&&edit_ch.png
