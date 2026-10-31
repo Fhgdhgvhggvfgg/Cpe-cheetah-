@@ -60,5 +60,7 @@ p(900,500) s(250,400) "مستودع لعبة mindustry"
 https://fhgdhgvhggvfgg.github.io/Cpe-cheetah-/cheetah-m/index.html&&mindustry-page.png
 p(1200,500) s(300,400) "new character"
 https://www.tiktok.com/@noxl_cat?_r=1&_t=ZS-9AifQ7UDNLB&&jullya_t.png
-p(2150,550) s(300,400) "new character"
+p(2150,550) s(300,400) "لعبة الفهد العداء"
 https://fhgdhgvhggvfgg.github.io/Cpe-cheetah-/cheetah_run/index.html&&cheetah_jump_p.png
+p(2500,550) s(300,180) "اول اصدار من لعبة الفهد العداء"
+cheetah_run.zip
