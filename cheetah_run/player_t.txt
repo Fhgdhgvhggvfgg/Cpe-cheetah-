@@ -1,0 +1,2 @@
+player_jump.png
+player_gg.png
