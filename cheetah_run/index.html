@@ -49,7 +49,7 @@
     left: 10px;
     width: 75px;
     height: 75px;
-    background-image: url('player_jump.png'); /* تم التغيير هنا */
+    background-image: url('players/player_jump.png'); /* تم التغيير هنا */
     background-size: 200% 400%;  /* تم تعديل الارتفاع ليناسب 1024 عمودي */
     background-position: 100% 100%;
     z-index: 15;
@@ -124,7 +124,7 @@
     left: -30px;  
     width: 135px;
     height: 135px;
-    background-image: url('player_jump.png'); /* تم التغيير هنا */
+    background-image: url('players/player_jump.png'); /* تم التغيير هنا */
     background-size: 200% 400%;  /* تم تعديل الارتفاع */
     background-position: 0% 0%;
     border-radius: 0px;
@@ -157,7 +157,7 @@
 #start-player-preview {
     width: 180px;
     height: 180px;
-    background-image: url('player_jump.png'); /* تم التغيير هنا */
+    background-image: url('players/player_jump.png'); /* تم التغيير هنا */
     background-size: 200% 400%;  /* تم تعديل الارتفاع */
     background-position: 100% 100%;
     margin-bottom: 20px;
@@ -353,7 +353,7 @@
         const whiteBoxIcon = document.getElementById('white-box-icon');
         const finalScoreDisplay = document.getElementById('final-score');
 
-let currentPlayerImage = localStorage.getItem('selectedPlayerImage') || 'player_jump.png';
+let currentPlayerImage = localStorage.getItem('selectedPlayerImage') || 'players/player_jump.png';
 
         applyPlayerImage(currentPlayerImage);
 
@@ -536,9 +536,9 @@ let currentPlayerImage = localStorage.getItem('selectedPlayerImage') || 'player_
 
             // إذا كانت الشخصية المحذوفة هي الشخصية الحالية، نرجع للافتراضية
             if (currentPlayerImage === imgName) {
-                currentPlayerImage = 'player_jump.png';
-                localStorage.setItem('selectedPlayerImage', 'player_jump.png');
-                applyPlayerImage('player_jump.png');
+                currentPlayerImage = 'players/player_jump.png';
+                localStorage.setItem('selectedPlayerImage', 'players/player_jump.png');
+                applyPlayerImage('players/player_jump.png');
             }
 
             // إعادة تحميل القائمة لتحديث العناصر
