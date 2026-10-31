@@ -43,18 +43,19 @@
             transition: transform 0.2s ease;
         }
 
-        #white-box-icon {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            width: 75px;
-            height: 75px;
-            background-image: url('player_jump.png');
-            background-size: 200% 200%;
-            background-position: 100% 100%;
-            z-index: 15;
-            border-radius: 4px;
-        }
+#white-box-icon {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 75px;
+    height: 75px;
+    background-image: url('player_jump.png'); /* تم التغيير هنا */
+    background-size: 200% 400%;  /* تم تعديل الارتفاع ليناسب 1024 عمودي */
+    background-position: 100% 100%;
+    z-index: 15;
+    border-radius: 4px;
+}
+
 
         .lane-line {
             position: absolute;
@@ -117,19 +118,20 @@
             box-shadow: 0 0 8px rgba(0, 150, 255, 0.8);
         }
 
-        #player {
-            position: absolute;
-            bottom: 8px; 
-            left: -30px;  
-            width: 135px;
-            height: 135px;
-            background-image: url('player_jump.png');
-            background-size: 200% 200%;
-            background-position: 0% 0%;
-            border-radius: 0px;
-            box-shadow: none;
-            transition: transform 0.45s cubic-bezier(0, 0, 0.58, 1);
-        }
+#player {
+    position: absolute;
+    bottom: 8px; 
+    left: -30px;  
+    width: 135px;
+    height: 135px;
+    background-image: url('player_jump.png'); /* تم التغيير هنا */
+    background-size: 200% 400%;  /* تم تعديل الارتفاع */
+    background-position: 0% 0%;
+    border-radius: 0px;
+    box-shadow: none;
+    transition: transform 0.45s cubic-bezier(0, 0, 0.58, 1);
+}
+
 
         #ui {
             margin-top: 8px;
@@ -152,15 +154,16 @@
             text-align: center;
         }
 
-        #start-player-preview {
-            width: 180px;
-            height: 180px;
-            background-image: url('player_jump.png');
-            background-size: 200% 200%;
-            background-position: 100% 100%;
-            margin-bottom: 20px;
-            border-radius: 8px;
-        }
+#start-player-preview {
+    width: 180px;
+    height: 180px;
+    background-image: url('player_jump.png'); /* تم التغيير هنا */
+    background-size: 200% 400%;  /* تم تعديل الارتفاع */
+    background-position: 100% 100%;
+    margin-bottom: 20px;
+    border-radius: 8px;
+}
+
 
         #start-screen h2 {
             margin-bottom: 20px;
@@ -247,12 +250,13 @@
         .character-preview-img {
             width: 50px;
             height: 50px;
-            background-size: 200% 200%;
-            background-position: 100% 100%;
+            background-size: 200% 400%;  /* تم التعديل لتناسب الابعاد العمودية الجديدة */
+            background-position: 100% 100%; /* عرض الشخصية الثابتة في القائمة (الصورة الرابعة مثلاً) */
             border-radius: 6px;
             margin-left: 15px;
             flex-shrink: 0;
         }
+
 
         .character-name {
             font-size: 14px;
@@ -349,7 +353,8 @@
         const whiteBoxIcon = document.getElementById('white-box-icon');
         const finalScoreDisplay = document.getElementById('final-score');
 
-        let currentPlayerImage = localStorage.getItem('selectedPlayerImage') || 'player_jump.png';
+let currentPlayerImage = localStorage.getItem('selectedPlayerImage') || 'player_jump.png';
+
         applyPlayerImage(currentPlayerImage);
 
         let currentScale = parseFloat(localStorage.getItem('gameScale')) || 1.0;
@@ -449,9 +454,9 @@
 
         function resetJumpCounters() {
             isJumping = false;
-            player.style.transition = 'none';
+            player.style.backgroundPosition = (runFrame === 0 ? '0% 0%' : '-100% 0%');tyle.transition = 'none';
             player.style.transform = 'translateY(0)';
-            player.style.backgroundPosition = '0% 0%';
+            player.style.backgroundPosition = (runFrame === 0 ? '0% 0%' : '-100% 0%');            
             
             setTimeout(() => {
                 player.style.transition = 'transform 0.45s cubic-bezier(0, 0, 0.58, 1)';

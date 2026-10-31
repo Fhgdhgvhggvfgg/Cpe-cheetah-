@@ -1,2 +1,2 @@
-player_jump.png
-player_gg.png
+players/player_jump.png
+players/player_gg.png
