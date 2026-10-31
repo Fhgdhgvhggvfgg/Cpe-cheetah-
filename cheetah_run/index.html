@@ -65,7 +65,6 @@
         #line1 { left: 146px; }
         #line2 { left: 293px; }
 
-        /* تم تكبير حجم العوائق الوردية المربعة */
         .obstacle {
             position: absolute;
             width: 65px;
@@ -76,7 +75,6 @@
             z-index: 2;
         }
 
-        /* تم تكبير حجم الأعداء الصفراء الدائرية */
         .enemy-yellow {
             position: absolute;
             width: 60px;
@@ -90,7 +88,7 @@
         .obstacle-line {
             position: absolute;
             width: 420px;
-            height: 12px; /* خط عائقعريض وأكبر قليلاً */
+            height: 12px;
             background: #f4b446;
             box-shadow: 0 0 10px #f4b446;
             border-radius: 6px;
@@ -117,7 +115,6 @@
             box-shadow: 0 0 8px rgba(0, 150, 255, 0.8);
         }
 
-        /* تم تكبير شخصية اللاعب نفسها لتتناسب مع العوائق والأبعاد الجديدة */
         #player {
             position: absolute;
             bottom: 8px; 
@@ -182,7 +179,6 @@
             margin-top: 10px;
         }
 
-        /* قائمة اختيار الشخصيات */
         #character-select-screen {
             display: none;
             position: absolute;
@@ -273,10 +269,9 @@
 </head>
 <body>
 
-    <h1>لعبة المسارات (زوايا حادة بدون هالة)</h1>
+    <h1>لعبة المسارات (توقيت زمني ثابت)</h1>
     
     <div id="game-container">
-        <!-- قائمة البداية -->
         <div id="start-screen">
             <div id="start-player-preview"></div>
             <h2>لعبة تفادي العوائق</h2>
@@ -284,7 +279,6 @@
             <button onclick="openCharacterSelect()" style="background: #ffcc00;">اختر الشخصية</button>
         </div>
 
-        <!-- قائمة اختيار الشخصيات -->
         <div id="character-select-screen">
             <h2>اختر شخصية اللاعب</h2>
             <div id="character-list"></div>
@@ -328,7 +322,6 @@
         let currentPlayerImage = localStorage.getItem('selectedPlayerImage') || 'player_jump.png';
         applyPlayerImage(currentPlayerImage);
 
-        // تعديل أماكن المسارات لتتناسب مع التوسعة وحجم الشخصية الجديد
         const lanes = [320, 185, 50]; 
         let currentLane = 1; 
         let score = 0;
@@ -338,17 +331,18 @@
         let obstacles = [];
         let yellowEnemies = [];
         let triangles = []; 
-        let gameSpeed = 4;
-        let spawnTimer = 0;
-        let yellowSpawnTimer = 0;
-        let nextYellowSpawnTime = getRandomYellowTime();
         
-        let triangleSpawnTimer = 0;
+        let gameSpeed = 450; 
+        let spawnAccumulator = 0;
+        let yellowSpawnAccumulator = 0;
+        let nextYellowSpawnTime = getRandomYellowTime();
+        let triangleSpawnAccumulator = 0;
         let nextTriangleSpawnTime = getRandomTriangleTime();
 
         let animTimer = 0;
         let runFrame = 0;
         let gameAnimId = null;
+        let lastTime = 0;
 
         let touchStartX = 0;
         let touchStartY = 0;
@@ -420,7 +414,8 @@
         function startGame() {
             startScreen.style.display = 'none';
             isGameStarted = true;
-            updateGame();
+            lastTime = performance.now();
+            gameAnimId = requestAnimationFrame(updateGame);
         }
 
         async function openCharacterSelect() {
@@ -490,10 +485,10 @@
             score = 0;
             scoreDisplay.textContent = score;
             currentLane = 1;
-            gameSpeed = 4;
-            spawnTimer = 0;
-            yellowSpawnTimer = 0;
-            triangleSpawnTimer = 0;
+            // تم إلغاء تصفير السرعة هنا أيضاً (gameSpeed ستبقى محفوظة)
+            spawnAccumulator = 0;
+            yellowSpawnAccumulator = 0;
+            triangleSpawnAccumulator = 0;
             nextYellowSpawnTime = getRandomYellowTime();
             nextTriangleSpawnTime = getRandomTriangleTime();
             animTimer = 0;
@@ -562,11 +557,11 @@
         }
 
         function getRandomYellowTime() {
-            return Math.floor(Math.random() * (600 - 240 + 1)) + 240;
+            return Math.random() * 3 + 2; 
         }
 
         function getRandomTriangleTime() {
-            return Math.floor(Math.random() * (1200 - 600 + 1)) + 600;
+            return Math.random() * 5 + 4; 
         }
 
         function createYellowEnemy() {
@@ -596,47 +591,52 @@
             triangles.push(line);
         }
 
-        function updateGame() {
+        function updateGame(currentTime) {
             if (!isGameStarted || isGameOver) return;
 
+            let deltaTime = (currentTime - lastTime) / 1000; 
+            if (deltaTime > 0.1) deltaTime = 0.1; 
+            lastTime = currentTime;
+
             if (!isJumping) {
-                animTimer++;
-                if (animTimer > 15) {
+                animTimer += deltaTime;
+                if (animTimer > 0.16) {
                     runFrame = 1 - runFrame;
                     player.style.backgroundPosition = (runFrame === 0 ? '0% 0%' : '-100% 0%');
                     animTimer = 0;
                 }
             }
 
-            spawnTimer++;
-            if (spawnTimer > 55) {
+            spawnAccumulator += deltaTime;
+            if (spawnAccumulator > 0.9) {
                 createObstacle();
-                spawnTimer = 0;
-                gameSpeed += 0.001;
+                spawnAccumulator = 0;
+                gameSpeed += 2; 
             }
 
-            yellowSpawnTimer++;
-            if (yellowSpawnTimer >= nextYellowSpawnTime) {
+            yellowSpawnAccumulator += deltaTime;
+            if (yellowSpawnAccumulator >= nextYellowSpawnTime) {
                 createYellowEnemy();
-                yellowSpawnTimer = 0;
+                yellowSpawnAccumulator = 0;
                 nextYellowSpawnTime = getRandomYellowTime();
             }
 
-            triangleSpawnTimer++;
-            if (triangleSpawnTimer >= nextTriangleSpawnTime) {
+            triangleSpawnAccumulator += deltaTime;
+            if (triangleSpawnAccumulator >= nextTriangleSpawnTime) {
                 createTriangle();
-                triangleSpawnTimer = 0;
+                triangleSpawnAccumulator = 0;
                 nextTriangleSpawnTime = getRandomTriangleTime();
             }
 
             for (let i = obstacles.length - 1; i >= 0; i--) {
                 let obs = obstacles[i];
-                let currentTop = parseInt(obs.style.top);
-                obs.style.top = (currentTop + gameSpeed) + 'px';
+                let currentTop = parseFloat(obs.style.top);
+                currentTop += gameSpeed * deltaTime;
+                obs.style.top = currentTop + 'px';
 
                 let obsLane = parseInt(obs.dataset.lane);
                 let obsHeight = obs.offsetHeight;
-                let playerY = 390; // تعديل نطاق الارتفاع للتصادم مع الأحجام الجديدة
+                let playerY = 390;
 
                 if (currentTop >= playerY && currentTop <= playerY + obsHeight && obsLane === currentLane) {
                     if (!isJumping) {
@@ -655,11 +655,12 @@
 
             for (let i = yellowEnemies.length - 1; i >= 0; i--) {
                 let yEnemy = yellowEnemies[i];
-                let currentTop = parseInt(yEnemy.style.top);
-                yEnemy.style.top = (currentTop + (gameSpeed * 0.8)) + 'px';
+                let currentTop = parseFloat(yEnemy.style.top);
+                currentTop += (gameSpeed * 0.8) * deltaTime;
+                yEnemy.style.top = currentTop + 'px';
 
                 let currentX = parseFloat(yEnemy.dataset.x);
-                currentX += yEnemy.direction * 1.5;
+                currentX += yEnemy.direction * 90 * deltaTime;
 
                 if (currentX > 370) {
                     currentX = 370;
@@ -673,16 +674,13 @@
 
                 let playerX = lanes[currentLane];
                 let playerY = 460;
-                let enemyXVal = currentX;
-                let enemyYVal = currentTop;
-
                 let enemyWidth = yEnemy.offsetWidth;
                 let enemyHeight = yEnemy.offsetHeight;
 
                 let hitRadiusX = enemyWidth * 0.75;
                 let hitRadiusY = enemyHeight * 0.75;
 
-                if (Math.abs(enemyYVal - playerY) < hitRadiusY && Math.abs(enemyXVal - playerX) < hitRadiusX) {
+                if (Math.abs(currentTop - playerY) < hitRadiusY && Math.abs(currentX - playerX) < hitRadiusX) {
                     if (!isJumping) {
                         endGame();
                         return;
@@ -699,8 +697,9 @@
 
             for (let i = triangles.length - 1; i >= 0; i--) {
                 let tri = triangles[i];
-                let currentTop = parseInt(tri.style.top);
-                tri.style.top = (currentTop + gameSpeed) + 'px';
+                let currentTop = parseFloat(tri.style.top);
+                currentTop += gameSpeed * deltaTime;
+                tri.style.top = currentTop + 'px';
 
                 if (currentTop >= 390 && currentTop <= 470) {
                     if (isJumping) { 
@@ -758,10 +757,9 @@
             score = 0;
             scoreDisplay.textContent = score;
             currentLane = 1;
-            gameSpeed = 4;
-            spawnTimer = 0;
-            yellowSpawnTimer = 0;
-            triangleSpawnTimer = 0;
+            spawnAccumulator = 0;
+            yellowSpawnAccumulator = 0;
+            triangleSpawnAccumulator = 0;
             nextYellowSpawnTime = getRandomYellowTime();
             nextTriangleSpawnTime = getRandomTriangleTime();
             animTimer = 0;
@@ -775,7 +773,9 @@
             updatePlayerPosition();
             gameOverScreen.style.display = 'none';
             
-            updateGame();
+            isGameStarted = true;
+            lastTime = performance.now();
+            gameAnimId = requestAnimationFrame(updateGame);
         }
     </script>
 </body>
