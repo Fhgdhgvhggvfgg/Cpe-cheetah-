@@ -619,25 +619,50 @@ let currentPlayerImage = localStorage.getItem('selectedPlayerImage') || 'players
             gameOverScreen.style.display = 'none';
             startScreen.style.display = 'flex';
         }
-
+        
+                function resetJumpCounters() {
+            isJumping = false;
+            player.style.transition = 'none';
+            player.style.transform = 'translateY(0)';
+            player.style.backgroundPosition = (runFrame === 0 ? '0% 0%' : '-100% 0%');            
+            
+            setTimeout(() => {
+                player.style.transition = 'transform 0.45s cubic-bezier(0, 0, 0.58, 1)';
+            }, 50);
+        }
+        
         function jump() {
             if (isJumping) return;
             isJumping = true;
             
-            player.style.transition = 'transform 0.3s cubic-bezier(0, 0, 0.2, 1)';
+            // توليد رقم عشوائي بين 1 و 10 لاختيار شكل/إطار الصورة عشوائياً
+            let num = Math.floor(Math.random() * 10) + 1;
+            
+            let bgPos = '-100% 0%'; // الإطار الافتراضي للصورة
+            if (num < 4) {
+                bgPos = '-100% 200%'; // إطار عشوائي مختلف للصورة إذا كان الرقم أقل من 4
+            }
+            
+            // معلومات الحركة الثابتة والمنتظمة لجميع القفزات
+            player.style.transition = 'transform 0.8s cubic-bezier(0, 0, 0.2, 1)';
             player.style.transform = 'translateY(-110px)';
-            player.style.backgroundPosition = '-100% 0%';
+            player.style.backgroundPosition = bgPos; // تطبيق الصورة العشوائية هنا
             
             setTimeout(() => {
-                player.style.transition = 'transform 0.3s cubic-bezier(0.42, 0, 1, 1)';
+                if (!isJumping) return; // لضمان عدم حدوث تداخل إذا تم التصفير بالأسفل
+                
+                player.style.transition = 'transform 0.2s cubic-bezier(0.42, 0, 1, 1)';
                 player.style.transform = 'translateY(0)';
                 player.style.backgroundPosition = '0% 0%';
                 
                 setTimeout(() => {
                     isJumping = false;
                 }, 200);
-            }, 200);
+            }, 500);
         }
+
+
+
 
         function moveLeft() {
             if (currentLane < 2) {
