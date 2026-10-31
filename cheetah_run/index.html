@@ -556,18 +556,18 @@
             if (isJumping) return;
             isJumping = true;
             
-            player.style.transition = 'transform 0.2s cubic-bezier(0, 0, 0.2, 1)';
+            player.style.transition = 'transform 0.3s cubic-bezier(0, 0, 0.2, 1)';
             player.style.transform = 'translateY(-110px)';
             player.style.backgroundPosition = '-100% 0%';
             
             setTimeout(() => {
-                player.style.transition = 'transform 0.25s cubic-bezier(0.42, 0, 1, 1)';
+                player.style.transition = 'transform 0.3s cubic-bezier(0.42, 0, 1, 1)';
                 player.style.transform = 'translateY(0)';
                 player.style.backgroundPosition = '0% 0%';
                 
                 setTimeout(() => {
                     isJumping = false;
-                }, 140);
+                }, 200);
             }, 200);
         }
 
@@ -793,6 +793,7 @@
                 gameAnimId = null;
             }
 
+gameSpeed = 450; 
             obstacles.forEach(obs => obs.remove());
             obstacles = [];
             yellowEnemies.forEach(yEnemy => yEnemy.remove());
