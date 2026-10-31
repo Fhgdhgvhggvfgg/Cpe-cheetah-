@@ -470,8 +470,7 @@ let currentPlayerImage = localStorage.getItem('selectedPlayerImage') || 'players
             gameAnimId = requestAnimationFrame(updateGame);
         }
 
-        // دالة فتح قائمة الشخصيات ودمج صور المعرض المحفوظة داخل القائمة
-        // دالة فتح قائمة الشخصيات وعرض زر الحذف بجانب صور المعرض فقط
+        // دالة فتح قائمة الشخصيات وعرض الشخصيات الجديدة في الأعلى
         async function openCharacterSelect() {
             startScreen.style.display = 'none';
             characterSelectScreen.style.display = 'flex';
@@ -482,19 +481,55 @@ let currentPlayerImage = localStorage.getItem('selectedPlayerImage') || 'players
                 const text = await response.text();
                 let images = text.split('\n').map(item => item.trim()).filter(item => item.length > 0);
 
-                let customImages = JSON.parse(localStorage.getItem('customPlayerImages')) || [];
-                images = [...customImages, ...images];
-
+                // جلب المفاتيح المخزنة للشخصيات المخصصة
+                let customKeys = JSON.parse(localStorage.getItem('customPlayerImages')) || [];
+                
                 characterListContainer.innerHTML = '';
+
+                // 1. عرض الشخصيات المخصصة أولاً (في الأعلى) وتسميتها بـ character1, character2...
+                customKeys.forEach((key, index) => {
+                    let imgData = localStorage.getItem(key);
+                    if (!imgData) return;
+
+                    const item = document.createElement('div');
+                    item.className = 'character-item';
+                    item.onclick = (e) => {
+                        if (!e.target.classList.contains('delete-btn')) {
+                            selectCharacter(imgData);
+                        }
+                    };
+
+                    const imgPreview = document.createElement('div');
+                    imgPreview.className = 'character-preview-img';
+                    imgPreview.style.backgroundImage = `url('${imgData}')`;
+
+                    const nameSpan = document.createElement('span');
+                    nameSpan.className = 'character-name';
+                    nameSpan.style.flexGrow = '1';
+                    nameSpan.textContent = `character${index + 1}`;
+
+                    item.appendChild(imgPreview);
+                    item.appendChild(nameSpan);
+
+                    // زر حذف الشخصية المخصصة
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'delete-btn';
+                    deleteBtn.textContent = '✕';
+                    deleteBtn.style.cssText = 'background: #ff3366; color: #fff; border: none; border-radius: 4px; padding: 5px 10px; cursor: pointer; font-weight: bold; margin-right: 10px;';
+                    deleteBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        deleteCustomCharacter(key, imgData);
+                    };
+                    item.appendChild(deleteBtn);
+
+                    characterListContainer.appendChild(item);
+                });
+
+                // 2. عرض الشخصيات الأساسية من ملف player_t.txt بعدها في الأسفل[span_0](start_span)[span_0](end_span)
                 images.forEach(imgName => {
                     const item = document.createElement('div');
                     item.className = 'character-item';
-                    // جعل العنصر يختار الشخصية عند النقر عليه (باستثناء زر الحذف)
-                    item.onclick = (e) => {
-                        if (!e.target.classList.contains('delete-btn')) {
-                            selectCharacter(imgName);
-                        }
-                    };
+                    item.onclick = () => selectCharacter(imgName);
 
                     const imgPreview = document.createElement('div');
                     imgPreview.className = 'character-preview-img';
@@ -503,29 +538,57 @@ let currentPlayerImage = localStorage.getItem('selectedPlayerImage') || 'players
                     const nameSpan = document.createElement('span');
                     nameSpan.className = 'character-name';
                     nameSpan.style.flexGrow = '1';
-                    nameSpan.textContent = imgName.startsWith('blob:') ? 'صورة من المعرض' : imgName;
+
+                    // استخراج اسم الملف كاسم للشخصية
+                    let fileName = imgName.split('/').pop().replace(/\.[^/.]+$/, "");
+                    nameSpan.textContent = fileName;
 
                     item.appendChild(imgPreview);
                     item.appendChild(nameSpan);
-
-                    // إضافة زر حذف بحافة مسطرة الشخصية إذا كانت الصورة مضافة من المعرض (تبدأ بـ blob:)
-                    if (imgName.startsWith('blob:')) {
-                        const deleteBtn = document.createElement('button');
-                        deleteBtn.className = 'delete-btn';
-                        deleteBtn.textContent = '✕';
-                        deleteBtn.style.cssText = 'background: #ff3366; color: #fff; border: none; border-radius: 4px; padding: 5px 10px; cursor: pointer; font-weight: bold; margin-right: 10px;';
-                        deleteBtn.onclick = (e) => {
-                            e.stopPropagation(); // منع تفعيل اختيار الشخصية عند النقر على زر الحذف
-                            deleteCustomCharacter(imgName);
-                        };
-                        item.appendChild(deleteBtn);
-                    }
-
                     characterListContainer.appendChild(item);
                 });
+
             } catch (error) {
                 characterListContainer.innerHTML = 'فشل تحميل ملف الشخصيات player_t.txt';
             }
+        }
+
+        // دالة حذف الشخصية المخصصة من الذاكرة وتحديث القائمة (تم دمجها وإصلاح التداخل سابقاً)
+        function deleteCustomCharacter(key, imgData) {
+            localStorage.removeItem(key); // حذف مساحة التخزين المنفصلة
+
+            let customKeys = JSON.parse(localStorage.getItem('customPlayerImages')) || [];
+            customKeys = customKeys.filter(k => k !== key);
+            localStorage.setItem('customPlayerImages', JSON.stringify(customKeys));
+
+            // إذا كانت الشخصية المحذوفة هي الحالية، نرجع للافتراضية
+            if (currentPlayerImage === imgData) {
+                currentPlayerImage = 'players/player_jump.png';
+                localStorage.setItem('selectedPlayerImage', 'players/player_jump.png');
+                applyPlayerImage('players/player_jump.png');
+            }
+
+            // إعادة تحميل القائمة لتحديث العناصر
+            openCharacterSelect();
+        }
+
+        // دالة حذف الشخصية المخصصة من الذاكرة وتحديث القائمة
+        function deleteCustomCharacter(key, imgData) {
+            localStorage.removeItem(key); // حذف الصورة المخزنة في مساحتها المنفصلة
+
+            let customKeys = JSON.parse(localStorage.getItem('customPlayerImages')) || [];
+            customKeys = customKeys.filter(k => k !== key);
+            localStorage.setItem('customPlayerImages', JSON.stringify(customKeys));
+
+            // إذا كانت الشخصية المحذوفة هي الشخصية الحالية، نرجع للافتراضية
+            if (currentPlayerImage === imgData) {
+                currentPlayerImage = 'players/player_jump.png';
+                localStorage.setItem('selectedPlayerImage', 'players/player_jump.png');
+                applyPlayerImage('players/player_jump.png');
+            }
+
+            // إعادة تحميل القائمة لتحديث العناصر
+            openCharacterSelect();
         }
 
         // دالة حذف الشخصية المخصصة من الذاكرة وتحديث القائمة
@@ -559,24 +622,39 @@ let currentPlayerImage = localStorage.getItem('selectedPlayerImage') || 'players
         }
 
         // دالة اختيار وحفظ الصورة من المعرض لتصبح جزءاً من قائمة الشخصيات
-        function handleDeviceImage(event) {
-            const file = event.target.files[0];
-            if (!file) return;
+// دالة اختيار وحفظ الصورة من المعرض بمساحة تخزين منفصلة وتسميتها character1, character2...
+function handleDeviceImage(event) {
+    const file = event.target.files[0];
+    if (!file) return;
 
-            const imagePath = URL.createObjectURL(file);
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const base64Image = e.target.result; // تحويل الصورة إلى نص Base64 لتخزينها بشكل دائم وآمن
 
-            let customImages = JSON.parse(localStorage.getItem('customPlayerImages')) || [];
-            if (!customImages.includes(imagePath)) {
-                customImages.push(imagePath);
-                localStorage.setItem('customPlayerImages', JSON.stringify(customImages));
-            }
+        // جلب عداد الشخصيات المخصصة الحالي أو البدء من 1
+        let customCount = parseInt(localStorage.getItem('customCharacterCount') || '0') + 1;
+        let characterKey = `character${customCount}`;
 
-            currentPlayerImage = imagePath;
-            localStorage.setItem('selectedPlayerImage', imagePath);
-            
-            applyPlayerImage(imagePath);
-            closeCharacterSelect();
+        // تخزين الصورة في مساحة تخزين منفصلة باسم character1, character2...
+        localStorage.setItem(characterKey, base64Image);
+        localStorage.setItem('customCharacterCount', customCount);
+
+        // حفظ الصورة في قائمة مخصصة لسهولة جلبها في القائمة
+        let customImages = JSON.parse(localStorage.getItem('customPlayerImages')) || [];
+        if (!customImages.includes(characterKey)) {
+            customImages.push(characterKey);
+            localStorage.setItem('customPlayerImages', JSON.stringify(customImages));
         }
+
+        currentPlayerImage = base64Image;
+        localStorage.setItem('selectedPlayerImage', base64Image);
+        
+        applyPlayerImage(base64Image);
+        closeCharacterSelect();
+    };
+    reader.readAsDataURL(file);
+}
+
 
         function applyPlayerImage(imgName) {
             player.style.backgroundImage = `url('${imgName}')`;
