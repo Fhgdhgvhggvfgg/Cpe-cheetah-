@@ -39,6 +39,8 @@
             box-shadow: 0 0 25px rgba(0,0,0,0.9);
             border-radius: 12px;
             flex-shrink: 0;
+            transform-origin: center center;
+            transition: transform 0.2s ease;
         }
 
         #white-box-icon {
@@ -179,6 +181,25 @@
             margin-top: 10px;
         }
 
+        /* حاوية أزرار التحكم بالحجم */
+        .zoom-buttons-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .zoom-buttons-container button {
+            padding: 10px 20px;
+            font-size: 18px;
+            background: #333;
+            color: #fff;
+            border: 2px solid #fff;
+            cursor: pointer;
+            font-weight: bold;
+            border-radius: 8px;
+            margin-top: 0 !important;
+        }
+
         #character-select-screen {
             display: none;
             position: absolute;
@@ -277,6 +298,12 @@
             <h2>لعبة تفادي العوائق</h2>
             <button onclick="startGame()">ابدأ اللعب</button>
             <button onclick="openCharacterSelect()" style="background: #ffcc00;">اختر الشخصية</button>
+            
+            <!-- أزرار التحكم بالحجم (+ و -) -->
+            <div class="zoom-buttons-container">
+                <button onclick="zoomGame(0.1)">+</button>
+                <button onclick="zoomGame(-0.1)">-</button>
+            </div>
         </div>
 
         <div id="character-select-screen">
@@ -321,6 +348,26 @@
 
         let currentPlayerImage = localStorage.getItem('selectedPlayerImage') || 'player_jump.png';
         applyPlayerImage(currentPlayerImage);
+
+        // متغيرات التحكم بحجم الشاشة
+        let currentScale = parseFloat(localStorage.getItem('gameScale')) || 1.0;
+        updateGameScale();
+
+        function zoomGame(amount) {
+            currentScale += amount;
+            // وضع حدود للحجم حتى لا يصبح صغير جداً أو كبير جداً (مثلاً بين 0.6 إلى 2.0)
+            if (currentScale < 0.6) currentScale = 0.6;
+            if (currentScale > 2.0) currentScale = 2.0;
+            // تقريب الرقم لمنع تراكم الكسور العشرية الكثيرة
+            currentScale = Math.round(currentScale * 10) / 10;
+            
+            localStorage.setItem('gameScale', currentScale);
+            updateGameScale();
+        }
+
+        function updateGameScale() {
+            gameContainer.style.transform = `scale(${currentScale})`;
+        }
 
         const lanes = [320, 185, 50]; 
         let currentLane = 1; 
@@ -485,7 +532,6 @@
             score = 0;
             scoreDisplay.textContent = score;
             currentLane = 1;
-            // تم إلغاء تصفير السرعة هنا أيضاً (gameSpeed ستبقى محفوظة)
             spawnAccumulator = 0;
             yellowSpawnAccumulator = 0;
             triangleSpawnAccumulator = 0;
