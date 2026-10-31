@@ -309,6 +309,9 @@
         <div id="character-select-screen">
             <h2>اختر شخصية اللاعب</h2>
             <div id="character-list"></div>
+            <input type="file" id="device-image-input" accept="image/*" style="display: none;" onchange="handleDeviceImage(event)">
+<button onclick="document.getElementById('device-image-input').click()" style="background: #00ffcc; color: #000; margin-bottom: 10px;">اختر صورة من المعرض</button>
+
             <button onclick="closeCharacterSelect()" style="background: #ff3366; color: #fff;">رجوع</button>
         </div>
 
@@ -334,7 +337,7 @@
     <p style="font-size: 12px; color: #aaa; margin-top: 3px; text-align: center;">اسحب يميناً/يساراً للمسار | اسحب للأعلى للقفز | اسحب للأسفل للتصفير</p>
 
     <script>
-        const playerContainer = document.getElementById('player-container');
+           const playerContainer = document.getElementById('player-container');
         const player = document.getElementById('player');
         const gameContainer = document.getElementById('game-container');
         const scoreDisplay = document.getElementById('score');
@@ -349,18 +352,14 @@
         let currentPlayerImage = localStorage.getItem('selectedPlayerImage') || 'player_jump.png';
         applyPlayerImage(currentPlayerImage);
 
-        // متغيرات التحكم بحجم الشاشة
         let currentScale = parseFloat(localStorage.getItem('gameScale')) || 1.0;
         updateGameScale();
 
         function zoomGame(amount) {
             currentScale += amount;
-            // وضع حدود للحجم حتى لا يصبح صغير جداً أو كبير جداً (مثلاً بين 0.6 إلى 2.0)
             if (currentScale < 0.6) currentScale = 0.6;
             if (currentScale > 2.0) currentScale = 2.0;
-            // تقريب الرقم لمنع تراكم الكسور العشرية الكثيرة
             currentScale = Math.round(currentScale * 10) / 10;
-            
             localStorage.setItem('gameScale', currentScale);
             updateGameScale();
         }
@@ -423,6 +422,7 @@
             handleGesture();
         }, { passive: true });
 
+        // تم إعادة إضافة دالة handleGesture لتصحيح الخطأ البرمجي
         function handleGesture() {
             let diffX = touchEndX - touchStartX;
             let diffY = touchEndY - touchStartY;
@@ -465,6 +465,8 @@
             gameAnimId = requestAnimationFrame(updateGame);
         }
 
+        // دالة فتح قائمة الشخصيات ودمج صور المعرض المحفوظة داخل القائمة
+        // دالة فتح قائمة الشخصيات وعرض زر الحذف بجانب صور المعرض فقط
         async function openCharacterSelect() {
             startScreen.style.display = 'none';
             characterSelectScreen.style.display = 'flex';
@@ -473,13 +475,21 @@
             try {
                 const response = await fetch('player_t.txt');
                 const text = await response.text();
-                const images = text.split('\n').map(item => item.trim()).filter(item => item.length > 0);
+                let images = text.split('\n').map(item => item.trim()).filter(item => item.length > 0);
+
+                let customImages = JSON.parse(localStorage.getItem('customPlayerImages')) || [];
+                images = [...customImages, ...images];
 
                 characterListContainer.innerHTML = '';
                 images.forEach(imgName => {
                     const item = document.createElement('div');
                     item.className = 'character-item';
-                    item.onclick = () => selectCharacter(imgName);
+                    // جعل العنصر يختار الشخصية عند النقر عليه (باستثناء زر الحذف)
+                    item.onclick = (e) => {
+                        if (!e.target.classList.contains('delete-btn')) {
+                            selectCharacter(imgName);
+                        }
+                    };
 
                     const imgPreview = document.createElement('div');
                     imgPreview.className = 'character-preview-img';
@@ -487,16 +497,49 @@
 
                     const nameSpan = document.createElement('span');
                     nameSpan.className = 'character-name';
-                    nameSpan.textContent = imgName;
+                    nameSpan.style.flexGrow = '1';
+                    nameSpan.textContent = imgName.startsWith('blob:') ? 'صورة من المعرض' : imgName;
 
                     item.appendChild(imgPreview);
                     item.appendChild(nameSpan);
+
+                    // إضافة زر حذف بحافة مسطرة الشخصية إذا كانت الصورة مضافة من المعرض (تبدأ بـ blob:)
+                    if (imgName.startsWith('blob:')) {
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.className = 'delete-btn';
+                        deleteBtn.textContent = '✕';
+                        deleteBtn.style.cssText = 'background: #ff3366; color: #fff; border: none; border-radius: 4px; padding: 5px 10px; cursor: pointer; font-weight: bold; margin-right: 10px;';
+                        deleteBtn.onclick = (e) => {
+                            e.stopPropagation(); // منع تفعيل اختيار الشخصية عند النقر على زر الحذف
+                            deleteCustomCharacter(imgName);
+                        };
+                        item.appendChild(deleteBtn);
+                    }
+
                     characterListContainer.appendChild(item);
                 });
             } catch (error) {
                 characterListContainer.innerHTML = 'فشل تحميل ملف الشخصيات player_t.txt';
             }
         }
+
+        // دالة حذف الشخصية المخصصة من الذاكرة وتحديث القائمة
+        function deleteCustomCharacter(imgName) {
+            let customImages = JSON.parse(localStorage.getItem('customPlayerImages')) || [];
+            customImages = customImages.filter(img => img !== imgName);
+            localStorage.setItem('customPlayerImages', JSON.stringify(customImages));
+
+            // إذا كانت الشخصية المحذوفة هي الشخصية الحالية، نرجع للافتراضية
+            if (currentPlayerImage === imgName) {
+                currentPlayerImage = 'player_jump.png';
+                localStorage.setItem('selectedPlayerImage', 'player_jump.png');
+                applyPlayerImage('player_jump.png');
+            }
+
+            // إعادة تحميل القائمة لتحديث العناصر
+            openCharacterSelect();
+        }
+
 
         function closeCharacterSelect() {
             characterSelectScreen.style.display = 'none';
@@ -507,6 +550,26 @@
             currentPlayerImage = imgName;
             localStorage.setItem('selectedPlayerImage', imgName);
             applyPlayerImage(imgName);
+            closeCharacterSelect();
+        }
+
+        // دالة اختيار وحفظ الصورة من المعرض لتصبح جزءاً من قائمة الشخصيات
+        function handleDeviceImage(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const imagePath = URL.createObjectURL(file);
+
+            let customImages = JSON.parse(localStorage.getItem('customPlayerImages')) || [];
+            if (!customImages.includes(imagePath)) {
+                customImages.push(imagePath);
+                localStorage.setItem('customPlayerImages', JSON.stringify(customImages));
+            }
+
+            currentPlayerImage = imagePath;
+            localStorage.setItem('selectedPlayerImage', imagePath);
+            
+            applyPlayerImage(imagePath);
             closeCharacterSelect();
         }
 
@@ -793,7 +856,7 @@
                 gameAnimId = null;
             }
 
-gameSpeed = 450; 
+            gameSpeed = 450; 
             obstacles.forEach(obs => obs.remove());
             obstacles = [];
             yellowEnemies.forEach(yEnemy => yEnemy.remove());
@@ -824,6 +887,8 @@ gameSpeed = 450;
             lastTime = performance.now();
             gameAnimId = requestAnimationFrame(updateGame);
         }
+
+        
     </script>
 </body>
 </html>
