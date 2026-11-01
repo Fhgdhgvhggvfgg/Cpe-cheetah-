@@ -359,10 +359,16 @@ function activateShield() {
             isShieldActive = false;
             powerupStatus.style.display = 'none';
             
-            // تدمير الزعيم الحالي عند انتهاء الوقت
+            // تدمير الزعيم الحالي وإضافة 500 نقطة
             if (currentBoss) {
                 currentBoss.destroy();
                 currentBoss = null;
+
+                // إضافة النقاط وتحديث واجهة المستخدم
+                score += 500;
+                if (scoreElement) {
+                    scoreElement.textContent = score;
+                }
             }
 
             blueCircleSpawnAccumulator = 0; 
@@ -370,6 +376,7 @@ function activateShield() {
         }
     }, 1000);
 }
+
 
         function updateGame(currentTime) {
             if (!isGameStarted || isGameOver) return;
