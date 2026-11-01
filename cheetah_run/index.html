@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>game of runner cheetah</title>
     <!-- تم اضافة استدعاء ملف الزعيم هنا لحل مشكلة عدم التعرف على الكلاس -->
-    <script src="game_boss.js"></script>
-    <script src="game_boss2.js"></script>
+<script src="game_boss.js"></script>
+<script src="game_boss2.js"></script>
+<script src="game_boss3.js"></script>
+
     <style>
         html, body {
             margin: 0; padding: 0; width: 100%; height: 100%;
@@ -323,27 +325,23 @@ function activateShield() {
     // إزالة هالة الدرع عن اللاعب (لا يوجد player.style.filter)
 
     // استدعاء الزعيم بالتناوب بناءً على قيمة bossToggle
-    if (!currentBoss) {
-        if (bossToggle === 1) {
-            currentBoss = new GameBoss2(
-                gameContainer,
-                () => currentLane,
-                () => lanes[currentLane],
-                () => { endGame(); },
-                () => isJumping
-            );
-            bossToggle = 2; // المرة القادمة سيظهر الزعيم الآخر
-        } else {
-            currentBoss = new GameBoss(
-                gameContainer,
-                () => currentLane,
-                () => lanes[currentLane],
-                () => { endGame(); },
-                () => isJumping
-            );
-            bossToggle = 1; // العودة للزعيم الأول
-        }
+// تعديل متغير التبديل ليشمل الزعماء الثلاثة
+let bossToggle = 1;
+
+// داخل دالة activateShield()
+if (!currentBoss) {
+    if (bossToggle === 1) {
+        currentBoss = new GameBoss(gameContainer, () => currentLane, () => lanes[currentLane], () => endGame(), () => isJumping);
+        bossToggle = 2;
+    } else if (bossToggle === 2) {
+        currentBoss = new GameBoss2(gameContainer, () => currentLane, () => lanes[currentLane], () => endGame(), () => isJumping);
+        bossToggle = 3;
+    } else {
+        currentBoss = new GameBoss3(gameContainer, () => currentLane, () => lanes[currentLane], () => endGame(), () => isJumping);
+        bossToggle = 1;
     }
+}
+
 
     // مسح الأعداء والعوائق الحالية من الشاشة
     [obstacles, yellowEnemies, triangles, blueCircles].forEach(arr => {
