@@ -8,6 +8,7 @@
 <script src="game_boss.js"></script>
 <script src="game_boss2.js"></script>
 <script src="game_boss3.js"></script>
+<script src="game_boss4.js"></script>
 
     <style>
         html, body {
@@ -382,20 +383,22 @@ function activateShield() {
 // تعديل متغير التبديل ليشمل الزعماء الثلاثة
 
 
-// داخل دالة activateShield()
 if (!currentBoss) {
-    // اختيار الكلاس بناءً على قيمة bossToggle وتحديث الرقم تلقائياً للدورة القادمة
     if (this.bossToggle === 1) {
         currentBoss = new GameBoss(gameContainer, () => currentLane, () => lanes[currentLane], () => endGame(), () => isJumping);
-        this.bossToggle = 2; // الانتقال للزعيم الثاني في المرة القادمة
+        this.bossToggle = 2;
     } else if (this.bossToggle === 2) {
         currentBoss = new GameBoss2(gameContainer, () => currentLane, () => lanes[currentLane], () => endGame(), () => isJumping);
-        this.bossToggle = 3; // الانتقال للزعيم الثالث في المرة القادمة
-    } else {
+        this.bossToggle = 3;
+    } else if (this.bossToggle === 3) {
         currentBoss = new GameBoss3(gameContainer, () => currentLane, () => lanes[currentLane], () => endGame(), () => isJumping);
-        this.bossToggle = 1; // العودة للزعيم الأول للدورة الجديدة
+        this.bossToggle = 4;
+    } else {
+        currentBoss = new GameBoss4(gameContainer, () => currentLane, () => lanes[currentLane], () => endGame(), () => isJumping);
+        this.bossToggle = 1; // العودة للزعيم الأول
     }
 }
+
 
 
 
