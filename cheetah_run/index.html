@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>game of runner cheetah</title>
+    <!-- تم اضافة استدعاء ملف الزعيم هنا لحل مشكلة عدم التعرف على الكلاس -->
+    <script src="game_boss.js"></script>
     <style>
         html, body {
             margin: 0; padding: 0; width: 100%; height: 100%;
@@ -28,6 +30,9 @@
         .obstacle { position: absolute; width: 65px; height: 65px; background: #ff3366; border-radius: 10px; box-shadow: 0 0 12px #ff3366; z-index: 2; }
         .enemy-yellow { position: absolute; width: 60px; height: 60px; background: #ffcc00; border-radius: 50%; box-shadow: 0 0 12px #ffcc00; z-index: 2; }
         .obstacle-line { position: absolute; width: 420px; height: 12px; background: #f4b446; box-shadow: 0 0 10px #f4b446; border-radius: 6px; z-index: 12; }
+        
+        .blue-circle { position: absolute; width: 50px; height: 50px; background: #00ccff; border-radius: 50%; box-shadow: 0 0 15px #00ccff, inset 0 0 10px #ffffff; z-index: 3; }
+
         #player-container { position: absolute; bottom: 170px; width: 65px; height: 65px; transition: bottom 0.3s ease-in, left 0.12s ease-out; z-index: 10; }
         #shadow { position: absolute; bottom: 0; left: 0; width: 65px; height: 15px; background: rgba(0, 150, 255, 0.6); border-radius: 50%; box-shadow: 0 0 8px rgba(0, 150, 255, 0.8); }
         #player {
@@ -57,8 +62,12 @@
             display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             background: rgba(0, 0, 0, 0.95); padding: 20px 30px; text-align: center; border: 2px solid #fff; border-radius: 10px; z-index: 20;
         }
+        #powerup-status {
+            position: absolute; top: 15px; right: 15px; background: rgba(0, 204, 255, 0.8);
+            color: #000; padding: 5px 12px; border-radius: 20px; font-weight: bold; font-size: 14px;
+            display: none; z-index: 25; box-shadow: 0 0 10px #00ccff;
+        }
     </style>
-    <!-- استدعاء ملف الكلاس المستقل -->
     <script src="character.js"></script>
 </head>
 <body>
@@ -66,6 +75,8 @@
     <h1>لعبة المسارات (توقيت زمني ثابت)</h1>
     
     <div id="game-container">
+        <div id="powerup-status">درع الحماية: <span id="timer-count">20</span>ث</div>
+
         <div id="start-screen">
             <div id="start-player-preview"></div>
             <h2>لعبة تفادي العوائق</h2>
@@ -107,8 +118,8 @@
     <p style="font-size: 12px; color: #aaa; margin-top: 3px; text-align: center;">اسحب يميناً/يساراً للمسار | اسحب للأعلى للقفز | اسحب للأسفل للتصفير</p>
 
     <script>
-        // تهيئة مدير الشخصيات
         const charManager = new CharacterManager();
+        let currentBoss = null; // متغير عام لتخزين كائن الزعيم الحالي باستخدام اسم الكلاس مستقبلاً
 
         const playerContainer = document.getElementById('player-container');
         const player = document.getElementById('player');
@@ -120,8 +131,9 @@
         const startPlayerPreview = document.getElementById('start-player-preview');
         const whiteBoxIcon = document.getElementById('white-box-icon');
         const finalScoreDisplay = document.getElementById('final-score');
+        const powerupStatus = document.getElementById('powerup-status');
+        const timerCount = document.getElementById('timer-count');
 
-        // تطبيق الصورة المختارة عند البدء
         updateSelectedPlayer(charManager.currentPlayerImage);
 
         let currentScale = parseFloat(localStorage.getItem('gameScale')) || 1.0;
@@ -156,15 +168,20 @@
             startScreen.style.display = 'flex';
         }
 
-        // إعدادات اللعبة وحركاتها
         const lanes = [320, 185, 50]; 
         let currentLane = 1; 
         let score = 0;
         let isGameStarted = false, isGameOver = false, isJumping = false;
-        let obstacles = [], yellowEnemies = [], triangles = []; 
+        let obstacles = [], yellowEnemies = [], triangles = [], blueCircles = []; 
         let gameSpeed = 450, spawnAccumulator = 0, yellowSpawnAccumulator = 0;
         let nextYellowSpawnTime = getRandomYellowTime(), triangleSpawnAccumulator = 0;
         let nextTriangleSpawnTime = getRandomTriangleTime();
+        
+        let blueCircleSpawnAccumulator = 0;
+        let nextBlueCircleSpawnTime = getRandomBlueCircleTime();
+        let isShieldActive = false;
+        let shieldTimer = 0;
+
         let animTimer = 0, runFrame = 0, gameAnimId = null, lastTime = 0;
         let touchStartX = 0, touchStartY = 0, touchEndX = 0, touchEndY = 0;
 
@@ -248,6 +265,7 @@
 
         function getRandomYellowTime() { return Math.random() * 3 + 2; }
         function getRandomTriangleTime() { return Math.random() * 5 + 4; }
+        function getRandomBlueCircleTime() { return Math.random() * 12 + 10; }
 
         function createObstacle() {
             const obstacle = document.createElement('div');
@@ -282,12 +300,70 @@
             triangles.push(line);
         }
 
+        function createBlueCircle() {
+            const circle = document.createElement('div');
+            circle.classList.add('blue-circle');
+            const randomLane = Math.floor(Math.random() * 3);
+            circle.style.left = (lanes[randomLane] + 7) + 'px'; 
+            circle.style.top = '-50px';
+            circle.dataset.lane = randomLane;
+            gameContainer.appendChild(circle);
+            blueCircles.push(circle);
+        }
+
+        function activateShield() {
+            isShieldActive = true;
+            shieldTimer = 20;
+            powerupStatus.style.display = 'block';
+            timerCount.textContent = shieldTimer;
+            
+            // تم إزالة هالة الدرع البرمجية عن اللاعب هنا (لا يوجد player.style.filter)
+
+            // استدعاء الزعيم، وجعل طلقات البوس تنهي اللعبة (تقتل اللاعب) عند إصابته فوراً
+            if (!currentBoss) {
+                currentBoss = new GameBoss(
+                    gameContainer,
+                    () => currentLane,
+                    () => lanes[currentLane],
+                    () => { endGame(); }, // قتل اللاعب فوراً عند إصابته بالطلقة
+                    () => isJumping
+                );
+            }
+
+            [obstacles, yellowEnemies, triangles, blueCircles].forEach(arr => {
+                arr.forEach(el => el.remove());
+                arr.length = 0;
+            });
+
+            let countdownInterval = setInterval(() => {
+                shieldTimer--;
+                timerCount.textContent = shieldTimer;
+                if (shieldTimer <= 0 || isGameOver) {
+                    clearInterval(countdownInterval);
+                    isShieldActive = false;
+                    powerupStatus.style.display = 'none';
+                    
+                    if (currentBoss) {
+                        currentBoss.destroy();
+                        currentBoss = null;
+                    }
+
+                    blueCircleSpawnAccumulator = 0; 
+                    nextBlueCircleSpawnTime = getRandomBlueCircleTime();
+                }
+            }, 1000);
+        }
+
+
         function updateGame(currentTime) {
             if (!isGameStarted || isGameOver) return;
 
             let deltaTime = (currentTime - lastTime) / 1000; 
             if (deltaTime > 0.1) deltaTime = 0.1; 
-            lastTime = currentTime;
+            lastTime = currentTime;            
+
+            // تحديث الزعيم الحالي في كل إطار (Frame) برمجياً عبر اسم الكلاس/المتجر العام
+            if (currentBoss) currentBoss.update(deltaTime);
 
             if (!isJumping) {
                 animTimer += deltaTime;
@@ -298,25 +374,34 @@
                 }
             }
 
-            spawnAccumulator += deltaTime;
-            if (spawnAccumulator > 0.9) {
-                createObstacle();
-                spawnAccumulator = 0;
-                gameSpeed += 2; 
-            }
+            if (!isShieldActive) {
+                spawnAccumulator += deltaTime;
+                if (spawnAccumulator > 0.9) {
+                    createObstacle();
+                    spawnAccumulator = 0;
+                    gameSpeed += 2; 
+                }
 
-            yellowSpawnAccumulator += deltaTime;
-            if (yellowSpawnAccumulator >= nextYellowSpawnTime) {
-                createYellowEnemy();
-                yellowSpawnAccumulator = 0;
-                nextYellowSpawnTime = getRandomYellowTime();
-            }
+                yellowSpawnAccumulator += deltaTime;
+                if (yellowSpawnAccumulator >= nextYellowSpawnTime) {
+                    createYellowEnemy();
+                    yellowSpawnAccumulator = 0;
+                    nextYellowSpawnTime = getRandomYellowTime();
+                }
 
-            triangleSpawnAccumulator += deltaTime;
-            if (triangleSpawnAccumulator >= nextTriangleSpawnTime) {
-                createTriangle();
-                triangleSpawnAccumulator = 0;
-                nextTriangleSpawnTime = getRandomTriangleTime();
+                triangleSpawnAccumulator += deltaTime;
+                if (triangleSpawnAccumulator >= nextTriangleSpawnTime) {
+                    createTriangle();
+                    triangleSpawnAccumulator = 0;
+                    nextTriangleSpawnTime = getRandomTriangleTime();
+                }
+
+                blueCircleSpawnAccumulator += deltaTime;
+                if (blueCircleSpawnAccumulator >= nextBlueCircleSpawnTime) {
+                    createBlueCircle();
+                    blueCircleSpawnAccumulator = 0;
+                    nextBlueCircleSpawnTime = getRandomBlueCircleTime();
+                }
             }
 
             for (let i = obstacles.length - 1; i >= 0; i--) {
@@ -324,7 +409,7 @@
                 let currentTop = parseFloat(obs.style.top) + gameSpeed * deltaTime;
                 obs.style.top = currentTop + 'px';
 
-                if (currentTop >= 390 && currentTop <= 455 && parseInt(obs.dataset.lane) === currentLane) {
+                if (!isShieldActive && currentTop >= 390 && currentTop <= 455 && parseInt(obs.dataset.lane) === currentLane) {
                     if (!isJumping) { endGame(); return; }
                 }
                 if (currentTop > 680) { obs.remove(); obstacles.splice(i, 1); score += 10; scoreDisplay.textContent = score; }
@@ -341,7 +426,7 @@
                 yEnemy.dataset.x = currentX;
                 yEnemy.style.left = currentX + 'px';
 
-                if (Math.abs(currentTop - 460) < 45 && Math.abs(currentX - lanes[currentLane]) < 45) {
+                if (!isShieldActive && Math.abs(currentTop - 460) < 45 && Math.abs(currentX - lanes[currentLane]) < 45) {
                     if (!isJumping) { endGame(); return; }
                 }
                 if (currentTop > 680) { yEnemy.remove(); yellowEnemies.splice(i, 1); score += 15; scoreDisplay.textContent = score; }
@@ -352,8 +437,25 @@
                 let currentTop = parseFloat(tri.style.top) + gameSpeed * deltaTime;
                 tri.style.top = currentTop + 'px';
 
-                if (currentTop >= 390 && currentTop <= 470 && isJumping) { endGame(); return; }
+                if (!isShieldActive && currentTop >= 390 && currentTop <= 470 && isJumping) { endGame(); return; }
                 if (currentTop > 680) { tri.remove(); triangles.splice(i, 1); score += 20; scoreDisplay.textContent = score; }
+            }
+
+            for (let i = blueCircles.length - 1; i >= 0; i--) {
+                let circ = blueCircles[i];
+                let currentTop = parseFloat(circ.style.top) + gameSpeed * deltaTime;
+                circ.style.top = currentTop + 'px';
+
+                if (currentTop >= 380 && currentTop <= 460 && Math.abs(parseFloat(circ.style.left) - (lanes[currentLane] + 7)) < 40) {
+                    circ.remove();
+                    blueCircles.splice(i, 1);
+                    score += 50;
+                    scoreDisplay.textContent = score;
+                    activateShield();
+                    continue;
+                }
+
+                if (currentTop > 680) { circ.remove(); blueCircles.splice(i, 1); }
             }
 
             gameAnimId = requestAnimationFrame(updateGame);
@@ -362,8 +464,15 @@
         function endGame() {
             if (isGameOver) return;
             isGameOver = true;
+
+            if (currentBoss) {
+                currentBoss.destroy();
+                currentBoss = null;
+            }
+
             player.style.backgroundPosition = '0% 100%';
             playerContainer.style.bottom = '90px';
+            powerupStatus.style.display = 'none';
             if (gameAnimId) cancelAnimationFrame(gameAnimId);
             
             setTimeout(() => {
@@ -374,11 +483,21 @@
 
         function restartGame() {
             if (gameAnimId) cancelAnimationFrame(gameAnimId);
+
+            if (currentBoss) {
+                currentBoss.destroy();
+                currentBoss = null;
+            }
+
             gameSpeed = 450;
-            [obstacles, yellowEnemies, triangles].forEach(arr => { arr.forEach(el => el.remove()); arr.length = 0; });
+            [obstacles, yellowEnemies, triangles, blueCircles].forEach(arr => { arr.forEach(el => el.remove()); arr.length = 0; });
             score = 0; scoreDisplay.textContent = score; currentLane = 1;
-            spawnAccumulator = yellowSpawnAccumulator = triangleSpawnAccumulator = 0;
+            spawnAccumulator = yellowSpawnAccumulator = triangleSpawnAccumulator = blueCircleSpawnAccumulator = 0;
             nextYellowSpawnTime = getRandomYellowTime(); nextTriangleSpawnTime = getRandomTriangleTime();
+            nextBlueCircleSpawnTime = getRandomBlueCircleTime();
+            isShieldActive = false;
+            powerupStatus.style.display = 'none';
+            player.style.filter = "none";
             animTimer = runFrame = 0; isJumping = isGameOver = false;
             playerContainer.style.bottom = '170px';
             player.style.transform = 'translateY(0)';
@@ -391,9 +510,17 @@
 
         function goToStartScreen() {
             if (gameAnimId) cancelAnimationFrame(gameAnimId);
-            [obstacles, yellowEnemies, triangles].forEach(arr => { arr.forEach(el => el.remove()); arr.length = 0; });
+
+            if (currentBoss) {
+                currentBoss.destroy();
+                currentBoss = null;
+            }
+
+            [obstacles, yellowEnemies, triangles, blueCircles].forEach(arr => { arr.forEach(el => el.remove()); arr.length = 0; });
             score = 0; scoreDisplay.textContent = score; currentLane = 1;
-            isJumping = isGameOver = isGameStarted = false;
+            isJumping = isGameOver = isGameStarted = isShieldActive = false;
+            powerupStatus.style.display = 'none';
+            player.style.filter = "none";
             playerContainer.style.bottom = '170px';
             player.style.transform = 'translateY(0)';
             updatePlayerPosition();
