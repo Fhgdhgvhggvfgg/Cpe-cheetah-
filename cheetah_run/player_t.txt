@@ -1,2 +1,2 @@
-players/player_jump.png
-players/player_gg.png
+players/jamaica.png
+players/asia.png
