@@ -6,6 +6,7 @@
     <title>game of runner cheetah</title>
     <!-- تم اضافة استدعاء ملف الزعيم هنا لحل مشكلة عدم التعرف على الكلاس -->
     <script src="game_boss.js"></script>
+    <script src="game_boss2.js"></script>
     <style>
         html, body {
             margin: 0; padding: 0; width: 100%; height: 100%;
@@ -311,49 +312,64 @@
             blueCircles.push(circle);
         }
 
-        function activateShield() {
-            isShieldActive = true;
-            shieldTimer = 20;
-            powerupStatus.style.display = 'block';
-            timerCount.textContent = shieldTimer;
-            
-            // تم إزالة هالة الدرع البرمجية عن اللاعب هنا (لا يوجد player.style.filter)
+let bossToggle = 1; // متغير خارجي للتناوب بين الزعماء (يمكنك جعله عشوائياً أيضاً)
 
-            // استدعاء الزعيم، وجعل طلقات البوس تنهي اللعبة (تقتل اللاعب) عند إصابته فوراً
-            if (!currentBoss) {
-                currentBoss = new GameBoss(
-                    gameContainer,
-                    () => currentLane,
-                    () => lanes[currentLane],
-                    () => { endGame(); }, // قتل اللاعب فوراً عند إصابته بالطلقة
-                    () => isJumping
-                );
+function activateShield() {
+    isShieldActive = true;
+    shieldTimer = 20;
+    powerupStatus.style.display = 'block';
+    timerCount.textContent = shieldTimer;
+    
+    // إزالة هالة الدرع عن اللاعب (لا يوجد player.style.filter)
+
+    // استدعاء الزعيم بالتناوب بناءً على قيمة bossToggle
+    if (!currentBoss) {
+        if (bossToggle === 1) {
+            currentBoss = new GameBoss2(
+                gameContainer,
+                () => currentLane,
+                () => lanes[currentLane],
+                () => { endGame(); },
+                () => isJumping
+            );
+            bossToggle = 2; // المرة القادمة سيظهر الزعيم الآخر
+        } else {
+            currentBoss = new GameBoss(
+                gameContainer,
+                () => currentLane,
+                () => lanes[currentLane],
+                () => { endGame(); },
+                () => isJumping
+            );
+            bossToggle = 1; // العودة للزعيم الأول
+        }
+    }
+
+    // مسح الأعداء والعوائق الحالية من الشاشة
+    [obstacles, yellowEnemies, triangles, blueCircles].forEach(arr => {
+        arr.forEach(el => el.remove());
+        arr.length = 0;
+    });
+
+    let countdownInterval = setInterval(() => {
+        shieldTimer--;
+        timerCount.textContent = shieldTimer;
+        if (shieldTimer <= 0 || isGameOver) {
+            clearInterval(countdownInterval);
+            isShieldActive = false;
+            powerupStatus.style.display = 'none';
+            
+            // تدمير الزعيم الحالي عند انتهاء الوقت
+            if (currentBoss) {
+                currentBoss.destroy();
+                currentBoss = null;
             }
 
-            [obstacles, yellowEnemies, triangles, blueCircles].forEach(arr => {
-                arr.forEach(el => el.remove());
-                arr.length = 0;
-            });
-
-            let countdownInterval = setInterval(() => {
-                shieldTimer--;
-                timerCount.textContent = shieldTimer;
-                if (shieldTimer <= 0 || isGameOver) {
-                    clearInterval(countdownInterval);
-                    isShieldActive = false;
-                    powerupStatus.style.display = 'none';
-                    
-                    if (currentBoss) {
-                        currentBoss.destroy();
-                        currentBoss = null;
-                    }
-
-                    blueCircleSpawnAccumulator = 0; 
-                    nextBlueCircleSpawnTime = getRandomBlueCircleTime();
-                }
-            }, 1000);
+            blueCircleSpawnAccumulator = 0; 
+            nextBlueCircleSpawnTime = getRandomBlueCircleTime();
         }
-
+    }, 1000);
+}
 
         function updateGame(currentTime) {
             if (!isGameStarted || isGameOver) return;
