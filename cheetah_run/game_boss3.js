@@ -19,7 +19,7 @@ class GameBoss3 {
         this.warningLanes = []; // الخطوط الملونة المحذرة
         this.projectiles = [];   // المقذوفات (المثلثات والصواريخ)
 
-        // تكرار النمط كل 5 ثوانٍ
+        // تكرار النمط كل فترة زمنية
         this.attackInterval = setInterval(() => this.triggerAttackPattern(), 2400);
         // إطلاق أول هجمة فوراً عند البداية
         this.triggerAttackPattern();
@@ -41,6 +41,7 @@ class GameBoss3 {
                 top: 30px;
                 left: 185px;
                 z-index: 15;
+                pointer-events: none; /* لضمان عدم حجب اللمس */
             }
             /* خطوط التحذير العمودية في المسارات */
             .boss-warning-line {
@@ -51,6 +52,7 @@ class GameBoss3 {
                 opacity: 0.5;
                 z-index: 4;
                 transition: opacity 0.2s;
+                pointer-events: none; /* لضمان عدم حجب اللمس */
             }
             .boss-warning-red {
                 background: #ff0055;
@@ -69,6 +71,7 @@ class GameBoss3 {
                 border-radius: 15px 15px 5px 5px;
                 box-shadow: 0 0 15px #ff0055;
                 z-index: 6;
+                pointer-events: none; /* لضمان عدم حجب اللمس */
             }
             /* المثلث المعكوس البرتقالي */
             .boss3-inverted-triangle {
@@ -79,25 +82,23 @@ class GameBoss3 {
                 border-right: 25px solid transparent;
                 border-top: 50px solid #ff9900;
                 filter: drop-shadow(0px 0px 8px #ff9900);
-                z-index: 12; /* طبقة أعلى من القفز */
+                z-index: 12;
+                pointer-events: none; /* لضمان عدم حجب اللمس */
             }
         `;
         document.head.appendChild(style);
     }
 
     triggerAttackPattern() {
-        // إزالة أي تحذيرات سابقة إن وجدت
         this.clearWarnings();
 
         const laneStates = [];
 
-        // 1. اختار حالة كل مسار من المسارات الثلاثة عشوائياً (أحمر أو برتقالي)
         for (let i = 0; i < 3; i++) {
             const isRed = Math.random() < 0.5;
             const state = isRed ? 'red' : 'orange';
             laneStates.push(state);
 
-            // إنشاء خط التحذير العمودي
             const warningEl = document.createElement('div');
             warningEl.className = `boss-warning-line boss-warning-${state}`;
             warningEl.style.left = (this.lanes[i]) + 'px';
@@ -105,7 +106,6 @@ class GameBoss3 {
             this.warningLanes.push(warningEl);
         }
 
-        // 2. يستمر التحذير لمدة ثانية واحدة (1000ms) ثم تظهر العوائق
         setTimeout(() => {
             this.clearWarnings();
             this.spawnObstacles(laneStates);
@@ -118,20 +118,18 @@ class GameBoss3 {
             const laneX = this.lanes[i];
 
             if (state === 'red') {
-                // إطلاق صاروخ أحمر
                 const rocket = document.createElement('div');
                 rocket.className = 'boss3-rocket';
-                rocket.style.left = (laneX + 17) + 'px'; // موازاة المنتصف
+                rocket.style.left = (laneX + 17) + 'px';
                 rocket.style.top = '-60px';
                 rocket.dataset.lane = i;
                 rocket.dataset.type = 'red';
                 this.gameContainer.appendChild(rocket);
                 this.projectiles.push(rocket);
             } else if (state === 'orange') {
-                // إطلاق مثلث معكوس برتقالي
                 const triangle = document.createElement('div');
                 triangle.className = 'boss3-inverted-triangle';
-                triangle.style.left = (laneX + 7) + 'px'; // موازاة المنتصف
+                triangle.style.left = (laneX + 7) + 'px';
                 triangle.style.top = '-60px';
                 triangle.dataset.lane = i;
                 triangle.dataset.type = 'orange';
@@ -150,35 +148,30 @@ class GameBoss3 {
         for (let i = this.projectiles.length - 1; i >= 0; i--) {
             let p = this.projectiles[i];
 
-            // تحريك المقذوفات للأسفل
             let currentTop = parseFloat(p.style.top) + 1300 * deltaTime;
             p.style.top = currentTop + 'px';
 
             let projLane = parseInt(p.dataset.lane);
             let projType = p.dataset.type;
 
-            // التحقق من وصول العائق لمستوى اللاعب (منطقة الاصطدام)
-// التعديل الصحيح لشرط الاصطدام داخل دالة update
-if (currentTop >= 390 && currentTop <= 520) { // توسيع النطاق ليتناسب مع السرعة العالية
-    if (projLane === this.getPlayerLane()) {
-        let jumping = this.isPlayerJumping ? this.isPlayerJumping() : false;
+            if (currentTop >= 390 && currentTop <= 520) { 
+                if (projLane === this.getPlayerLane()) {
+                    let jumping = this.isPlayerJumping ? this.isPlayerJumping() : false;
 
-        if (projType === 'orange' && jumping) {
-            p.remove(); // إزالة العنصر من الشاشة
-            this.projectiles.splice(i, 1); // تعديل الرقم إلى 1 بدلاً من 2
-            if (this.onHitPlayer) this.onHitPlayer();
-            break; // إيقاف التكرار فور الاصطدام
-        } else if (projType === 'red' && !jumping) {
-            p.remove(); // إزالة العنصر من الشاشة
-            this.projectiles.splice(i, 1); // حذف المقذوف المصدوم فقط
-            if (this.onHitPlayer) this.onHitPlayer();
-            break; // إيقاف التكرار فور الاصطدام
-        }
-    }
-}
+                    if (projType === 'orange' && jumping) {
+                        p.remove(); 
+                        this.projectiles.splice(i, 1); 
+                        if (this.onHitPlayer) this.onHitPlayer();
+                        continue;
+                    } else if (projType === 'red' && !jumping) {
+                        p.remove(); 
+                        this.projectiles.splice(i, 1); 
+                        if (this.onHitPlayer) this.onHitPlayer();
+                        continue;
+                    }
+                }
+            }
 
-
-            // إزالة المقذوف عند الخروج من أسفل الشاشة
             if (currentTop > 680) {
                 p.remove();
                 this.projectiles.splice(i, 1);

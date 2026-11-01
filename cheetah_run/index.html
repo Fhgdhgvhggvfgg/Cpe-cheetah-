@@ -136,7 +136,7 @@
         const finalScoreDisplay = document.getElementById('final-score');
         const powerupStatus = document.getElementById('powerup-status');
         const timerCount = document.getElementById('timer-count');
-
+this.bossToggle = 3;
         updateSelectedPlayer(charManager.currentPlayerImage);
 
         let currentScale = parseFloat(localStorage.getItem('gameScale')) || 1.0;
@@ -326,21 +326,23 @@ function activateShield() {
 
     // استدعاء الزعيم بالتناوب بناءً على قيمة bossToggle
 // تعديل متغير التبديل ليشمل الزعماء الثلاثة
-let bossToggle = 1;
+
 
 // داخل دالة activateShield()
 if (!currentBoss) {
-    if (bossToggle === 1) {
+    // اختيار الكلاس بناءً على قيمة bossToggle وتحديث الرقم تلقائياً للدورة القادمة
+    if (this.bossToggle === 1) {
         currentBoss = new GameBoss(gameContainer, () => currentLane, () => lanes[currentLane], () => endGame(), () => isJumping);
-        bossToggle = 2;
-    } else if (bossToggle === 2) {
+        this.bossToggle = 2; // الانتقال للزعيم الثاني في المرة القادمة
+    } else if (this.bossToggle === 2) {
         currentBoss = new GameBoss2(gameContainer, () => currentLane, () => lanes[currentLane], () => endGame(), () => isJumping);
-        bossToggle = 3;
+        this.bossToggle = 3; // الانتقال للزعيم الثالث في المرة القادمة
     } else {
         currentBoss = new GameBoss3(gameContainer, () => currentLane, () => lanes[currentLane], () => endGame(), () => isJumping);
-        bossToggle = 1;
+        this.bossToggle = 1; // العودة للزعيم الأول للدورة الجديدة
     }
 }
+
 
 
     // مسح الأعداء والعوائق الحالية من الشاشة
