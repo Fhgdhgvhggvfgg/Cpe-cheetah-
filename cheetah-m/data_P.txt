@@ -56,3 +56,5 @@ p(2800,900) s(350,500) "strong jeen 💪😼."
 https://www.tiktok.com/@nono_20115?_r=1&_t=ZS-9AuLm17jcfd&&jeen_fanartS.png
 p(0,-200) s(350,500) "صممي شخصيتكي الفهدة💕."
 https://fhgdhgvhggvfgg.github.io/Cpe-cheetah-/edit_ch/index.html&&edit_ch.png
+p(3600,500) s(550,850) "الفائز بفانارت الشهر 💕😻🔥."
+https://www.tiktok.com/@yasmin.wasef2?_r=1&_t=ZS-9B2BSTVhGI0&&lora_fanart_diamond.png
