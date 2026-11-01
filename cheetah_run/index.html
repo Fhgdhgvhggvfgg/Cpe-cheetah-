@@ -23,10 +23,13 @@
             box-shadow: 0 0 25px rgba(0,0,0,0.9); border-radius: 12px;
             flex-shrink: 0; transform-origin: center center; transition: transform 0.2s ease;
         }
-        #white-box-icon {
-            position: absolute; top: 10px; left: 10px; width: 75px; height: 75px;
-            background-size: 200% 400%; background-position: 100% 100%; z-index: 15; border-radius: 4px;
-        }
+#white-box-icon {
+    position: absolute; top: 10px; left: 10px; width: 75px; height: 75px;
+    background-size: 200% 400%; background-position: 100% 100%; z-index: 15; border-radius: 4px;
+    border: 3px solid #00ccff; /* أضف هذا السطر للحدود السماوية */
+    box-shadow: 0 0 10px #00ccff; /* توهج جمالي اختياري */
+}
+
         .lane-line { position: absolute; top: 0; bottom: 0; width: 2px; background: rgba(255, 255, 255, 0.2); z-index: 1; }
         #line1 { left: 146px; }
         #line2 { left: 293px; }
@@ -50,7 +53,18 @@
             align-items: center; justify-content: center; z-index: 30; text-align: center;
         }
         #character-select-screen { display: none; z-index: 40; padding: 20px; box-sizing: border-box; }
-        #start-player-preview { width: 180px; height: 180px; background-size: 200% 400%; background-position: 100% 100%; margin-bottom: 20px; border-radius: 8px; }
+        
+#start-player-preview { 
+    width: 180px; 
+    height: 180px; 
+    background-size: 200% 400%; 
+    background-position: 100% 100%; 
+    margin-bottom: 20px; 
+    border-radius: 8px;
+    border: 3px solid #00ccff; /* أضف هذا السطر للحدود السماوية */
+    box-shadow: 0 0 10px #00ccff; /* توهج اختياري */
+}
+
         #start-screen button, #character-select-screen button, .zoom-buttons-container button, #game-over button {
             padding: 12px 30px; font-size: 18px; border: none; cursor: pointer; font-weight: bold; border-radius: 8px; margin-top: 10px;
         }
@@ -83,6 +97,10 @@
         <div id="start-screen">
             <div id="start-player-preview"></div>
             <h2>لعبة تفادي العوائق</h2>
+            <div style="font-size: 16px; color: #ffcc00; margin: 10px 0; font-weight: bold;">
+    أعلى نقاط: <span id="highest-score">0</span>
+</div>
+
             <button onclick="startGame()" style="background: #00ffcc; color: #000;">ابدأ اللعب</button>
             <button onclick="openCharacterSelectMenu()" style="background: #ffcc00; color: #000;">اختر الشخصية</button>
             
@@ -115,6 +133,7 @@
             <button onclick="restartGame()" style="background: #00ffcc; color: #000;">إعادة المحاولة</button>
             <button onclick="goToStartScreen()" style="background: #ffcc00; color: #000;">القائمة الرئيسية</button>
         </div>
+        <div id="ui">النقاط: <span id="score">0</span></div>
     </div>
 
     <div id="ui">النقاط: <span id="score">0</span></div>
@@ -142,6 +161,22 @@ this.bossToggle = 3;
         let currentScale = parseFloat(localStorage.getItem('gameScale')) || 1.0;
         updateGameScale();
 
+// دالة لتحديث وعرض أعلى نقاط عند نهاية اللعبة أو بدايتها
+function checkAndUpdateHighScore(currentScore) {
+    // جلب أعلى نقاط مخزنة مسبقاً، وإذا لم توجد تكون القيمة 0
+    let highScore = localStorage.getItem('gameHighScore') || 0;
+
+    // مقارنة النقاط الحالية مع أعلى نقاط مسجلة
+    if (currentScore > highScore) {
+        highScore = currentScore;
+        // تخزين الرقم الجديد كأعلى نقاط
+        localStorage.setItem('gameHighScore', highScore);
+    }
+
+    return highScore;
+}
+
+
         function zoomGame(amount) {
             currentScale = Math.min(Math.max(currentScale + amount, 0.6), 2.0);
             currentScale = Math.round(currentScale * 10) / 10;
@@ -150,6 +185,8 @@ this.bossToggle = 3;
         }
 
         function updateGameScale() {
+        document.getElementById('highest-score').textContent = localStorage.getItem('gameHighScore') || 0;
+
             gameContainer.style.transform = `scale(${currentScale})`;
         }
 
@@ -498,13 +535,20 @@ if (!currentBoss) {
             powerupStatus.style.display = 'none';
             if (gameAnimId) cancelAnimationFrame(gameAnimId);
             
+            // === هنا يتم حساب وتحديث أعلى نقاط ===
+            let bestScore = checkAndUpdateHighScore(score);
+
             setTimeout(() => {
-                finalScoreDisplay.textContent = "النقاط: " + score;
+                // عرض النقاط الحالية وأعلى نقاط وصلت لها في واجهة الخسارة
+                finalScoreDisplay.innerHTML = `النقاط: ${score} <br> <span style="color: #ffcc00; font-size: 15px;">أعلى نقاط: ${bestScore}</span>`;
                 gameOverScreen.style.display = 'block';
             }, 1000);
         }
 
+
         function restartGame() {
+        document.getElementById('highest-score').textContent = localStorage.getItem('gameHighScore') || 0;
+
             if (gameAnimId) cancelAnimationFrame(gameAnimId);
 
             if (currentBoss) {
@@ -532,6 +576,8 @@ if (!currentBoss) {
         }
 
         function goToStartScreen() {
+        document.getElementById('highest-score').textContent = localStorage.getItem('gameHighScore') || 0;
+
             if (gameAnimId) cancelAnimationFrame(gameAnimId);
 
             if (currentBoss) {
