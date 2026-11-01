@@ -9,6 +9,11 @@ class GameBoss2 {
         
         this.injectStyles();
 
+        // إنشاء طبقة الساحة/الحلبة الرمادية
+        this.arenaLayer = document.createElement('div');
+        this.arenaLayer.className = 'boss-arena-overlay';
+        this.gameContainer.appendChild(this.arenaLayer);
+
         // إنشاء عنصر الزعيم الثاني
         this.bossElement = document.createElement('div');
         this.bossElement.className = 'game-boss-2-element';
@@ -25,6 +30,17 @@ class GameBoss2 {
         const style = document.createElement('style');
         style.id = 'game-boss-2-styles';
         style.innerHTML = `
+            /* طبقة الساحة أو الحلبة الرمادية */
+            .boss-arena-overlay {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(160, 150, 130, 0.35);
+                pointer-events: none; /* لكي لا تؤثر على تفاعلات اللمس أو الماوس */
+                z-index: 2; /* تحت العناصر المهمة وفوق الخلفية الأساسية */
+            }
             .game-boss-2-element {
                 position: absolute;
                 width: 70px;
@@ -123,6 +139,9 @@ class GameBoss2 {
         this.projectiles = [];
         if (this.bossElement) {
             this.bossElement.remove();
+        }
+        if (this.arenaLayer) {
+            this.arenaLayer.remove();
         }
     }
 }

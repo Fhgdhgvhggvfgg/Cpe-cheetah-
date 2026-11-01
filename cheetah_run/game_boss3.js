@@ -11,7 +11,7 @@ class GameBoss3 {
 
         this.injectStyles();
 
-        // إنشاء عنصر الزعيم (عنصر أرجواني غامق مائل للزرقة)
+        // إنشاء عنصر الزعيم (مربع رمادي)
         this.bossElement = document.createElement('div');
         this.bossElement.className = 'game-boss-3-element';
         this.gameContainer.appendChild(this.bossElement);
@@ -19,10 +19,11 @@ class GameBoss3 {
         this.warningLanes = []; // الخطوط الملونة المحذرة
         this.projectiles = [];   // المقذوفات (المثلثات والصواريخ)
 
-        // تكرار النمط كل فترة زمنية
-        this.attackInterval = setInterval(() => this.triggerAttackPattern(), 2400);
-        // إطلاق أول هجمة فوراً عند البداية
-        this.triggerAttackPattern();
+        // الانتظار ثانية واحدة قبل إطلاق أول قذيفة ومن ثم تكرار الهجمات
+        setTimeout(() => {
+            this.triggerAttackPattern();
+            this.attackInterval = setInterval(() => this.triggerAttackPattern(), 2400);
+        }, 1000);
     }
 
     injectStyles() {
@@ -35,9 +36,9 @@ class GameBoss3 {
                 position: absolute;
                 width: 70px;
                 height: 70px;
-                background: #00e5ff;
-                border-radius: 50%;
-                box-shadow: 0 0 20px #00e5ff;
+                background: #888888;
+                border-radius: 0; /* تحويل الدائرة إلى مربع */
+                box-shadow: 0 0 20px #888888;
                 top: 30px;
                 left: 185px;
                 z-index: 15;
@@ -180,7 +181,9 @@ class GameBoss3 {
     }
 
     destroy() {
-        clearInterval(this.attackInterval);
+        if (this.attackInterval) {
+            clearInterval(this.attackInterval);
+        }
         this.clearWarnings();
         this.projectiles.forEach(p => p.remove());
         this.projectiles = [];
