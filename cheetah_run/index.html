@@ -68,8 +68,26 @@
         #start-screen button, #character-select-screen button, .zoom-buttons-container button, #game-over button {
             padding: 12px 30px; font-size: 18px; border: none; cursor: pointer; font-weight: bold; border-radius: 8px; margin-top: 10px;
         }
-        .zoom-buttons-container { display: flex; gap: 10px; margin-top: 10px; }
-        .zoom-buttons-container button { padding: 10px 20px; background: #333; color: #fff; border: 2px solid #fff; margin-top: 0 !important; }
+.zoom-buttons-container { 
+    position: absolute; 
+    top: 15px; 
+    right: 15px; 
+    display: flex; 
+    gap: 10px; 
+    z-index: 50; /* رقم كبير لضمان ظهورها فوق الأعداء واللاعب والزعماء */
+}
+
+.zoom-buttons-container button { 
+    padding: 8px 15px; 
+    background: rgba(0, 0, 0, 0.7); 
+    color: #fff; 
+    border: 2px solid #00ccff; 
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-top: 0 !important; 
+}
+
         #character-list { display: flex; flex-direction: column; gap: 15px; max-height: 350px; overflow-y: auto; width: 100%; align-items: center; margin-bottom: 15px; }
         .character-item { display: flex; align-items: center; background: rgba(255, 255, 255, 0.1); padding: 10px 15px; border-radius: 8px; width: 80%; cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
         .character-item:hover { border-color: #00ffcc; }
@@ -88,15 +106,21 @@
     <script src="character.js"></script>
 </head>
 <body>
-
-    <h1>لعبة المسارات (توقيت زمني ثابت)</h1>
+                     <div class="zoom-buttons-container">
+                <button onclick="zoomGame(0.1)">+</button>
+                <button onclick="zoomGame(-0.1)">-</button>
+            </div>
+    <h1>لعبة الفهد العداء</h1>
     
     <div id="game-container">
-        <div id="powerup-status">درع الحماية: <span id="timer-count">20</span>ث</div>
+   
+    
+        <div id="powerup-status">مواجهة البوس <span id="timer-count">20</span>ث</div>
 
         <div id="start-screen">
             <div id="start-player-preview"></div>
-            <h2>لعبة تفادي العوائق</h2>
+            <h2>السحب اعلى اسفل يمين يسار</h2>
+
             <div style="font-size: 16px; color: #ffcc00; margin: 10px 0; font-weight: bold;">
     أعلى نقاط: <span id="highest-score">0</span>
 </div>
@@ -104,10 +128,6 @@
             <button onclick="startGame()" style="background: #00ffcc; color: #000;">ابدأ اللعب</button>
             <button onclick="openCharacterSelectMenu()" style="background: #ffcc00; color: #000;">اختر الشخصية</button>
             
-            <div class="zoom-buttons-container">
-                <button onclick="zoomGame(0.1)">+</button>
-                <button onclick="zoomGame(-0.1)">-</button>
-            </div>
         </div>
 
         <div id="character-select-screen">
@@ -135,9 +155,6 @@
         </div>
         <div id="ui">النقاط: <span id="score">0</span></div>
     </div>
-
-    <div id="ui">النقاط: <span id="score">0</span></div>
-    <p style="font-size: 12px; color: #aaa; margin-top: 3px; text-align: center;">اسحب يميناً/يساراً للمسار | اسحب للأعلى للقفز | اسحب للأسفل للتصفير</p>
 
     <script>
         const charManager = new CharacterManager();
