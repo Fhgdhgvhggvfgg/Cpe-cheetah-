@@ -1,6 +1,6 @@
 class CharacterManager {
     constructor() {
-        this.currentPlayerImage = localStorage.getItem('selectedPlayerImage') || 'players/player_jump.png';
+        this.currentPlayerImage = localStorage.getItem('selectedPlayerImage') || 'players/jamaica.png';
     }
 
     // تطبيق الصورة الحالية على عناصر الواجهة
