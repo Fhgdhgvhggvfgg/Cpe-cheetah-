@@ -236,18 +236,16 @@ this.bossToggle = 3;
         document.head.appendChild(s);
     }
 
+// الكود بعد التعديل
 function updateGscoreProgressBar() {
-    let progressBar = document.getElementById('score-progress-bar');
-    if (!progressBar) return;
+    let progressBar = document.getElementById('score-progress-bar'); //
+    if (!progressBar) return; //
 
- // القيمة الابتدائية
-    // مقارنة السكور العادي بـ gscore وحساب النسبة المئوية للزيادة
-    let currentProgress = score - gscore;
-    let percentage = Math.min((currentProgress / 400) * 100, 100);
-    percentage = Math.max(percentage, 0);
+    let currentProgress = score - gscore; //
+    let percentage = Math.min((currentProgress / 1200) * 100, 100); // تم التغيير إلى 800
+    percentage = Math.max(percentage, 0); //
 
-    // تطبيق النسبة ليزداد الخط الأخضر تدريجياً مع زيادة النقاط
-    progressBar.style.width = percentage + '%';
+    progressBar.style.width = percentage + '%'; //
 }
 
 
@@ -293,29 +291,19 @@ function checkAndUpdateHighScore(currentScore) {
             });
         }
 
-// دالة تحديث الشريط بناءً على الفرق بين السكور العادي و gscore
-function updateGscoreProgressBar() {
-    let progressBar = document.getElementById('score-progress-bar');
-    if (!progressBar) return;
 
-    let currentProgress = score - gscore;
-    let percentage = Math.min((currentProgress / 400) * 100, 100);
-    percentage = Math.max(percentage, 0);
-
-    progressBar.style.width = percentage + '%';
-}
-
-// دالة التصفير المشروطة بالوصول إلى 400 نقطة
+// الكود بعد التعديل
 function resetGscore() {
-    let currentProgress = score - gscore;
+    let currentProgress = score - gscore; //
     
-    // التحقق مما إذا كان الشريط قد وصل إلى حده الأقصى (400 نقطة أو أكثر)
-    if (currentProgress >= 400) {
+    // التحقق مما إذا كان الشريط قد وصل إلى حده الأقصى (800 نقطة أو أكثر)
+    if (currentProgress >= 1200) { // تم التغيير إلى 800
 
         gscore = score; // تصفير أو إعادة ضبط نقطة البداية للشريط
         updateGscoreProgressBar(); // تحديث شكل الشريط ليعود للصفر
     }
 }
+
 
 
 
