@@ -11,13 +11,7 @@
 <script src="game_boss4.js"></script>
 
 <script>
-    let com = 1;
 
-    if (com === 1) {
-        const s = document.createElement('script');
-        s.src = 'mascot.js';
-        document.head.appendChild(s);
-    }
 </script>
 
 
@@ -234,7 +228,13 @@ this.bossToggle = 3;
         let currentScale = parseFloat(localStorage.getItem('gameScale')) || 1.0;
         updateGameScale();
 
+    let com = 1;
 
+    if (com === 1) {
+        const s = document.createElement('script');
+        s.src = 'mascot.js';
+        document.head.appendChild(s);
+    }
 
 function updateGscoreProgressBar() {
     let progressBar = document.getElementById('score-progress-bar');
@@ -666,21 +666,22 @@ updateGscoreProgressBar();
             }, 1000);
         }
 
+function restartGame() {
+document.getElementById('highest-score').textContent = localStorage.getItem('gameHighScore') || 0;
 
-        function restartGame() {
-        document.getElementById('highest-score').textContent = localStorage.getItem('gameHighScore') || 0;
+    if (gameAnimId) cancelAnimationFrame(gameAnimId);
 
-            if (gameAnimId) cancelAnimationFrame(gameAnimId);
+    if (currentBoss) {
+        currentBoss.destroy();
+        currentBoss = null;
+    }
 
-            if (currentBoss) {
-                currentBoss.destroy();
-                currentBoss = null;
-            }
-
-            gameSpeed = 450;
-            [obstacles, yellowEnemies, triangles, blueCircles].forEach(arr => { arr.forEach(el => el.remove()); arr.length = 0; });
-            score = 0; scoreDisplay.textContent = score; currentLane = 1;
-            spawnAccumulator = yellowSpawnAccumulator = triangleSpawnAccumulator = blueCircleSpawnAccumulator = 0;
+    gameSpeed = 450;
+    [obstacles, yellowEnemies, triangles, blueCircles].forEach(arr => { arr.forEach(el => el.remove()); arr.length = 0; });
+    score = 0; scoreDisplay.textContent = score; currentLane = 1;
+    gscore = 0;              // ← أضف هذا السطر
+    updateGscoreProgressBar(); // ← أضف هذا السطر لتحديث الشريط فوراً
+    spawnAccumulator = yellowSpawnAccumulator = triangleSpawnAccumulator = blueCircleSpawnAccumulator = 0;
             nextYellowSpawnTime = getRandomYellowTime(); nextTriangleSpawnTime = getRandomTriangleTime();
             nextBlueCircleSpawnTime = getRandomBlueCircleTime();
             isShieldActive = false;
@@ -695,20 +696,23 @@ updateGscoreProgressBar();
             isGameStarted = true; lastTime = performance.now();
             gameAnimId = requestAnimationFrame(updateGame);
         }
+        
+       function goToStartScreen() {
+document.getElementById('highest-score').textContent = localStorage.getItem('gameHighScore') || 0;
 
-        function goToStartScreen() {
-        document.getElementById('highest-score').textContent = localStorage.getItem('gameHighScore') || 0;
+    if (gameAnimId) cancelAnimationFrame(gameAnimId);
 
-            if (gameAnimId) cancelAnimationFrame(gameAnimId);
+    if (currentBoss) {
+        currentBoss.destroy();
+        currentBoss = null;
+    }
 
-            if (currentBoss) {
-                currentBoss.destroy();
-                currentBoss = null;
-            }
+    [obstacles, yellowEnemies, triangles, blueCircles].forEach(arr => { arr.forEach(el => el.remove()); arr.length = 0; });
+    score = 0; scoreDisplay.textContent = score; currentLane = 1;
+    gscore = 0;              // ← أضف هذا السطر
+    updateGscoreProgressBar(); // ← أضف هذا السطر
+    isJumping = isGameOver = isGameStarted = isShieldActive = false;
 
-            [obstacles, yellowEnemies, triangles, blueCircles].forEach(arr => { arr.forEach(el => el.remove()); arr.length = 0; });
-            score = 0; scoreDisplay.textContent = score; currentLane = 1;
-            isJumping = isGameOver = isGameStarted = isShieldActive = false;
             powerupStatus.style.display = 'none';
             player.style.filter = "none";
             playerContainer.style.bottom = '170px';
