@@ -64,3 +64,5 @@ p(2150,550) s(300,400) "لعبة الفهد العداء"
 https://fhgdhgvhggvfgg.github.io/Cpe-cheetah-/cheetah_run/index.html&&cheetah_jump_p.png
 p(2500,550) s(300,180) "اول اصدار من لعبة الفهد العداء"
 cheetah_run.zip
+p(2500,750) s(300,180) "ثاني اصدار من لعبة الفهد العداء"
+cheetah_run_power.zip
