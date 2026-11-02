@@ -10,6 +10,17 @@
 <script src="game_boss3.js"></script>
 <script src="game_boss4.js"></script>
 
+<script>
+    let com = 1;
+
+    if (com === 1) {
+        const s = document.createElement('script');
+        s.src = 'mascot.js';
+        document.head.appendChild(s);
+    }
+</script>
+
+
     <style>
         html, body {
             margin: 0; padding: 0; width: 100%; height: 100%;
@@ -30,6 +41,45 @@
     border: 3px solid #00ccff; /* أضف هذا السطر للحدود السماوية */
     box-shadow: 0 0 10px #00ccff; /* توهج جمالي اختياري */
 }
+
+#reset-gscore-btn {
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+    padding: 8px 15px;
+    background: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    border: 2px solid #00ffcc;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    z-index: 5; /* جعلناه خلف الشاشات والقوائم التي تملك z-index أعلى */
+    font-size: 14px;
+    display: none; /* مخفي افتراضياً */
+}
+
+#reset-gscore-btn:hover {
+    background: #00ffcc;
+    color: #000;
+}
+
+
+#score-progress-container {
+    width: 200px;
+    height: 12px;
+    background: #444; /* لون رمادي للخلفية */
+    border-radius: 6px;
+    overflow: hidden;
+    margin: 8px auto 0 auto;
+    border: 1px solid #666;
+}
+#score-progress-bar {
+    width: 0%;
+    height: 100%;
+    background: #00ffcc; /* لون اخضر مضيء يمتلئ مع النقاط */
+    transition: width 0.2s ease-out;
+}
+
 
         .lane-line { position: absolute; top: 0; bottom: 0; width: 2px; background: rgba(255, 255, 255, 0.2); z-index: 1; }
         #line1 { left: 146px; }
@@ -114,8 +164,13 @@
     <h1>لعبة الفهد العداء</h1>
     
     <div id="game-container">
-   
     
+    <button id="reset-gscore-btn" onclick="resetGscore()">تصفير الشريط</button>
+   
+    <div id="score-progress-container">
+    <div id="score-progress-bar"></div>
+</div>
+
         <div id="powerup-status">مواجهة البوس <span id="timer-count">20</span>ث</div>
 
         <div id="start-screen">
@@ -179,6 +234,23 @@ this.bossToggle = 3;
         let currentScale = parseFloat(localStorage.getItem('gameScale')) || 1.0;
         updateGameScale();
 
+
+
+function updateGscoreProgressBar() {
+    let progressBar = document.getElementById('score-progress-bar');
+    if (!progressBar) return;
+
+ // القيمة الابتدائية
+    // مقارنة السكور العادي بـ gscore وحساب النسبة المئوية للزيادة
+    let currentProgress = score - gscore;
+    let percentage = Math.min((currentProgress / 400) * 100, 100);
+    percentage = Math.max(percentage, 0);
+
+    // تطبيق النسبة ليزداد الخط الأخضر تدريجياً مع زيادة النقاط
+    progressBar.style.width = percentage + '%';
+}
+
+
 // دالة لتحديث وعرض أعلى نقاط عند نهاية اللعبة أو بدايتها
 function checkAndUpdateHighScore(currentScore) {
     // جلب أعلى نقاط مخزنة مسبقاً، وإذا لم توجد تكون القيمة 0
@@ -221,6 +293,32 @@ function checkAndUpdateHighScore(currentScore) {
             });
         }
 
+// دالة تحديث الشريط بناءً على الفرق بين السكور العادي و gscore
+function updateGscoreProgressBar() {
+    let progressBar = document.getElementById('score-progress-bar');
+    if (!progressBar) return;
+
+    let currentProgress = score - gscore;
+    let percentage = Math.min((currentProgress / 400) * 100, 100);
+    percentage = Math.max(percentage, 0);
+
+    progressBar.style.width = percentage + '%';
+}
+
+// دالة التصفير المشروطة بالوصول إلى 400 نقطة
+function resetGscore() {
+    let currentProgress = score - gscore;
+    
+    // التحقق مما إذا كان الشريط قد وصل إلى حده الأقصى (400 نقطة أو أكثر)
+    if (currentProgress >= 400) {
+
+        gscore = score; // تصفير أو إعادة ضبط نقطة البداية للشريط
+        updateGscoreProgressBar(); // تحديث شكل الشريط ليعود للصفر
+    }
+}
+
+
+
         function closeCharacterSelect() {
             characterSelectScreen.style.display = 'none';
             startScreen.style.display = 'flex';
@@ -229,6 +327,7 @@ function checkAndUpdateHighScore(currentScore) {
         const lanes = [320, 185, 50]; 
         let currentLane = 1; 
         let score = 0;
+        let gscore = 0;
         let isGameStarted = false, isGameOver = false, isJumping = false;
         let obstacles = [], yellowEnemies = [], triangles = [], blueCircles = []; 
         let gameSpeed = 450, spawnAccumulator = 0, yellowSpawnAccumulator = 0;
@@ -293,6 +392,8 @@ function checkAndUpdateHighScore(currentScore) {
 
         function startGame() {
             startScreen.style.display = 'none';
+            document.getElementById('reset-gscore-btn').style.display = 'block';
+            
             isGameStarted = true;
             lastTime = performance.now();
             gameAnimId = requestAnimationFrame(updateGame);
@@ -437,7 +538,7 @@ if (!currentBoss) {
 
         function updateGame(currentTime) {
             if (!isGameStarted || isGameOver) return;
-
+updateGscoreProgressBar();
             let deltaTime = (currentTime - lastTime) / 1000; 
             if (deltaTime > 0.1) deltaTime = 0.1; 
             lastTime = currentTime;            
