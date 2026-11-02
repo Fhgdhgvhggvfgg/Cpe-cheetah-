@@ -298,7 +298,7 @@ function resetGscore() {
     let currentProgress = score - gscore; //
     
     // التحقق مما إذا كان الشريط قد وصل إلى حده الأقصى (800 نقطة أو أكثر)
-    if (currentProgress >= this.mascot_t) { // تم التغيير إلى 800
+    if (currentProgress >= this.mascot_t) { 
 
         gscore = score; // تصفير أو إعادة ضبط نقطة البداية للشريط
         updateGscoreProgressBar(); // تحديث شكل الشريط ليعود للصفر
@@ -316,7 +316,7 @@ function resetGscore() {
         const lanes = [320, 185, 50]; 
         let currentLane = 1; 
         let score = 0;
-        let gscore = 0;
+        let gscore = -400;
         let isGameStarted = false, isGameOver = false, isJumping = false;
         let obstacles = [], yellowEnemies = [], triangles = [], blueCircles = []; 
         let gameSpeed = 450, spawnAccumulator = 0, yellowSpawnAccumulator = 0;
