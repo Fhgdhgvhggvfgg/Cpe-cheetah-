@@ -1,19 +1,24 @@
 /**
  * mascot.js — مناعة مؤقتة (10 ثوانٍ) بحذف الكيانات قبل وصولها + هالة زرقاء
- *  - يحذف الكيانات قبل وصولها بمسافة بعيدة
- *  - لا يحذف الدائرة الزرقاء (blue-circle) لأنها تحضر البوس
+ *  ⚠️ يتطلب إضافة في index.html بعد تعريف gscore:
+ *      window.setGscore = function(v){ gscore = v; };
+ *      window.getGscore = function(){ return gscore; };
+ *      window.getScore  = function(){ return score; };
+ *  - يحذف/ينقل الكيانات قبل وصولها (النقاط العادية تستمر)
+ *  - لا يحذف الدائرة الزرقاء (blue-circle)
  *  - مؤقت 10 ثوانٍ ثم يُلغى تلقائياً
- *  - هالة زرقاء نابضة حول اللاعب أثناء التفعيل
- *  - يعترض endGame كطبقة أمان أثناء التفعيل فقط
- *  - يُفعّل فقط عند تصفير فعلي للشريط (اكتمال 100% ثم تصفير)
- *  - يعمل أثناء البوس كما في اللعب العادي
- *  - متوافق مع new MascotShield(...) في index.html
+ *  - هالة زرقاء نابضة
+ *  - أثناء الدرع: gscore = score كل إطار (الشريط يبقى 0%)
+ *  - عند انتهاء الدرع: gscore = score (يبدأ الشريط من 0%)
+ *  - يعترض endGame كطبقة أمان
+ *  - متوافق مع new MascotShield(...)
  */
 (function () {
     'use strict';
 
     let isActive = false;
     let originalEndGame = null;
+    let originalResetGscore = null;
     let patched = false;
     let playerEl = null;
     let rafId = null;
@@ -33,6 +38,26 @@
     }
     function getGameContainer() {
         return document.getElementById('game-container');
+    }
+
+    // ====== دوال gscore ======
+    function keepGscoreAtScore() {
+        if (typeof window.setGscore === 'function' && typeof window.getScore === 'function') {
+            try {
+                const s = window.getScore();
+                if (typeof s === 'number') window.setGscore(s);
+                return true;
+            } catch (e) {}
+        }
+        return false;
+    }
+
+    function isProgressBarFull() {
+        const bar = document.getElementById('score-progress-bar');
+        if (!bar) return false;
+        const width = bar.style.width || '0%';
+        const pct = parseFloat(width);
+        return !isNaN(pct) && pct >= 99.5;
     }
 
     // ====== الهالة الزرقاء ======
@@ -61,15 +86,6 @@
         if (!p) return;
         p.style.filter = 'none';
         p.style.animation = '';
-    }
-
-    // ====== التحقق من اكتمال الشريط ======
-    function isProgressBarFull() {
-        const bar = document.getElementById('score-progress-bar');
-        if (!bar) return false;
-        const width = bar.style.width || '0%';
-        const pct = parseFloat(width);
-        return !isNaN(pct) && pct >= 99.5;
     }
 
     // ====== الحذف/النقل البعيد ======
@@ -117,7 +133,7 @@
         }
     }
 
-    // ====== إبقاء اللاعب في وضعية الجري ======
+    // ====== الجري ======
     function forceRunPose() {
         const p = getPlayer();
         const c = getPlayerContainer();
@@ -170,6 +186,7 @@
         if (isActive) {
             eraseDistantEntities();
             forceRunPose();
+            keepGscoreAtScore();   // ← gscore = score كل إطار
         }
         rafId = requestAnimationFrame(eraserLoop);
     }
@@ -181,14 +198,12 @@
         if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
     }
 
-    // ====== إلغاء التفعيل التلقائي ======
     function scheduleAutoDeactivate() {
         if (autoDeactivateTimer) clearTimeout(autoDeactivateTimer);
         autoDeactivateTimer = setTimeout(() => {
             MascotShield.deactivate();
         }, SHIELD_DURATION_SEC * 1000);
     }
-
     function cancelAutoDeactivate() {
         if (autoDeactivateTimer) {
             clearTimeout(autoDeactivateTimer);
@@ -199,10 +214,7 @@
     // ====== الواجهة ======
     const MascotShield = {
         activate() {
-            if (isActive) {
-                scheduleAutoDeactivate();
-                return this;
-            }
+            if (isActive) { scheduleAutoDeactivate(); return this; }
             isActive = true;
             patchEndGame();
             forceRunPose();
@@ -218,34 +230,40 @@
             unpatchEndGame();
             removeAura();
             stopEraser();
+
+            // ضمان أخير: gscore = score
+            keepGscoreAtScore();
+            try {
+                if (typeof window.updateGscoreProgressBar === 'function') {
+                    window.updateGscoreProgressBar();
+                }
+            } catch (e) {}
+
             return this;
         },
         isInvincible() { return isActive === true; },
         isActive() { return isActive === true; },
         setEraseLine(y) {
-            if (typeof y === 'number' && y >= 0 && y <= 680) {
-                ERASE_LINE_Y = y;
-            }
+            if (typeof y === 'number' && y >= 0 && y <= 680) ERASE_LINE_Y = y;
             return this;
         },
         setDuration(seconds) {
-            if (typeof seconds === 'number' && seconds > 0) {
-                SHIELD_DURATION_SEC = seconds;
-            }
+            if (typeof seconds === 'number' && seconds > 0) SHIELD_DURATION_SEC = seconds;
             return this;
         }
     };
 
-    // ====== اعتراض resetGscore (تفعيل فقط عند تصفير فعلي) ======
+    // ====== اعتراض resetGscore ======
     function autoPatchResetGscore() {
         const timer = setInterval(() => {
             if (typeof window.resetGscore === 'function' && !window.__mascot_resetPatched) {
                 const originalReset = window.resetGscore;
+                originalResetGscore = originalReset;
+
                 window.resetGscore = function () {
                     const wasFull = isProgressBarFull();
                     const result = originalReset.apply(this, arguments);
                     const nowEmpty = !isProgressBarFull();
-                    // تفعيل فقط إذا كان الشريط ممتلئاً وتم تصفيره فعلاً
                     if (wasFull && nowEmpty) {
                         MascotShield.activate();
                     }
@@ -258,12 +276,9 @@
         setTimeout(() => clearInterval(timer), 10000);
     }
 
-    // ====== زر التصفير: لا نضيف مستمعاً (onclick يستدعي resetGscore المعترضة) ======
     function bindResetButton() {
         const btn = document.getElementById('reset-gscore-btn');
-        if (btn && !btn.__mascotBound) {
-            btn.__mascotBound = true;
-        }
+        if (btn && !btn.__mascotBound) btn.__mascotBound = true;
     }
 
     // ====== تشغيل ======
