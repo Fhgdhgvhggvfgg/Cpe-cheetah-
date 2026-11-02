@@ -36,6 +36,15 @@
     box-shadow: 0 0 10px #00ccff; /* توهج جمالي اختياري */
 }
 
+.music-button-container { position: absolute; top: 15px; left: 15px; z-index: 50; }
+#music-toggle-btn { 
+    padding: 8px 15px; background: rgba(0, 0, 0, 0.7); color: #fff; 
+    border: 2px solid #00ccff; border-radius: 6px; cursor: pointer; 
+    font-weight: bold; font-family: Tahoma, sans-serif; transition: 0.2s;
+}
+#music-toggle-btn:hover { background: #00ccff; color: #000; }
+
+
 #reset-gscore-btn {
     position: absolute;
     bottom: 15px;
@@ -176,6 +185,11 @@
 </div>
 
             <button onclick="startGame()" style="background: #00ffcc; color: #000;">ابدأ اللعب</button>
+            <div class="music-button-container">
+    <button id="music-toggle-btn" onclick="toggleMusic()">🎵 تشغيل الموسيقى</button>
+</div>
+<audio id="game-audio" src="game_m.mp3" loop></audio>
+
             <button onclick="openCharacterSelectMenu()" style="background: #ffcc00; color: #000;">اختر الشخصية</button>
             
         </div>
@@ -247,6 +261,22 @@ function updateGscoreProgressBar() {
     percentage = Math.max(percentage, 0); //
 
     progressBar.style.width = percentage + '%'; //
+}
+
+function toggleMusic() {
+    const audio = document.getElementById('game-audio');
+    const musicBtn = document.getElementById('music-toggle-btn');
+
+    if (audio.paused) {
+        audio.play().then(() => {
+            musicBtn.textContent = "🔇 إيقاف الموسيقى";
+        }).catch(error => {
+            console.log("تعذر تشغيل الصوت:", error);
+        });
+    } else {
+        audio.pause();
+        musicBtn.textContent = "🎵 تشغيل الموسيقى";
+    }
 }
 
 
