@@ -1,17 +1,6 @@
 /**
- * mascot.js — مناعة مؤقتة (10 ثوانٍ) بحذف الكيانات قبل وصولها + هالة زرقاء
- *  ⚠️ يتطلب إضافة في index.html بعد تعريف gscore:
- *      window.setGscore = function(v){ gscore = v; };
- *      window.getGscore = function(){ return gscore; };
- *      window.getScore  = function(){ return score; };
- *  - يحذف/ينقل الكيانات قبل وصولها (النقاط العادية تستمر)
- *  - لا يحذف الدائرة الزرقاء (blue-circle)
- *  - مؤقت 10 ثوانٍ ثم يُلغى تلقائياً
- *  - هالة زرقاء نابضة
- *  - أثناء الدرع: gscore = score كل إطار (الشريط يبقى 0%)
- *  - عند انتهاء الدرع: gscore = score (يبدأ الشريط من 0%)
- *  - يعترض endGame كطبقة أمان
- *  - متوافق مع new MascotShield(...)
+ * mascot.js — مناعة مؤقتة (10 ثوانٍ) بحذف الكيانات قبل وصولها + هالة زرقاء + مؤقت شريحة البيتزا
+ *  ⚠️ متوافق مع الكود السابق مع إضافة عداد تناقص دائري (شكل شريحة بيتزا دائرية)
  */
 (function () {
     'use strict';
@@ -28,6 +17,10 @@
     const TELEPORT_TO_BOTTOM = true;
     const HIDE_TELEPORTED = true;
     let SHIELD_DURATION_SEC = 10;
+    
+    // متغيرات مؤقت البيتزا
+    let pizzaTimerEl = null;
+    let timerInterval = null;
 
     function getPlayer() {
         if (!playerEl) playerEl = document.getElementById('player');
@@ -60,7 +53,7 @@
         return !isNaN(pct) && pct >= 99.5;
     }
 
-    // ====== الهالة الزرقاء ======
+    // ====== الهالة الزرقاء ومؤقت شريحة البيتزا ======
     function injectAuraStyles() {
         if (document.getElementById('mascot-aura-style')) return;
         const style = document.createElement('style');
@@ -70,6 +63,33 @@
                 0%   { filter: drop-shadow(0 0 8px #00ccff) drop-shadow(0 0 18px #00ccff) drop-shadow(0 0 30px #0099ff); }
                 50%  { filter: drop-shadow(0 0 14px #00ffff) drop-shadow(0 0 26px #00ccff) drop-shadow(0 0 42px #0099ff); }
                 100% { filter: drop-shadow(0 0 8px #00ccff) drop-shadow(0 0 18px #00ccff) drop-shadow(0 0 30px #0099ff); }
+            }
+
+            /* مؤقت شريحة البيتزا الدائرية */
+            .mascot-pizza-timer {
+                position: absolute;
+                top: -130px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                background: conic-gradient(#00ccff 0deg, rgba(0, 204, 255, 0.2) 0deg);
+                box-shadow: 0 0 10px rgba(0, 204, 255, 0.8), inset 0 0 5px rgba(255, 255, 255, 0.5);
+                border: 2px solid #ffffff;
+                z-index: 1000;
+                pointer-events: none;
+                transition: transform 0.1s linear;
+            }
+            .mascot-pizza-timer::after {
+                content: '';
+                position: absolute;
+                top: 9px;
+                left: 9px;
+                right: 9px;
+                bottom: 9px;
+                background: rgba(10, 20, 40, 0.85);
+                border-radius: 50%;
             }
         `;
         document.head.appendChild(style);
@@ -86,6 +106,47 @@
         if (!p) return;
         p.style.filter = 'none';
         p.style.animation = '';
+    }
+
+    // إنشاء وعرض مؤقت البيتزا الدائري
+    function createPizzaTimer() {
+        removePizzaTimer();
+        const container = getPlayerContainer();
+        if (!container) return;
+
+        pizzaTimerEl = document.createElement('div');
+        pizzaTimerEl.className = 'mascot-pizza-timer';
+        container.appendChild(pizzaTimerEl);
+
+        let startTime = Date.now();
+        let durationMs = SHIELD_DURATION_SEC * 1000;
+
+        timerInterval = setInterval(() => {
+            let elapsed = Date.now() - startTime;
+            let progress = elapsed / durationMs;
+
+            if (progress >= 1) {
+                progress = 1;
+                clearInterval(timerInterval);
+            }
+
+            // الزاوية تتناقص من 360 إلى 0 (أو العكس بحسب طريقة التعبئة)
+            let degrees = (1 - progress) * 360;
+            if (pizzaTimerEl) {
+                pizzaTimerEl.style.background = `conic-gradient(#00ccff ${degrees}deg, rgba(0, 204, 255, 0.15) ${degrees}deg)`;
+            }
+        }, 50);
+    }
+
+    function removePizzaTimer() {
+        if (timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+        if (pizzaTimerEl) {
+            pizzaTimerEl.remove();
+            pizzaTimerEl = null;
+        }
     }
 
     // ====== الحذف/النقل البعيد ======
@@ -219,6 +280,7 @@
             patchEndGame();
             forceRunPose();
             applyAura();
+            createPizzaTimer(); // تشغيل مؤقت شرائح البيتزا الدائري
             startEraser();
             scheduleAutoDeactivate();
             return this;
@@ -229,6 +291,7 @@
             cancelAutoDeactivate();
             unpatchEndGame();
             removeAura();
+            removePizzaTimer(); // إزالة مؤقت البيتزا
             stopEraser();
 
             // ضمان أخير: gscore = score

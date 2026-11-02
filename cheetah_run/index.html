@@ -223,6 +223,7 @@
         const powerupStatus = document.getElementById('powerup-status');
         const timerCount = document.getElementById('timer-count');
 this.bossToggle = 3;
+this.mascot_t = 1000;
         updateSelectedPlayer(charManager.currentPlayerImage);
 
         let currentScale = parseFloat(localStorage.getItem('gameScale')) || 1.0;
@@ -242,7 +243,7 @@ function updateGscoreProgressBar() {
     if (!progressBar) return; //
 
     let currentProgress = score - gscore; //
-    let percentage = Math.min((currentProgress / 1200) * 100, 100); // تم التغيير إلى 800
+    let percentage = Math.min((currentProgress / this.mascot_t) * 100, 100); // تم التغيير إلى 800
     percentage = Math.max(percentage, 0); //
 
     progressBar.style.width = percentage + '%'; //
@@ -297,7 +298,7 @@ function resetGscore() {
     let currentProgress = score - gscore; //
     
     // التحقق مما إذا كان الشريط قد وصل إلى حده الأقصى (800 نقطة أو أكثر)
-    if (currentProgress >= 1200) { // تم التغيير إلى 800
+    if (currentProgress >= this.mascot_t) { // تم التغيير إلى 800
 
         gscore = score; // تصفير أو إعادة ضبط نقطة البداية للشريط
         updateGscoreProgressBar(); // تحديث شكل الشريط ليعود للصفر
