@@ -9,6 +9,8 @@
 <script src="game_boss2.js"></script>
 <script src="game_boss3.js"></script>
 <script src="game_boss4.js"></script>
+<script src="game_boss5.js"></script>
+
 
 <script>
 
@@ -513,11 +515,15 @@ if (!currentBoss) {
     } else if (this.bossToggle === 3) {
         currentBoss = new GameBoss3(gameContainer, () => currentLane, () => lanes[currentLane], () => endGame(), () => isJumping);
         this.bossToggle = 4;
-    } else {
+    } else if (this.bossToggle === 4) {
         currentBoss = new GameBoss4(gameContainer, () => currentLane, () => lanes[currentLane], () => endGame(), () => isJumping);
+        this.bossToggle = 5;
+    } else {
+        currentBoss = new GameBoss5(gameContainer, () => currentLane, () => lanes[currentLane], () => endGame(), () => isJumping);
         this.bossToggle = 1; // العودة للزعيم الأول
     }
 }
+
 
 
 
