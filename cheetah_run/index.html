@@ -704,7 +704,7 @@ document.getElementById('highest-score').textContent = localStorage.getItem('gam
     gameSpeed = 450;
     [obstacles, yellowEnemies, triangles, blueCircles].forEach(arr => { arr.forEach(el => el.remove()); arr.length = 0; });
     score = 0; scoreDisplay.textContent = score; currentLane = 1;
-    gscore = 0;              // ← أضف هذا السطر
+    gscore = -400;              // ← أضف هذا السطر
     updateGscoreProgressBar(); // ← أضف هذا السطر لتحديث الشريط فوراً
     spawnAccumulator = yellowSpawnAccumulator = triangleSpawnAccumulator = blueCircleSpawnAccumulator = 0;
             nextYellowSpawnTime = getRandomYellowTime(); nextTriangleSpawnTime = getRandomTriangleTime();
@@ -734,7 +734,7 @@ document.getElementById('highest-score').textContent = localStorage.getItem('gam
 
     [obstacles, yellowEnemies, triangles, blueCircles].forEach(arr => { arr.forEach(el => el.remove()); arr.length = 0; });
     score = 0; scoreDisplay.textContent = score; currentLane = 1;
-    gscore = 0;              // ← أضف هذا السطر
+    gscore = -400;              // ← أضف هذا السطر
     updateGscoreProgressBar(); // ← أضف هذا السطر
     isJumping = isGameOver = isGameStarted = isShieldActive = false;
 
