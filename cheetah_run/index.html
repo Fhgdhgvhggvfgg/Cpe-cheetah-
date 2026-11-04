@@ -10,7 +10,7 @@
 <script src="game_boss3.js"></script>
 <script src="game_boss4.js"></script>
 <script src="game_boss5.js"></script>
-
+<script src="game_boss6.js"></script>
 
 <script>
 
@@ -238,7 +238,7 @@
         const finalScoreDisplay = document.getElementById('final-score');
         const powerupStatus = document.getElementById('powerup-status');
         const timerCount = document.getElementById('timer-count');
-this.bossToggle = 3;
+this.bossToggle = 5;
 this.mascot_t = 1000;
         updateSelectedPlayer(charManager.currentPlayerImage);
 
@@ -518,11 +518,15 @@ if (!currentBoss) {
     } else if (this.bossToggle === 4) {
         currentBoss = new GameBoss4(gameContainer, () => currentLane, () => lanes[currentLane], () => endGame(), () => isJumping);
         this.bossToggle = 5;
-    } else {
+    } else if (this.bossToggle === 5) {
         currentBoss = new GameBoss5(gameContainer, () => currentLane, () => lanes[currentLane], () => endGame(), () => isJumping);
+        this.bossToggle = 6;
+    } else {
+        currentBoss = new GameBoss6(gameContainer, () => currentLane, () => lanes[currentLane], () => endGame(), () => isJumping);
         this.bossToggle = 1; // العودة للزعيم الأول
     }
 }
+
 
 
 
