@@ -111,9 +111,10 @@ class GameBoss6 {
                 border-right: 40px solid transparent;
                 border-top: 52px solid #e74c3c; /* القاعدة للأعلى ورأس المثلث الحاد لأسفل */
                 filter: drop-shadow(0 0 8px #e74c3c);
-                z-index: 10;
+                z-index: 1; /* قم بتغيير هذه القيمة من 10 إلى 1 (أو أقل من طبقة اللاعب) */
                 pointer-events: none;
             }
+
         `;
         document.head.appendChild(style);
     }
