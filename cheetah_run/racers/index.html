@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>قائمة المتسابقين</title>
+    <style>
+        body {
+            font-family: Tahoma, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .racers-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .racer-card {
+            display: flex;
+            align-items: center;
+            background: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+        }
+
+        .racer-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .racer-rank {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff5722;
+            margin-left: 20px;
+            min-width: 35px;
+            text-align: center;
+        }
+
+        /* تعديل حجم الصورة لتصبح كبيرة */
+        .racer-img {
+            width: 120px;
+            height: 120px;
+            border-radius: 10px;
+            object-fit: cover;
+            border: 2px solid #ddd;
+            margin-left: 20px;
+        }
+
+        .racer-info {
+            flex-grow: 1;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        /* تنسيق الزر */
+        .racer-btn {
+            background-color: #0066cc;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+
+        .racer-btn:hover {
+            background-color: #004999;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>قائمة المتسابقين التنازلية</h1>
+    <div id="container" class="racers-container">
+        <!-- سيتم تعبئة العناصر تلقائياً بواسطة JavaScript -->
+    </div>
+
+    <script>
+        async function loadRacers() {
+            try {
+                // جلب ملف racers.txt
+                const response = await fetch('racers.txt');
+                const text = await response.text();
+                
+                // تقسيم السطور وإزالة الفراغات الزائدة
+                const lines = text.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
+                
+                const container = document.getElementById('container');
+                let rank = 1;
+
+                // قراءة البيانات زوجية (السطر الأول صورة، السطر الثاني رابط)
+                for (let i = 0; i < lines.length; i += 2) {
+                    if (i + 1 < lines.length) {
+                        const imgSrc = lines[i];
+                        const linkUrl = lines[i + 1];
+
+                        // إنشاء الحاوية الخاصة بالبطاقة
+                        const card = document.createElement('div');
+                        card.className = 'racer-card';
+
+                        card.innerHTML = `
+                            <div class="racer-rank">#${rank}</div>
+                            <img src="${imgSrc}" alt="رقم ${rank}" class="racer-img" onerror="this.src='https://via.placeholder.com/120?text=No+Img'">
+                            <div class="racer-info">
+                                <a href="${linkUrl}" target="_blank" class="racer-btn">زيارة الرابط</a>
+                            </div>
+                        `;
+
+                        container.appendChild(card);
+                        rank++;
+                    }
+                }
+            } catch (error) {
+                console.error("حدث خطأ أثناء قراءة ملف racers.txt:", error);
+                document.getElementById('container').innerHTML = '<p style="color:red; text-align:center;">تعذر تحميل البيانات. تأكد من تشغيل الصفحة عبر خادم محلي (Local Server).</p>';
+            }
+        }
+
+        loadRacers();
+    </script>
+
+</body>
+</html>
