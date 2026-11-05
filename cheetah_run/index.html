@@ -10,6 +10,7 @@
 <script src="game_boss3.js"></script>
 <script src="game_boss4.js"></script>
 <script src="game_boss5.js"></script>
+<script src="start_p.js"></script>
 <script src="game_boss6.js"></script>
 
 <script>
@@ -413,12 +414,51 @@ function resetGscore() {
 
         function startGame() {
             startScreen.style.display = 'none';
-            document.getElementById('reset-gscore-btn').style.display = 'block';
             
-            isGameStarted = true;
-            lastTime = performance.now();
-            gameAnimId = requestAnimationFrame(updateGame);
+            const introEffect = new StartP(gameContainer, () => {
+                // 1. تفعيل زر القدرة وبدء اللعب
+                document.getElementById('reset-gscore-btn').style.display = 'block';
+                isGameStarted = true;
+                lastTime = performance.now();
+                gameAnimId = requestAnimationFrame(updateGame);
+
+                // 2. إظهار صورة القفز في منتصف شاشة اللعب فور بدء اللعب
+                const jumpEffectImg = document.createElement('div');
+                jumpEffectImg.style.position = 'absolute';
+                jumpEffectImg.style.top = '50%';
+                jumpEffectImg.style.left = '50%';
+                jumpEffectImg.style.width = '400px'; // حجم كامل واضح
+                jumpEffectImg.style.height = '400px';
+                jumpEffectImg.style.transform = 'translate(-50%, -50%) scale(1)'; // تبدأ بالحجم الكامل مباشرة
+                jumpEffectImg.style.zIndex = '25'; // فوق الخلفية وتحت واجهات الخسارة
+                
+                // جلب صورة اللاعب الحالية وحالة القفز
+                const currentPlayerDiv = document.getElementById('player');
+                if (currentPlayerDiv) {
+                    jumpEffectImg.style.backgroundImage = window.getComputedStyle(currentPlayerDiv).backgroundImage;
+                    jumpEffectImg.style.backgroundSize = '200% 400%';
+                    jumpEffectImg.style.backgroundPosition = '-100% 200%'; // إطار القفز
+                }
+
+                // إضافة انتقال ناعم للتقلص بمدة نصف ثانية (0.5s)
+                jumpEffectImg.style.transition = 'transform 0.5s ease-out, opacity 0.5s ease-out';
+                gameContainer.appendChild(jumpEffectImg);
+
+                // تبقى بالحجم الكامل لمدة نصف ثانية (500ms)، ثم تبدأ بالتقلص والاختفاء
+                setTimeout(() => {
+                    jumpEffectImg.style.transform = 'translate(-50%, -50%) scale(0)';
+                    jumpEffectImg.style.opacity = '0';
+                }, 500); // تنفذ بعد نصف ثانية من ظهورها
+
+                // حذف العنصر كلياً من الـ DOM بعد انتهاء الحركة (بعد ثانية واحدة إجمالاً)
+                setTimeout(() => {
+                    jumpEffectImg.remove();
+                }, 1000);
+            });
+
+            introEffect.start();
         }
+
 
         function jump() {
             if (isJumping) return;
@@ -696,7 +736,7 @@ updateGscoreProgressBar();
         }
 
 function restartGame() {
-document.getElementById('highest-score').textContent = localStorage.getItem('gameHighScore') || 0;
+    document.getElementById('highest-score').textContent = localStorage.getItem('gameHighScore') || 0;
 
     if (gameAnimId) cancelAnimationFrame(gameAnimId);
 
@@ -707,24 +747,72 @@ document.getElementById('highest-score').textContent = localStorage.getItem('gam
 
     gameSpeed = 450;
     [obstacles, yellowEnemies, triangles, blueCircles].forEach(arr => { arr.forEach(el => el.remove()); arr.length = 0; });
-    score = 0; scoreDisplay.textContent = score; currentLane = 1;
-    gscore = -400;              // ← أضف هذا السطر
-    updateGscoreProgressBar(); // ← أضف هذا السطر لتحديث الشريط فوراً
+    score = 0; 
+    scoreDisplay.textContent = score; 
+    currentLane = 1;
+    gscore = -400;              
+    updateGscoreProgressBar(); 
+    
     spawnAccumulator = yellowSpawnAccumulator = triangleSpawnAccumulator = blueCircleSpawnAccumulator = 0;
-            nextYellowSpawnTime = getRandomYellowTime(); nextTriangleSpawnTime = getRandomTriangleTime();
-            nextBlueCircleSpawnTime = getRandomBlueCircleTime();
-            isShieldActive = false;
-            powerupStatus.style.display = 'none';
-            player.style.filter = "none";
-            animTimer = runFrame = 0; isJumping = isGameOver = false;
-            playerContainer.style.bottom = '170px';
-            player.style.transform = 'translateY(0)';
-            player.style.backgroundPosition = '0% 0%';
-            updatePlayerPosition();
-            gameOverScreen.style.display = 'none';
-            isGameStarted = true; lastTime = performance.now();
-            gameAnimId = requestAnimationFrame(updateGame);
+    nextYellowSpawnTime = getRandomYellowTime(); 
+    nextTriangleSpawnTime = getRandomTriangleTime();
+    nextBlueCircleSpawnTime = getRandomBlueCircleTime();
+    isShieldActive = false;
+    powerupStatus.style.display = 'none';
+    player.style.filter = "none";
+    animTimer = runFrame = 0; 
+    isJumping = false;
+    isGameOver = false;
+    isGameStarted = false; // تعيينها كخطوة أولى قبل تشغيل تأثير البداية
+    
+    playerContainer.style.bottom = '170px';
+    player.style.transform = 'translateY(0)';
+    player.style.backgroundPosition = '0% 0%';
+    updatePlayerPosition();
+    
+    // إخفاء شاشة الخسارة قبل تشغيل تأثير واجهة البدء
+    gameOverScreen.style.display = 'none';
+
+    // تشغيل نفس واجهة البداية (StartP) وتأثيراتها الحركية تماماً مثل زر ابدأ اللعب
+    const introEffect = new StartP(gameContainer, () => {
+        document.getElementById('reset-gscore-btn').style.display = 'block';
+        isGameStarted = true;
+        lastTime = performance.now();
+        gameAnimId = requestAnimationFrame(updateGame);
+
+        // صورة تأثير القفز في منتصف شاشة اللعب فور بدء اللعب
+        const jumpEffectImg = document.createElement('div');
+        jumpEffectImg.style.position = 'absolute';
+        jumpEffectImg.style.top = '50%';
+        jumpEffectImg.style.left = '50%';
+        jumpEffectImg.style.width = '400px'; 
+        jumpEffectImg.style.height = '400px';
+        jumpEffectImg.style.transform = 'translate(-50%, -50%) scale(1)'; 
+        jumpEffectImg.style.zIndex = '25'; 
+        
+        const currentPlayerDiv = document.getElementById('player');
+        if (currentPlayerDiv) {
+            jumpEffectImg.style.backgroundImage = window.getComputedStyle(currentPlayerDiv).backgroundImage;
+            jumpEffectImg.style.backgroundSize = '200% 400%';
+            jumpEffectImg.style.backgroundPosition = '-100% 200%'; 
         }
+
+        jumpEffectImg.style.transition = 'transform 0.5s ease-out, opacity 0.5s ease-out';
+        gameContainer.appendChild(jumpEffectImg);
+
+        setTimeout(() => {
+            jumpEffectImg.style.transform = 'translate(-50%, -50%) scale(0)';
+            jumpEffectImg.style.opacity = '0';
+        }, 500); 
+
+        setTimeout(() => {
+            jumpEffectImg.remove();
+        }, 1000);
+    });
+
+    introEffect.start();
+}
+
         
        function goToStartScreen() {
 document.getElementById('highest-score').textContent = localStorage.getItem('gameHighScore') || 0;
