@@ -168,6 +168,7 @@
 
             const cls = el.className || '';
             if (typeof cls === 'string' && cls.includes('lane-line')) continue;
+            if (cls.includes('road-mark')) continue; // ← أضف هذا السطر لتتخطى الندوب ولا يتم حذفها
             if (cls.includes('blue-circle')) continue;
 
             const isObstacle = cls.includes('obstacle') && !cls.includes('obstacle-line');
@@ -193,6 +194,7 @@
             }
         }
     }
+
 
     // ====== الجري ======
     function forceRunPose() {

@@ -35,8 +35,8 @@
 #white-box-icon {
     position: absolute; top: 10px; left: 10px; width: 75px; height: 75px;
     background-size: 200% 400%; background-position: 100% 100%; z-index: 15; border-radius: 4px;
-    border: 3px solid #00ccff; /* أضف هذا السطر للحدود السماوية */
-    box-shadow: 0 0 10px #00ccff; /* توهج جمالي اختياري */
+    border: 3px solid #00ccff;
+    box-shadow: 0 0 10px #00ccff;
 }
 
 .music-button-container { position: absolute; top: 15px; left: 15px; z-index: 50; }
@@ -59,9 +59,9 @@
     border-radius: 6px;
     cursor: pointer;
     font-weight: bold;
-    z-index: 5; /* جعلناه خلف الشاشات والقوائم التي تملك z-index أعلى */
+    z-index: 5;
     font-size: 14px;
-    display: none; /* مخفي افتراضياً */
+    display: none;
 }
 
 #reset-gscore-btn:hover {
@@ -69,11 +69,21 @@
     color: #000;
 }
 
+.road-mark {
+    position: absolute;
+    width: 6px;
+    height: 14px;
+    background: rgba(255, 255, 255, 0.35);
+    z-index: 1;
+    border-radius: 2px;
+    will-change: top; /* تحسين الأداء الرسومي وجعل الحركة خفيفة */
+}
+
 
 #score-progress-container {
     width: 200px;
     height: 12px;
-    background: #444; /* لون رمادي للخلفية */
+    background: #444;
     border-radius: 6px;
     overflow: hidden;
     margin: 8px auto 0 auto;
@@ -82,7 +92,7 @@
 #score-progress-bar {
     width: 0%;
     height: 100%;
-    background: #00ffcc; /* لون اخضر مضيء يمتلئ مع النقاط */
+    background: #00ffcc;
     transition: width 0.2s ease-out;
 }
 
@@ -90,13 +100,13 @@
         .lane-line { position: absolute; top: 0; bottom: 0; width: 2px; background: rgba(255, 255, 255, 0.2); z-index: 1; }
         #line1 { left: 146px; }
         #line2 { left: 293px; }
-        .obstacle { position: absolute; width: 65px; height: 65px; background: #ff3366; border-radius: 10px; box-shadow: 0 0 12px #ff3366; z-index: 2; }
-        .enemy-yellow { position: absolute; width: 60px; height: 60px; background: #ffcc00; border-radius: 50%; box-shadow: 0 0 12px #ffcc00; z-index: 2; }
-        .obstacle-line { position: absolute; width: 420px; height: 12px; background: #f4b446; box-shadow: 0 0 10px #f4b446; border-radius: 6px; z-index: 12; }
+        .obstacle { position: absolute; width: 65px; height: 65px; background: #ff3366; border-radius: 10px; box-shadow: 0 0 12px #ff3366; z-index: 2; will-change: top; }
+        .enemy-yellow { position: absolute; width: 60px; height: 60px; background: #ffcc00; border-radius: 50%; box-shadow: 0 0 12px #ffcc00; z-index: 2; will-change: top, left; }
+        .obstacle-line { position: absolute; width: 420px; height: 12px; background: #f4b446; box-shadow: 0 0 10px #f4b446; border-radius: 6px; z-index: 12; will-change: top; }
         
-        .blue-circle { position: absolute; width: 50px; height: 50px; background: #00ccff; border-radius: 50%; box-shadow: 0 0 15px #00ccff, inset 0 0 10px #ffffff; z-index: 3; }
+        .blue-circle { position: absolute; width: 50px; height: 50px; background: #00ccff; border-radius: 50%; box-shadow: 0 0 15px #00ccff, inset 0 0 10px #ffffff; z-index: 3; will-change: top; }
 
-        #player-container { position: absolute; bottom: 170px; width: 65px; height: 65px; transition: bottom 0.3s ease-in, left 0.12s ease-out; z-index: 10; }
+        #player-container { position: absolute; bottom: 170px; width: 65px; height: 65px; transition: bottom 0.3s ease-in, left 0.12s ease-out; z-index: 10; will-change: left; }
         #shadow { position: absolute; bottom: 0; left: 0; width: 65px; height: 15px; background: rgba(0, 150, 255, 0.6); border-radius: 50%; box-shadow: 0 0 8px rgba(0, 150, 255, 0.8); }
         #player {
             position: absolute; bottom: 8px; left: -30px; width: 135px; height: 135px;
@@ -109,7 +119,11 @@
             background: rgba(0, 0, 0, 0.92); display: flex; flex-direction: column;
             align-items: center; justify-content: center; z-index: 30; text-align: center;
         }
-        #character-select-screen { display: none; z-index: 40; padding: 20px; box-sizing: border-box; }
+#character-select-screen {
+    position: absolute; top: 50%; left: 0; width: 100%; height: 50%;
+    background: rgba(0, 0, 0, 0.92); display: flex; flex-direction: column;
+    align-items: center; justify-content: flex-start; z-index: 40; padding: 10px; box-sizing: border-box;
+}
         
 #start-player-preview { 
     width: 180px; 
@@ -118,8 +132,8 @@
     background-position: 100% 100%; 
     margin-bottom: 20px; 
     border-radius: 8px;
-    border: 3px solid #00ccff; /* أضف هذا السطر للحدود السماوية */
-    box-shadow: 0 0 10px #00ccff; /* توهج اختياري */
+    border: 3px solid #00ccff;
+    box-shadow: 0 0 10px #00ccff;
 }
 
         #start-screen button, #character-select-screen button, .zoom-buttons-container button, #game-over button {
@@ -131,7 +145,7 @@
     right: 15px; 
     display: flex; 
     gap: 10px; 
-    z-index: 50; /* رقم كبير لضمان ظهورها فوق الأعداء واللاعب والزعماء */
+    z-index: 50;
 }
 
 .zoom-buttons-container button { 
@@ -148,7 +162,7 @@
         #character-list { display: flex; flex-direction: column; gap: 15px; max-height: 350px; overflow-y: auto; width: 100%; align-items: center; margin-bottom: 15px; }
         .character-item { display: flex; align-items: center; background: rgba(255, 255, 255, 0.1); padding: 10px 15px; border-radius: 8px; width: 80%; cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
         .character-item:hover { border-color: #00ffcc; }
-        .character-preview-img { width: 80px; height: 80px; background-size: 200% 400%; background-position: 100% 100%; border-radius: 6px; margin-left: 15px; flex-shrink: 0;     border: 3px solid #ffffff;   box-shadow: 0 0 10px #00ccff; }
+        .character-preview-img { width: 80px; height: 80px; background-size: 200% 400%; background-position: 100% 100%; border-radius: 6px; margin-left: 15px; flex-shrink: 0; border: 3px solid #ffffff; box-shadow: 0 0 10px #00ccff; }
         .character-name { font-size: 14px; word-break: break-all; text-align: right; color: #fff; }
         #game-over {
             display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -197,8 +211,15 @@
             
         </div>
 
+    <div id="upper-preview-screen" style="position: absolute; top: 0; left: 0; width: 100%; height: 50%; background: #000000; overflow: hidden; z-index: 25; box-sizing: border-box;">
+        <div style="position: absolute; bottom: 50px; left: calc(50% - 32px); width: 65px; height: 65px;">
+            <div style="position: absolute; bottom: 0; left: 0; width: 65px; height: 15px; background: rgba(0, 150, 255, 0.6); border-radius: 50%; box-shadow: 0 0 8px rgba(0, 150, 255, 0.8);"></div>
+            <div id="single-preview-player" style="position: absolute; bottom: 8px; left: -30px; width: 135px; height: 135px; background-size: 200% 400%; background-position: 0% 0%;"></div>
+        </div>
+    </div>
+    
+
         <div id="character-select-screen">
-            <h2>اختر شخصية اللاعب</h2>
             <div id="character-list"></div>
             <input type="file" id="device-image-input" accept="image/*" style="display: none;" onchange="charManager.handleDeviceImage(event, (img) => updateSelectedPlayer(img))">
             <button onclick="document.getElementById('device-image-input').click()" style="background: #00ffcc; color: #000; margin-bottom: 10px;">اختر صورة من المعرض</button>
@@ -225,7 +246,7 @@
 
     <script>
         const charManager = new CharacterManager();
-        let currentBoss = null; // متغير عام لتخزين كائن الزعيم الحالي باستخدام اسم الكلاس مستقبلاً
+        let currentBoss = null;
 
         const playerContainer = document.getElementById('player-container');
         const player = document.getElementById('player');
@@ -239,8 +260,10 @@
         const finalScoreDisplay = document.getElementById('final-score');
         const powerupStatus = document.getElementById('powerup-status');
         const timerCount = document.getElementById('timer-count');
-this.bossToggle = 5;
-this.mascot_t = 1000;
+        let roadMarks = [];
+        let roadMarkSpawnAccumulator = 0;
+        this.bossToggle = 5;
+        this.mascot_t = 1000;
         updateSelectedPlayer(charManager.currentPlayerImage);
 
         let currentScale = parseFloat(localStorage.getItem('gameScale')) || 1.0;
@@ -254,16 +277,28 @@ this.mascot_t = 1000;
         document.head.appendChild(s);
     }
 
-// الكود بعد التعديل
 function updateGscoreProgressBar() {
-    let progressBar = document.getElementById('score-progress-bar'); //
-    if (!progressBar) return; //
+    let progressBar = document.getElementById('score-progress-bar');
+    if (!progressBar) return;
 
-    let currentProgress = score - gscore; //
-    let percentage = Math.min((currentProgress / this.mascot_t) * 100, 100); // تم التغيير إلى 800
-    percentage = Math.max(percentage, 0); //
+    let currentProgress = score - gscore;
+    let percentage = Math.min((currentProgress / this.mascot_t) * 100, 100);
+    percentage = Math.max(percentage, 0);
 
-    progressBar.style.width = percentage + '%'; //
+    progressBar.style.width = percentage + '%';
+}
+
+function createRoadMark() {
+    const lineXValues = [146, 293];
+    
+    lineXValues.forEach(xPos => {
+        const mark = document.createElement('div');
+        mark.classList.add('road-mark');
+        mark.style.left = (xPos - 2) + 'px';
+        mark.style.top = '-20px';
+        gameContainer.appendChild(mark);
+        roadMarks.push(mark);
+    });
 }
 
 function toggleMusic() {
@@ -282,22 +317,14 @@ function toggleMusic() {
     }
 }
 
-
-// دالة لتحديث وعرض أعلى نقاط عند نهاية اللعبة أو بدايتها
 function checkAndUpdateHighScore(currentScore) {
-    // جلب أعلى نقاط مخزنة مسبقاً، وإذا لم توجد تكون القيمة 0
     let highScore = localStorage.getItem('gameHighScore') || 0;
-
-    // مقارنة النقاط الحالية مع أعلى نقاط مسجلة
     if (currentScore > highScore) {
         highScore = currentScore;
-        // تخزين الرقم الجديد كأعلى نقاط
         localStorage.setItem('gameHighScore', highScore);
     }
-
     return highScore;
 }
-
 
         function zoomGame(amount) {
             currentScale = Math.min(Math.max(currentScale + amount, 0.6), 2.0);
@@ -307,8 +334,7 @@ function checkAndUpdateHighScore(currentScore) {
         }
 
         function updateGameScale() {
-        document.getElementById('highest-score').textContent = localStorage.getItem('gameHighScore') || 0;
-
+            document.getElementById('highest-score').textContent = localStorage.getItem('gameHighScore') || 0;
             gameContainer.style.transform = `scale(${currentScale})`;
         }
 
@@ -325,21 +351,13 @@ function checkAndUpdateHighScore(currentScore) {
             });
         }
 
-
-// الكود بعد التعديل
 function resetGscore() {
-    let currentProgress = score - gscore; //
-    
-    // التحقق مما إذا كان الشريط قد وصل إلى حده الأقصى (800 نقطة أو أكثر)
+    let currentProgress = score - gscore;
     if (currentProgress >= this.mascot_t) { 
-
-        gscore = score; // تصفير أو إعادة ضبط نقطة البداية للشريط
-        updateGscoreProgressBar(); // تحديث شكل الشريط ليعود للصفر
+        gscore = score;
+        updateGscoreProgressBar();
     }
 }
-
-
-
 
         function closeCharacterSelect() {
             characterSelectScreen.style.display = 'none';
@@ -416,41 +434,35 @@ function resetGscore() {
             startScreen.style.display = 'none';
             
             const introEffect = new StartP(gameContainer, () => {
-                // 1. تفعيل زر القدرة وبدء اللعب
                 document.getElementById('reset-gscore-btn').style.display = 'block';
                 isGameStarted = true;
                 lastTime = performance.now();
                 gameAnimId = requestAnimationFrame(updateGame);
 
-                // 2. إظهار صورة القفز في منتصف شاشة اللعب فور بدء اللعب
                 const jumpEffectImg = document.createElement('div');
                 jumpEffectImg.style.position = 'absolute';
                 jumpEffectImg.style.top = '50%';
                 jumpEffectImg.style.left = '50%';
-                jumpEffectImg.style.width = '400px'; // حجم كامل واضح
+                jumpEffectImg.style.width = '400px'; 
                 jumpEffectImg.style.height = '400px';
-                jumpEffectImg.style.transform = 'translate(-50%, -50%) scale(1)'; // تبدأ بالحجم الكامل مباشرة
-                jumpEffectImg.style.zIndex = '25'; // فوق الخلفية وتحت واجهات الخسارة
+                jumpEffectImg.style.transform = 'translate(-50%, -50%) scale(1)'; 
+                jumpEffectImg.style.zIndex = '25'; 
                 
-                // جلب صورة اللاعب الحالية وحالة القفز
                 const currentPlayerDiv = document.getElementById('player');
                 if (currentPlayerDiv) {
                     jumpEffectImg.style.backgroundImage = window.getComputedStyle(currentPlayerDiv).backgroundImage;
                     jumpEffectImg.style.backgroundSize = '200% 400%';
-                    jumpEffectImg.style.backgroundPosition = '-100% 200%'; // إطار القفز
+                    jumpEffectImg.style.backgroundPosition = '-100% 200%'; 
                 }
 
-                // إضافة انتقال ناعم للتقلص بمدة نصف ثانية (0.5s)
                 jumpEffectImg.style.transition = 'transform 0.5s ease-out, opacity 0.5s ease-out';
                 gameContainer.appendChild(jumpEffectImg);
 
-                // تبقى بالحجم الكامل لمدة نصف ثانية (500ms)، ثم تبدأ بالتقلص والاختفاء
                 setTimeout(() => {
                     jumpEffectImg.style.transform = 'translate(-50%, -50%) scale(0)';
                     jumpEffectImg.style.opacity = '0';
-                }, 500); // تنفذ بعد نصف ثانية من ظهورها
+                }, 500); 
 
-                // حذف العنصر كلياً من الـ DOM بعد انتهاء الحركة (بعد ثانية واحدة إجمالاً)
                 setTimeout(() => {
                     jumpEffectImg.remove();
                 }, 1000);
@@ -458,7 +470,6 @@ function resetGscore() {
 
             introEffect.start();
         }
-
 
         function jump() {
             if (isJumping) return;
@@ -531,7 +542,7 @@ function resetGscore() {
             blueCircles.push(circle);
         }
 
-let bossToggle = 1; // متغير خارجي للتناوب بين الزعماء (يمكنك جعله عشوائياً أيضاً)
+let bossToggle = 1;
 
 function activateShield() {
     isShieldActive = true;
@@ -539,40 +550,28 @@ function activateShield() {
     powerupStatus.style.display = 'block';
     timerCount.textContent = shieldTimer;
     
-    // إزالة هالة الدرع عن اللاعب (لا يوجد player.style.filter)
-
-    // استدعاء الزعيم بالتناوب بناءً على قيمة bossToggle
-// تعديل متغير التبديل ليشمل الزعماء الثلاثة
-
-
-if (!currentBoss) {
-    if (this.bossToggle === 1) {
-        currentBoss = new GameBoss(gameContainer, () => currentLane, () => lanes[currentLane], () => endGame(), () => isJumping);
-        this.bossToggle = 2;
-    } else if (this.bossToggle === 2) {
-        currentBoss = new GameBoss2(gameContainer, () => currentLane, () => lanes[currentLane], () => endGame(), () => isJumping);
-        this.bossToggle = 3;
-    } else if (this.bossToggle === 3) {
-        currentBoss = new GameBoss3(gameContainer, () => currentLane, () => lanes[currentLane], () => endGame(), () => isJumping);
-        this.bossToggle = 4;
-    } else if (this.bossToggle === 4) {
-        currentBoss = new GameBoss4(gameContainer, () => currentLane, () => lanes[currentLane], () => endGame(), () => isJumping);
-        this.bossToggle = 5;
-    } else if (this.bossToggle === 5) {
-        currentBoss = new GameBoss5(gameContainer, () => currentLane, () => lanes[currentLane], () => endGame(), () => isJumping);
-        this.bossToggle = 6;
-    } else {
-        currentBoss = new GameBoss6(gameContainer, () => currentLane, () => lanes[currentLane], () => endGame(), () => isJumping);
-        this.bossToggle = 1; // العودة للزعيم الأول
+    if (!currentBoss) {
+        if (this.bossToggle === 1) {
+            currentBoss = new GameBoss(gameContainer, () => currentLane, () => lanes[currentLane], () => endGame(), () => isJumping);
+            this.bossToggle = 2;
+        } else if (this.bossToggle === 2) {
+            currentBoss = new GameBoss2(gameContainer, () => currentLane, () => lanes[currentLane], () => endGame(), () => isJumping);
+            this.bossToggle = 3;
+        } else if (this.bossToggle === 3) {
+            currentBoss = new GameBoss3(gameContainer, () => currentLane, () => lanes[currentLane], () => endGame(), () => isJumping);
+            this.bossToggle = 4;
+        } else if (this.bossToggle === 4) {
+            currentBoss = new GameBoss4(gameContainer, () => currentLane, () => lanes[currentLane], () => endGame(), () => isJumping);
+            this.bossToggle = 5;
+        } else if (this.bossToggle === 5) {
+            currentBoss = new GameBoss5(gameContainer, () => currentLane, () => lanes[currentLane], () => endGame(), () => isJumping);
+            this.bossToggle = 6;
+        } else {
+            currentBoss = new GameBoss6(gameContainer, () => currentLane, () => lanes[currentLane], () => endGame(), () => isJumping);
+            this.bossToggle = 1;
+        }
     }
-}
 
-
-
-
-
-
-    // مسح الأعداء والعوائق الحالية من الشاشة
     [obstacles, yellowEnemies, triangles, blueCircles].forEach(arr => {
         arr.forEach(el => el.remove());
         arr.length = 0;
@@ -586,15 +585,12 @@ if (!currentBoss) {
             isShieldActive = false;
             powerupStatus.style.display = 'none';
             
-            // تدمير الزعيم الحالي وإضافة 500 نقطة
             if (currentBoss) {
                 currentBoss.destroy();
                 currentBoss = null;
-
-                // إضافة النقاط وتحديث واجهة المستخدم
                 score += 500;
-                if (scoreElement) {
-                    scoreElement.textContent = score;
+                if (scoreDisplay) {
+                    scoreDisplay.textContent = score;
                 }
             }
 
@@ -604,15 +600,34 @@ if (!currentBoss) {
     }, 1000);
 }
 
-
+        // دالة التحديث الخفيفة والمحسنة لمعالجة الرسوميات والحركات بأقل ضغط على المعالج
         function updateGame(currentTime) {
             if (!isGameStarted || isGameOver) return;
-updateGscoreProgressBar();
+            
             let deltaTime = (currentTime - lastTime) / 1000; 
             if (deltaTime > 0.1) deltaTime = 0.1; 
             lastTime = currentTime;            
 
-            // تحديث الزعيم الحالي في كل إطار (Frame) برمجياً عبر اسم الكلاس/المتجر العام
+            updateGscoreProgressBar();
+
+            roadMarkSpawnAccumulator += deltaTime;
+            if (roadMarkSpawnAccumulator > 0.25) {
+                createRoadMark();
+                roadMarkSpawnAccumulator = 0;
+            }
+
+            // حلقة معالجة خفيفة وموحدة للندوب
+            for (let i = roadMarks.length - 1; i >= 0; i--) {
+                let mark = roadMarks[i];
+                let currentTop = parseFloat(mark.style.top) + gameSpeed * deltaTime;
+                mark.style.top = currentTop + 'px';
+
+                if (currentTop > 680) {
+                    mark.remove();
+                    roadMarks.splice(i, 1);
+                }
+            }
+    
             if (currentBoss) currentBoss.update(deltaTime);
 
             if (!isJumping) {
@@ -725,11 +740,9 @@ updateGscoreProgressBar();
             powerupStatus.style.display = 'none';
             if (gameAnimId) cancelAnimationFrame(gameAnimId);
             
-            // === هنا يتم حساب وتحديث أعلى نقاط ===
             let bestScore = checkAndUpdateHighScore(score);
 
             setTimeout(() => {
-                // عرض النقاط الحالية وأعلى نقاط وصلت لها في واجهة الخسارة
                 finalScoreDisplay.innerHTML = `النقاط: ${score} <br> <span style="color: #ffcc00; font-size: 15px;">أعلى نقاط: ${bestScore}</span>`;
                 gameOverScreen.style.display = 'block';
             }, 1000);
@@ -747,6 +760,11 @@ function restartGame() {
 
     gameSpeed = 450;
     [obstacles, yellowEnemies, triangles, blueCircles].forEach(arr => { arr.forEach(el => el.remove()); arr.length = 0; });
+
+    roadMarks.forEach(el => el.remove()); 
+    roadMarks.length = 0;
+    roadMarkSpawnAccumulator = 0;
+
     score = 0; 
     scoreDisplay.textContent = score; 
     currentLane = 1;
@@ -763,24 +781,21 @@ function restartGame() {
     animTimer = runFrame = 0; 
     isJumping = false;
     isGameOver = false;
-    isGameStarted = false; // تعيينها كخطوة أولى قبل تشغيل تأثير البداية
+    isGameStarted = false;
     
     playerContainer.style.bottom = '170px';
     player.style.transform = 'translateY(0)';
     player.style.backgroundPosition = '0% 0%';
     updatePlayerPosition();
     
-    // إخفاء شاشة الخسارة قبل تشغيل تأثير واجهة البدء
     gameOverScreen.style.display = 'none';
 
-    // تشغيل نفس واجهة البداية (StartP) وتأثيراتها الحركية تماماً مثل زر ابدأ اللعب
     const introEffect = new StartP(gameContainer, () => {
         document.getElementById('reset-gscore-btn').style.display = 'block';
         isGameStarted = true;
         lastTime = performance.now();
         gameAnimId = requestAnimationFrame(updateGame);
 
-        // صورة تأثير القفز في منتصف شاشة اللعب فور بدء اللعب
         const jumpEffectImg = document.createElement('div');
         jumpEffectImg.style.position = 'absolute';
         jumpEffectImg.style.top = '50%';
@@ -812,10 +827,9 @@ function restartGame() {
 
     introEffect.start();
 }
-
         
-       function goToStartScreen() {
-document.getElementById('highest-score').textContent = localStorage.getItem('gameHighScore') || 0;
+function goToStartScreen() {
+    document.getElementById('highest-score').textContent = localStorage.getItem('gameHighScore') || 0;
 
     if (gameAnimId) cancelAnimationFrame(gameAnimId);
 
@@ -825,19 +839,23 @@ document.getElementById('highest-score').textContent = localStorage.getItem('gam
     }
 
     [obstacles, yellowEnemies, triangles, blueCircles].forEach(arr => { arr.forEach(el => el.remove()); arr.length = 0; });
+    roadMarks.forEach(el => el.remove()); 
+    roadMarks.length = 0;
+    roadMarkSpawnAccumulator = 0;
+
     score = 0; scoreDisplay.textContent = score; currentLane = 1;
-    gscore = -400;              // ← أضف هذا السطر
-    updateGscoreProgressBar(); // ← أضف هذا السطر
+    gscore = -400;              
+    updateGscoreProgressBar(); 
     isJumping = isGameOver = isGameStarted = isShieldActive = false;
 
-            powerupStatus.style.display = 'none';
-            player.style.filter = "none";
-            playerContainer.style.bottom = '170px';
-            player.style.transform = 'translateY(0)';
-            updatePlayerPosition();
-            gameOverScreen.style.display = 'none';
-            startScreen.style.display = 'flex';
-        }
+    powerupStatus.style.display = 'none';
+    player.style.filter = "none";
+    playerContainer.style.bottom = '170px';
+    player.style.transform = 'translateY(0)';
+    updatePlayerPosition();
+    gameOverScreen.style.display = 'none';
+    startScreen.style.display = 'flex';
+}
     </script>
 </body>
 </html>
