@@ -66,5 +66,7 @@ p(2500,550) s(300,180) "اول اصدار من لعبة الفهد العداء"
 cheetah_run.zip
 p(2500,750) s(300,180) "ثاني اصدار من لعبة الفهد العداء"
 cheetah_run_power.zip
+p(2500,950) s(300,180) "ثالث اصدار من لعبة الفهد العداء"
+cheetah_run_x.zip
 p(2150,350) s(300,180) "مسابقة افضل شعار للعبة. مدتها اربعة ايام"
 https://fhgdhgvhggvfgg.github.io/Cpe-cheetah-/cheetah_run/racers/index.html&&racers_p.png
