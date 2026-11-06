@@ -13,13 +13,20 @@ class GameBoss6 {
 
         this.injectStyles();
 
+        // جلب خلفية صورة اللاعب الحالية ديناميكياً من DOM دون استخدام أي صور خارجية
+        const playerElement = document.getElementById('player');
+        let playerBgImage = 'none';
+        if (playerElement) {
+            playerBgImage = window.getComputedStyle(playerElement).backgroundImage;
+        }
+
         this.bossElement = document.createElement('div');
         this.bossElement.className = 'game-boss-6-element';
+        // استخدام النصف العلوي فقط من سبريت اللاعب لملء شكل البوس مع تأثير الإنارة الحمراء
         this.bossElement.innerHTML = `
-            <div class="boss6-face">
-                <div class="boss6-eye left"></div>
-                <div class="boss6-eye right"></div>
-                <div class="boss6-mouth"></div>
+            <div class="boss6-image-container">
+                <div class="boss6-red-glow-effect"></div>
+                <div class="boss6-character-half" style="background-image: ${playerBgImage};"></div>
             </div>
         `;
         this.gameContainer.appendChild(this.bossElement);
@@ -51,38 +58,60 @@ class GameBoss6 {
                 top: 20px;
                 left: 15px;
                 width: 410px;
-                height: 120px;
-                background: rgba(142, 68, 173, 0.35);
-                border: 4px solid rgba(241, 196, 15, 0.6);
-                box-shadow: 0 0 25px rgba(231, 76, 60, 0.4);
+                height: 140px;
+                background: transparent;
+                border: none;
+                box-shadow: none;
                 border-radius: 12px;
                 z-index: 15;
-                opacity: 0.4;
+                opacity: 1;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 pointer-events: none;
             }
-            .boss6-face {
+            .boss6-image-container {
+                position: relative;
+                width: 100%;
+                height: 100%;
                 display: flex;
-                flex-direction: column;
                 align-items: center;
-                gap: 15px;
+                justify-content: center;
             }
-            .boss6-eye {
-                width: 25px;
-                height: 25px;
-                background: #00ffff;
+            /* تأثير الإنارة الحمراء القوية (Red Lighting Effect) */
+            .boss6-red-glow-effect {
+                position: absolute;
+                inset: 0;
+                background: radial-gradient(circle, rgba(231, 76, 60, 0.8) 0%, rgba(192, 57, 43, 0.4) 50%, transparent 80%);
+                box-shadow: 0 0 35px 15px rgba(255, 0, 0, 0.7), inset 0 0 20px rgba(255, 69, 0, 0.9);
                 border-radius: 50%;
-                box-shadow: 0 0 10px #00ffff;
-                display: inline-block;
-                margin: 0 15px;
+                animation: bossRedPulse 1.5s infinite alternate;
+                z-index: 1;
             }
-            .boss6-mouth {
-                width: 120px;
-                height: 12px;
-                background: #f39c12;
-                border-radius: 6px;
+            /* النصف العلوي من صورة اللاعب لملء شكل البوس مع الفلتر والتوهج الأحمر */
+            .boss6-character-half {
+                position: relative;
+                width: 110px;
+                height: 110px;
+                background-size: 200% 400%;
+                background-position: 0% 0%; /* النصف العلوي فقط */
+                border-radius: 50%;
+                z-index: 2;
+                border: 3px solid rgba(255, 0, 0, 0.8);
+                box-shadow: 0 0 15px rgba(255, 0, 0, 0.9);
+                filter: drop-shadow(0 0 12px rgba(255, 0, 0, 0.9)) brightness(0.9) sepia(1) hue-rotate(-50deg) saturate(4);
+            }
+            @keyframes bossRedPulse {
+                0% {
+                    transform: scale(0.95);
+                    opacity: 0.7;
+                    box-shadow: 0 0 25px 10px rgba(255, 0, 0, 0.6);
+                }
+                100% {
+                    transform: scale(1.1);
+                    opacity: 1;
+                    box-shadow: 0 0 45px 20px rgba(255, 0, 0, 0.9);
+                }
             }
             .boss6-white-circle {
                 position: absolute;
@@ -124,7 +153,6 @@ class GameBoss6 {
         if (!this.bossElement) return;
 
         let circle;
-        // إعادة استخدام عنصر مخزن بدلاً من إنشاء عنصر جديد لتفريغ الـ RAM
         if (this.whiteCirclePool.length > 0) {
             circle = this.whiteCirclePool.pop();
             circle.style.display = 'block';
@@ -151,7 +179,6 @@ class GameBoss6 {
         const targetClass = isYellow ? 'boss6-arrow-yellow' : 'boss6-arrow-red';
 
         let arrow;
-        // إعادة استخدام الأسهم من الحوض المخزن
         if (this.arrowPool.length > 0) {
             arrow = this.arrowPool.pop();
             arrow.className = targetClass;
@@ -195,7 +222,7 @@ class GameBoss6 {
             let playerLane = typeof this.getPlayerLane === 'function' ? this.getPlayerLane() : 1;
 
             if (currentTop >= 370 && currentTop <= 480 && circLane === playerLane) {
-                circ.style.display = 'none'; // إخفاء وإرجاع للحوض بدلاً من الحذف
+                circ.style.display = 'none';
                 this.whiteCirclePool.push(circ);
                 this.whiteCircles.splice(i, 1);
                 this.bossTop -= 66;
@@ -267,7 +294,6 @@ class GameBoss6 {
             this.arrowInterval = null;
         }
 
-        // إزالة وتفريغ العناصر نهائياً عند انتهاء البوس
         this.whiteCircles.forEach(c => c.remove());
         this.whiteCircles = [];
         this.whiteCirclePool.forEach(c => c.remove());
