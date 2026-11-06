@@ -27,6 +27,10 @@ class GameBoss6 {
         this.whiteCircles = [];
         this.arrows = [];
 
+        // Object Pools لتقليل إنشاء عناصر DOM واستهلاك الـ RAM
+        this.whiteCirclePool = [];
+        this.arrowPool = [];
+
         this.circleInterval = setInterval(() => {
             this.spawnWhiteCircle();
         }, 1200);
@@ -90,31 +94,28 @@ class GameBoss6 {
                 z-index: 14;
                 pointer-events: none;
             }
-            /* السهم الأصفر المثلث: رأسه الحاد موجه للأسفل نحو اللاعب */
             .boss6-arrow-yellow {
                 position: absolute;
                 width: 0;
                 height: 0;
                 border-left: 40px solid transparent;
                 border-right: 40px solid transparent;
-                border-top: 52px solid #f1c40f; /* القاعدة للأعلى ورأس المثلث الحاد لأسفل */
+                border-top: 52px solid #f1c40f;
                 filter: drop-shadow(0 0 8px #f1c40f);
                 z-index: 16;
                 pointer-events: none;
             }
-            /* السهم الأحمر المثلث: رأسه الحاد موجه للأسفل نحو اللاعب */
             .boss6-arrow-red {
                 position: absolute;
                 width: 0;
                 height: 0;
                 border-left: 40px solid transparent;
                 border-right: 40px solid transparent;
-                border-top: 52px solid #e74c3c; /* القاعدة للأعلى ورأس المثلث الحاد لأسفل */
+                border-top: 52px solid #e74c3c;
                 filter: drop-shadow(0 0 8px #e74c3c);
-                z-index: 1; /* قم بتغيير هذه القيمة من 10 إلى 1 (أو أقل من طبقة اللاعب) */
+                z-index: 1;
                 pointer-events: none;
             }
-
         `;
         document.head.appendChild(style);
     }
@@ -122,43 +123,55 @@ class GameBoss6 {
     spawnWhiteCircle() {
         if (!this.bossElement) return;
 
-        const circle = document.createElement('div');
-        circle.className = 'boss6-white-circle';
+        let circle;
+        // إعادة استخدام عنصر مخزن بدلاً من إنشاء عنصر جديد لتفريغ الـ RAM
+        if (this.whiteCirclePool.length > 0) {
+            circle = this.whiteCirclePool.pop();
+            circle.style.display = 'block';
+        } else {
+            circle = document.createElement('div');
+            circle.className = 'boss6-white-circle';
+            this.gameContainer.appendChild(circle);
+        }
 
         const randomLaneIndex = Math.floor(Math.random() * 3);
         const startX = this.lanes[randomLaneIndex] + 12; 
 
         circle.style.left = startX + 'px';
-        // جعل الدائرة البيضاء تنطلق من بداية الشاشة العلوية (0) تماماً
         circle.style.top = '0px'; 
         circle.dataset.lane = randomLaneIndex;
 
-        this.gameContainer.appendChild(circle);
         this.whiteCircles.push(circle);
     }
 
-        spawnArrow() {
+    spawnArrow() {
         if (!this.bossElement) return;
 
-        const arrow = document.createElement('div');
-        
-        // اختيار نوع السهم عشوائياً (أصفر أو أحمر)
         const isYellow = Math.random() < 0.5;
-        arrow.className = isYellow ? 'boss6-arrow-yellow' : 'boss6-arrow-red';
+        const targetClass = isYellow ? 'boss6-arrow-yellow' : 'boss6-arrow-red';
+
+        let arrow;
+        // إعادة استخدام الأسهم من الحوض المخزن
+        if (this.arrowPool.length > 0) {
+            arrow = this.arrowPool.pop();
+            arrow.className = targetClass;
+            arrow.style.display = 'block';
+        } else {
+            arrow = document.createElement('div');
+            arrow.className = targetClass;
+            this.gameContainer.appendChild(arrow);
+        }
 
         const randomLaneIndex = Math.floor(Math.random() * 3);
-        const startX = this.lanes[randomLaneIndex] + 10; // توسيط السهم المثلث في المسار
+        const startX = this.lanes[randomLaneIndex] + 10;
 
         arrow.style.left = startX + 'px';
-        // جعل السهم ينطلق من بداية الشاشة العلوية (0) وليس من موقع البوس
         arrow.style.top = '0px'; 
         arrow.dataset.lane = randomLaneIndex;
         arrow.dataset.type = isYellow ? 'yellow' : 'red';
 
-        this.gameContainer.appendChild(arrow);
         this.arrows.push(arrow);
     }
-
 
     checkAndLimitBossPosition() {
         if (this.bossTop < -100) {
@@ -182,7 +195,8 @@ class GameBoss6 {
             let playerLane = typeof this.getPlayerLane === 'function' ? this.getPlayerLane() : 1;
 
             if (currentTop >= 370 && currentTop <= 480 && circLane === playerLane) {
-                circ.remove();
+                circ.style.display = 'none'; // إخفاء وإرجاع للحوض بدلاً من الحذف
+                this.whiteCirclePool.push(circ);
                 this.whiteCircles.splice(i, 1);
                 this.bossTop -= 66;
                 this.checkAndLimitBossPosition();
@@ -190,7 +204,8 @@ class GameBoss6 {
             }
 
             if (currentTop > 680) {
-                circ.remove();
+                circ.style.display = 'none';
+                this.whiteCirclePool.push(circ);
                 this.whiteCircles.splice(i, 1);
             }
         }
@@ -207,7 +222,8 @@ class GameBoss6 {
 
             if (currentTop >= 380 && currentTop <= 470 && arrowLane === playerLane) {
                 if (arrowType === 'yellow' && isJumping) {
-                    arrow.remove();
+                    arrow.style.display = 'none';
+                    this.arrowPool.push(arrow);
                     this.arrows.splice(i, 1);
                     this.destroy();
                     if (typeof this.onHitPlayer === 'function') {
@@ -215,7 +231,8 @@ class GameBoss6 {
                     }
                     return;
                 } else if (arrowType === 'red' && !isJumping) {
-                    arrow.remove();
+                    arrow.style.display = 'none';
+                    this.arrowPool.push(arrow);
                     this.arrows.splice(i, 1);
                     this.destroy();
                     if (typeof this.onHitPlayer === 'function') {
@@ -226,7 +243,8 @@ class GameBoss6 {
             }
 
             if (currentTop > 680) {
-                arrow.remove();
+                arrow.style.display = 'none';
+                this.arrowPool.push(arrow);
                 this.arrows.splice(i, 1);
             }
         }
@@ -249,11 +267,16 @@ class GameBoss6 {
             this.arrowInterval = null;
         }
 
+        // إزالة وتفريغ العناصر نهائياً عند انتهاء البوس
         this.whiteCircles.forEach(c => c.remove());
         this.whiteCircles = [];
+        this.whiteCirclePool.forEach(c => c.remove());
+        this.whiteCirclePool = [];
 
         this.arrows.forEach(a => a.remove());
         this.arrows = [];
+        this.arrowPool.forEach(a => a.remove());
+        this.arrowPool = [];
 
         if (this.bossElement) {
             this.bossElement.remove();
