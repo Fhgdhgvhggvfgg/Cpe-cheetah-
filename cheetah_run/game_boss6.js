@@ -8,20 +8,18 @@ class GameBoss6 {
         this.isPlayerJumping = isPlayerJumping;
 
         this.lanes = [320, 170, 30];
-        this.bossTop = -100;
+        this.bossTop = -164;
         this.approachSpeed = 6;
 
         this.injectStyles();
 
-        // ✅ الحل: جلب الصورة من localStorage أولاً (المصدر الموثوق)
-        // ثم fallback إلى #white-box-icon، ثم إلى الصورة الافتراضية
+        // ✅ جلب الصورة من localStorage أولاً (المصدر الموثوق)
         let playerBgImage = this.getPlayerProfileImage();
 
         this.bossElement = document.createElement('div');
         this.bossElement.className = 'game-boss-6-element';
         this.bossElement.innerHTML = `
             <div class="boss6-image-container">
-                <div class="boss6-red-glow-effect"></div>
                 <div class="boss6-character-profile" id="boss6-profile-img" style="background-image: ${playerBgImage};"></div>
             </div>
         `;
@@ -53,13 +51,11 @@ class GameBoss6 {
 
     // ✅ دالة موحّدة لجلب صورة البروفايل بنفس طريقة #white-box-icon
     getPlayerProfileImage() {
-        // 1) المصدر الأول: localStorage (نفس ما يستخدمه CharacterManager)
         const stored = localStorage.getItem('selectedPlayerImage');
         if (stored) {
             return `url('${stored}')`;
         }
 
-        // 2) المصدر الثاني: #white-box-icon (إن وُجد)
         const whiteBoxIcon = document.getElementById('white-box-icon');
         if (whiteBoxIcon) {
             const computed = window.getComputedStyle(whiteBoxIcon).backgroundImage;
@@ -68,7 +64,6 @@ class GameBoss6 {
             }
         }
 
-        // 3) المصدر الثالث: صورة اللاعب نفسها
         const playerEl = document.getElementById('player');
         if (playerEl) {
             const computed = window.getComputedStyle(playerEl).backgroundImage;
@@ -77,136 +72,116 @@ class GameBoss6 {
             }
         }
 
-        // 4) الافتراضي
         return "url('players/jamaica.png')";
     }
-injectStyles() {
-    if (document.getElementById('game-boss-6-styles')) return;
 
-    const style = document.createElement('style');
-    style.id = 'game-boss-6-styles';
-    style.innerHTML = `
-        .game-boss-6-element {
-            position: absolute;
-            top: 20px;
-            left: 15px;
-            width: 410px;
-            height: 140px;
-            background: transparent;
-            border: none;
-            box-shadow: none;
-            border-radius: 12px;
-            z-index: 15;
-            opacity: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            pointer-events: none;
-        }
-        .boss6-image-container {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        /* ✅ الهالة الحمراء أصبحت أقوى وأكثر وضوحاً */
-        .boss6-red-glow-effect {
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(circle, rgba(231, 76, 60, 0.9) 0%, rgba(192, 57, 43, 0.5) 55%, transparent 85%);
-            box-shadow: 0 0 40px 15px rgba(255, 0, 0, 0.75),
-                        inset 0 0 30px rgba(255, 0, 0, 0.4);
-            border-radius: 12px;
-            z-index: 1;
-            pointer-events: none;
-            animation: boss6PulseRed 1.6s ease-in-out infinite;
-        }
-        /* ✅ نبض خفيف للهالة الحمراء */
-        @keyframes boss6PulseRed {
-            0%, 100% { opacity: 0.85; }
-            50%      { opacity: 1; }
-        }
-        /* ✅ صورة الشخصية: إطار أحمر + توهج أحمر بدل الأزرق */
-        .boss6-character-profile {
-            position: relative;
-            width: 120px;
-            height: 120px;
-            background-size: 200% 400%;
-            background-position: 100% 100%;
-            background-repeat: no-repeat;
-            border-radius: 6px;
-            z-index: 2;
-            border: 3px solid #ff2a2a;
-            box-shadow: 0 0 15px #ff2a2a,
-                        0 0 30px rgba(255, 0, 0, 0.9),
-                        0 0 50px rgba(255, 0, 0, 0.55);
-            /* ✅ تطبيق الفلتر الأحمر على الصورة نفسها */
-            filter: drop-shadow(0 0 10px #ff0000) saturate(1.3) contrast(1.15);
-            animation: boss6ProfilePulse 1.4s ease-in-out infinite;
-        }
-        /* ✅ طبقة حمراء شفافة فوق الصورة لتعزيز التأثير الأحمر */
-        .boss6-character-profile::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 4px;
-            background: rgba(255, 0, 0, 0.18);
-            mix-blend-mode: overlay;
-            pointer-events: none;
-            z-index: 3;
-        }
-        /* ✅ نبض خفيف للصورة نفسها */
-        @keyframes boss6ProfilePulse {
-            0%, 100% {
-                box-shadow: 0 0 15px #ff2a2a,
-                            0 0 30px rgba(255, 0, 0, 0.9),
-                            0 0 50px rgba(255, 0, 0, 0.55);
-                filter: drop-shadow(0 0 10px #ff0000) saturate(1.3) contrast(1.15);
+    injectStyles() {
+        if (document.getElementById('game-boss-6-styles')) return;
+
+        const style = document.createElement('style');
+        style.id = 'game-boss-6-styles';
+        style.innerHTML = `
+            .game-boss-6-element {
+                position: absolute;
+                top: 20px;
+                left: 15px;
+                width: 410px;
+                height: 140px;
+                background: transparent;
+                border: none;
+                box-shadow: none;
+                border-radius: 12px;
+                z-index: 15;
+                opacity: 1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                pointer-events: none;
             }
-            50% {
-                box-shadow: 0 0 22px #ff2a2a,
-                            0 0 45px rgba(255, 0, 0, 1),
-                            0 0 70px rgba(255, 0, 0, 0.75);
-                filter: drop-shadow(0 0 16px #ff0000) saturate(1.5) contrast(1.2);
+            .boss6-image-container {
+                position: relative;
+                width: 100%;
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
             }
-        }
-        .boss6-white-circle {
-            position: absolute;
-            width: 40px;
-            height: 40px;
-            background: #ffffff;
-            border-radius: 50%;
-            box-shadow: 0 0 15px #ffffff, inset 0 0 8px #00ccff;
-            z-index: 14;
-            pointer-events: none;
-        }
-        .boss6-arrow-yellow {
-            position: absolute;
-            width: 0;
-            height: 0;
-            border-left: 40px solid transparent;
-            border-right: 40px solid transparent;
-            border-top: 52px solid #f1c40f;
-            filter: drop-shadow(0 0 8px #f1c40f);
-            z-index: 16;
-            pointer-events: none;
-        }
-        .boss6-arrow-red {
-            position: absolute;
-            width: 0;
-            height: 0;
-            border-left: 40px solid transparent;
-            border-right: 40px solid transparent;
-            border-top: 52px solid #e74c3c;
-            filter: drop-shadow(0 0 8px #e74c3c);
-            z-index: 1;
-            pointer-events: none;
-        }
-    `;
-    document.head.appendChild(style);
-}
+            /* ✅ صورة الشخصية: الحفاظ على نفس المقاسات مع استبدال التوهج الخارجي بحدود خطوط حمراء */
+            .boss6-character-profile {
+                position: relative;
+                width: 300px;
+                height: 200px;
+                background-size: 200% 600%;
+                background-position: 100% 90%;
+                background-repeat: no-repeat;
+                border-radius: 6px;
+                opacity: 0.7;
+                z-index: 2;
+                border: 3px solid #ff2a2a;
+                box-shadow: 0 0 12px #ff2a2a,
+                            inset 0 0 8px rgba(255, 0, 0, 0.6);
+                filter: saturate(1.3) contrast(1.15);
+                animation: boss6ProfilePulse 1.4s ease-in-out infinite;
+            }
+            /* ✅ طبقة حمراء خفيفة فوق الصورة لتعزيز المظهر */
+            .boss6-character-profile::after {
+                content: '';
+                position: absolute;
+                inset: 0;
+                border-radius: 4px;
+                background: rgba(255, 0, 0, 0.12);
+                mix-blend-mode: overlay;
+                pointer-events: none;
+                z-index: 3;
+            }
+            /* ✅ نبض خفيف لخطوط الحدود الحمراء فقط دون تأثيرات خارجية ضخمة */
+            @keyframes boss6ProfilePulse {
+                0%, 100% {
+                    border-color: #ff2a2a;
+                    box-shadow: 0 0 10px #ff2a2a,
+                                inset 0 0 6px rgba(255, 0, 0, 0.5);
+                }
+                50% {
+                    border-color: #ff5252;
+                    box-shadow: 0 0 18px #ff2a2a,
+                                inset 0 0 12px rgba(255, 0, 0, 0.8);
+                }
+            }
+            .boss6-white-circle {
+                position: absolute;
+                width: 40px;
+                height: 40px;
+                background: #ffffff;
+                border-radius: 50%;
+                box-shadow: 0 0 15px #ffffff, inset 0 0 8px #00ccff;
+                z-index: 14;
+                pointer-events: none;
+            }
+            .boss6-arrow-yellow {
+                position: absolute;
+                width: 0;
+                height: 0;
+                border-left: 40px solid transparent;
+                border-right: 40px solid transparent;
+                border-top: 52px solid #f1c40f;
+                filter: drop-shadow(0 0 8px #f1c40f);
+                z-index: 16;
+                pointer-events: none;
+            }
+            .boss6-arrow-red {
+                position: absolute;
+                width: 0;
+                height: 0;
+                border-left: 40px solid transparent;
+                border-right: 40px solid transparent;
+                border-top: 52px solid #e74c3c;
+                filter: drop-shadow(0 0 8px #e74c3c);
+                z-index: 1;
+                pointer-events: none;
+            }
+        `;
+        document.head.appendChild(style);
+    }
 
     spawnWhiteCircle() {
         if (!this.bossElement) return;
@@ -260,8 +235,8 @@ injectStyles() {
     }
 
     checkAndLimitBossPosition() {
-        if (this.bossTop < -100) {
-            this.bossTop = -100;
+        if (this.bossTop < -164) {
+            this.bossTop = -164;
         }
     }
 
@@ -335,7 +310,7 @@ injectStyles() {
             }
         }
 
-        if (this.bossTop + 120 >= 430) {
+        if (this.bossTop + 120 >= 373) {
             this.destroy();
             if (typeof this.onHitPlayer === 'function') {
                 this.onHitPlayer();
@@ -352,7 +327,6 @@ injectStyles() {
             clearInterval(this.arrowInterval);
             this.arrowInterval = null;
         }
-        // ✅ إيقاف مراقب الصورة
         if (this.profileImageWatcher) {
             clearInterval(this.profileImageWatcher);
             this.profileImageWatcher = null;
