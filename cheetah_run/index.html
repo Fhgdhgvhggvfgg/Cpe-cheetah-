@@ -4,15 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>game of runner cheetah</title>
-    <!-- تم اضافة استدعاء ملف الزعيم هنا لحل مشكلة عدم التعرف على الكلاس -->
-<script src="game_boss.js"></script>
-<script src="game_boss2.js"></script>
-<script src="game_boss3.js"></script>
-<script src="game_boss4.js"></script>
-<script src="game_boss5.js"></script>
-<script src="start_p.js"></script>
-<script src="game_boss6.js"></script>
 
+<script src="boss/game_boss.js"></script>
+<script src="boss/game_boss2.js"></script>
+<script src="boss/game_boss3.js"></script>
+<script src="boss/game_boss4.js"></script>
+<script src="boss/game_boss5.js"></script>
+<script src="boss/game_boss6.js"></script>
+<script src="gameP/start_p.js"></script>o
 
 
 <script>
@@ -176,7 +175,7 @@
             display: none; z-index: 25; box-shadow: 0 0 10px #00ccff;
         }
     </style>
-    <script src="character.js"></script>
+    <script src="gameP/character.js"></script>
 </head>
 <body>
                      <div class="zoom-buttons-container">
@@ -302,7 +301,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (com === 1) {
         const s = document.createElement('script');
-        s.src = 'mascot.js';
+        s.src = 'gameP/mascot.js';
         document.head.appendChild(s);
     }
 
