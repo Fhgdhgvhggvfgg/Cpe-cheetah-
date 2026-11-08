@@ -1,4 +1,6 @@
-const CACHE_NAME = 'cheetah-runner-v2';
+const CACHE_NAME = 'cheetah-runner-v3';
+
+// قائمة كافة الملحقات والملفات التي يجب تحميلها وتخزينها بالكامل قبل بدء التطبيق
 const assetsToCache = [
   './',
   'indexR.html',
@@ -22,23 +24,30 @@ const assetsToCache = [
   'boss/game_boss6.js'
 ];
 
-// تثبيت الخدمة وتخزين كافة الملفات في الذاكرة الدائمة للمتصفح
+// 1. مرحلة التثبيت الإجباري: تحميل كافة الملحقات قبل تفعيل التطبيق
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
+      console.log('🔄 جاري تحميل وتخزين كافة ملحقات التطبيق مسبقاً...');
+      // cache.addAll تجلب كل الملفات دفعة واحدة وتنتظر اكتمالها
       return cache.addAll(assetsToCache);
+    }).then(() => {
+      console.log('✅ تم تحميل وتخزين كافة الملحقات بنجاح!');
+      return self.skipWaiting(); // الانتقال للتفعيل فوراً
+    }).catch((error) => {
+      console.error('❌ فشل في تحميل بعض الملحقات أثناء التثبيت:', error);
     })
   );
-  self.skipWaiting();
 });
 
-// تفعيل النسخة الجديدة وحذف الكاش القديم إن وجد
+// 2. تفعيل النسخة الجديدة وحذف الكاش القديم إن وجد
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
         keys.map((key) => {
           if (key !== CACHE_NAME) {
+            console.log('🗑️ حذف الكاش القديم:', key);
             return caches.delete(key);
           }
         })
@@ -48,7 +57,7 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// اعتراض الطلبات لجلبها من الذاكرة المحلية (الدائمة) في حال انقطاع الإنترنت
+// 3. اعتراض الطلبات وجلبها مباشرة من الذاكرة المحلية
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
@@ -56,7 +65,10 @@ self.addEventListener('fetch', (event) => {
         return cachedResponse;
       }
       return fetch(event.request).catch(() => {
-        // يمكن إرجاع صفحة بديلة هنا إذا لزم الأمر في حال فشل الاتصال وعدم توفر الملف
+        // إذا انقطع الإنترنت ولم يتم العثور على الملف، يمكن إرجاع الصفحة الرئيسية
+        if (event.request.mode === 'navigate') {
+          return caches.match('./indexR.html');
+        }
       });
     })
   );
