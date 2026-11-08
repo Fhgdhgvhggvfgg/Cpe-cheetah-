@@ -1,2 +1,0 @@
-mascot.js
-mascot2.js
