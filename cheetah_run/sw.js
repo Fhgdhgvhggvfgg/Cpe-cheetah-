@@ -1,7 +1,7 @@
 const CACHE_NAME = 'cheetah-runner-v2';
 const assetsToCache = [
   './',
-  'index.html',
+  'indexR.html',
   'manifest.json',
   'runer.png',
   'game_m.mp3',

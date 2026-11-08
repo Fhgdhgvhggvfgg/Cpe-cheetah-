@@ -954,7 +954,7 @@ document.querySelectorAll('.control-btn').forEach(btn => {
   // التحقق من دعم المتصفح لـ Service Worker وتسجيله
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js')
+      navigator.serviceWorker.register('./sw2.js')
         .then((registration) => {
           console.log('✅ تم تسجيل Service Worker بنجاح مع النطاق: ', registration.scope);
         })
