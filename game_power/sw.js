@@ -9,14 +9,14 @@ const assetsToCache = [
   './ranav_ingdom.png',
   './menu.png',
   './player_f.png',
-  './js/main.js'
-  './js/UIManager.js'
-  './js/InputHandler.js'
-  './js/StorageManager.js'
+  './js/main.js',
+  './js/UIManager.js',
+  './js/InputHandler.js',
+  './js/StorageManager.js',
   './js/GameCore.js'
 ];
 
-// تثبيت الخدمة وتخزين كافة الملفات في الذاكرة الدائمة
+// تثبيت الخدمة وتخزين كافة الملفات في الذاكرة الدائمة للمتصفح
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -42,15 +42,16 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// اعتراض الطلبات لجلبها من الذاكرة المحلية في حال انقطاع الإنترنت
+// اعتراض الطلبات لجلبها من الذاكرة المحلية (Cache) في حال انقطاع الإنترنت أو لتسريع التحميل
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
+      // إرجاع الملف من الذاكرة إذا وجد، وإلا جلبه من الشبكة
       if (cachedResponse) {
         return cachedResponse;
       }
       return fetch(event.request).catch(() => {
-        // العودة للبيانات المخزنة عند غياب الإنترنت
+        // يمكنك هنا إرجاع صفحة بديلة (Fallback) في حال انقطاع الإنترنت ولم يكن الملف مخزناً
       });
     })
   );
