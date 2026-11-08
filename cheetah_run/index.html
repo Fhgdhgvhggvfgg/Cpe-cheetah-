@@ -488,22 +488,17 @@ let animTimer = 0, runFrame = 0, gameAnimId = null; // تم حذف lastTime من
 
         updatePlayerPosition();
 
-// تفعيل القدرة الخارقة عند الضغط على زر الماوس الأيسر
-window.addEventListener('mousedown', (e) => {
-    // التأكد من أن النقر بالزر الأيسر فقط (button === 0) وأن اللعبة قد بدأت
-    if (e.button === 0 && isGameStarted && !isGameOver) {
-        resetGscore();
-    }
+
+document.addEventListener('keydown', (e) => {
+    if (!isGameStarted || isGameOver) return;
+    
+    if (e.key === 'ArrowRight') moveRight();
+    else if (e.key === 'ArrowLeft') moveLeft();
+    else if (e.key === 'ArrowUp') jump();
+    else if (e.key === 'ArrowDown') resetJumpCounters();
+    else if (e.key === 'Shift')   resetGscore(); 
 });
 
-
-        document.addEventListener('keydown', (e) => {
-            if (!isGameStarted || isGameOver) return;
-            if (e.key === 'ArrowRight') moveRight();
-            else if (e.key === 'ArrowLeft') moveLeft();
-            else if (e.key === 'ArrowUp') jump();
-            else if (e.key === 'ArrowDown') resetJumpCounters();
-        });
 
         gameContainer.addEventListener('touchstart', (e) => {
             touchStartX = e.changedTouches[0].screenX;
