@@ -415,17 +415,47 @@
     </div>
 
 <script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js')
-        .then((reg) => {
-          console.log('✅ Service Worker registered successfully:', reg.scope);
-        })
-        .catch((err) => {
-          console.log('❌ Service Worker registration failed:', err);
-        });
+// التقاط حدث إمكانية التثبيت
+window.addEventListener('beforeinstallprompt', (e) => {
+    // منع المتصفح من إظهار الإشعار الافتراضي تلقائياً
+    e.preventDefault();
+    // الاحتفاظ بالحدث لاستخدامه لاحقاً
+    deferredPrompt = e;
+    // إظهار زر التثبيت الخاص بك للمستخدم
+    if (installBtn) {
+        installBtn.style.display = 'block';
+    }
+});
+
+// دالة تنفيذ التثبيت عند ضغط المستخدم على الزر
+function installApp() {
+    if (!deferredPrompt) return;
+    
+    // إظهار موجه التثبيت الرسمي للمستخدم
+    deferredPrompt.prompt();
+    
+    // معرفة اختيار المستخدم (هل قام بالتثبيت أم إلغاء الأمر؟)
+    deferredPrompt.userChoice.then((choiceResult) => {
+        if (choiceResult.outcome === 'accepted') {
+            console.log('المستخدم وافق على تثبيت التطبيق');
+        } else {
+            console.log('المستخدم رفض تثبيت التطبيق');
+        }
+        deferredPrompt = null;
+        // إخفاء الزر بعد التثبيت أو المحاولة
+        if (installBtn) {
+            installBtn.style.display = 'none';
+        }
     });
-  }
+}
+
+// مراقبة ما إذا تم تثبيت التطبيق بالفعل لإخفاء الزر
+window.addEventListener('appinstalled', (evt) => {
+    console.log('تم تثبيت التطبيق بنجاح');
+    if (installBtn) {
+        installBtn.style.display = 'none';
+    }
+});
 </script>
 
 
