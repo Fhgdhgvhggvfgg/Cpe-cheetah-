@@ -11,6 +11,8 @@ self.addEventListener('install', (event) => {
         './favicon.png',
         './button.png',
         './menu.png',
+        './creative_bg.mp3',
+        './survival_bg.mp3',
         './player_f.png',
         './js/main.js',
         './js/UIManager.js',
