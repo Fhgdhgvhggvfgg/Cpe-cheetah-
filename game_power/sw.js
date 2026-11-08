@@ -1,4 +1,4 @@
-const CACHE_NAME = 'keven-cheetah-v1';
+const CACHE_NAME = 'keven-cheetah-v2';
 const assetsToCache = [
   './',
   './index.html',
@@ -16,8 +16,7 @@ const assetsToCache = [
   './js/GameCore.js'
 ];
 
-
-// تثبيت الخدمة وتخزين الملفات في الذاكرة الدائمة
+// تثبيت الخدمة وتخزين كافة الملفات في الذاكرة الدائمة
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -27,7 +26,7 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// تفعيل الخدمة وتنظيف التخزين القديم إن وجد
+// تفعيل النسخة الجديدة وحذف الكاش القديم إن وجد
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -43,7 +42,7 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// اعتراض الطلبات لجلب الملفات من الذاكرة عندما لا يوجد إنترنت
+// اعتراض الطلبات لجلبها من الذاكرة المحلية في حال انقطاع الإنترنت
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
@@ -51,7 +50,7 @@ self.addEventListener('fetch', (event) => {
         return cachedResponse;
       }
       return fetch(event.request).catch(() => {
-        // إذا فشل الاتصال ولم يكن الملف مخزناً، يمكنك إرجاع صفحة بديلة أو تجاهل
+        // العودة للبيانات المخزنة عند غياب الإنترنت
       });
     })
   );

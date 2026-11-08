@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
 
-<link rel="manifest" href="./manifest.json">
+<link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#1a1a1a">
 
 <link rel="icon" type="image/png" href="favicon.png">
@@ -397,6 +397,11 @@
     <img src="favicon.png" alt="Game Logo" class="fade-in-element" style="max-width: 220px; margin-bottom: 20px; image-rendering: pixelated;">    
     <h1 class="fade-in-element" style="color: white; margin-bottom: 20px;">keven 01</h1>
     <button id="startBtn" class="menu-btn fade-in-element" style="background: url('button.png') no-repeat center/contain !important; width: 150px; height: 50px; cursor: pointer;">ابدأ اللعب</button>
+    <button id="install-btn" style="display: none; background: #00ccff; color: #000; padding: 12px 20px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; margin: 10px auto;" onclick="installApp()">
+    ثبت اللعبة لتلعبها<br>
+    <span style="font-size: 14px; font-weight: normal;">بدون انترنت وفي الذاكرة الرئيسية</span>
+</button>
+
 </div>
 
 
@@ -432,6 +437,40 @@ window.addEventListener('load', async function() {
         await new Promise(r => setTimeout(r, 100));
         retries++;
     }
+    
+    let deferredPrompt;
+const installBtn = document.getElementById('install-btn');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (installBtn) {
+        installBtn.style.display = 'block';
+    }
+});
+
+function installApp() {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then((choiceResult) => {
+        if (choiceResult.outcome === 'accepted') {
+            console.log('المستخدم وافق على تثبيت التطبيق');
+        }
+        deferredPrompt = null;
+        if (installBtn) {
+            installBtn.style.display = 'none';
+        }
+    });
+}
+
+window.addEventListener('appinstalled', (evt) => {
+    console.log('تم تثبيت التطبيق بنجاح في الذاكرة الرئيسية');
+    if (installBtn) {
+        installBtn.style.display = 'none';
+    }
+});
+
+    
     
     // الحصول على صورة اللاعب من IndexedDB أو localStorage
     let imgData = null;
