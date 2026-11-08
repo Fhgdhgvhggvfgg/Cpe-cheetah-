@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#1a1a1a">
+
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="apple-touch-icon" href="favicon.png">
     <meta charset="UTF-8">
@@ -404,6 +408,21 @@
 <img id="quickShowPlayer" style="max-width: none; border: 5px solid #ffffff; border-radius: 8px; display: none; background: url('player_f.png') no-repeat center center; background-size: cover;">
         <div id="frameValDisplay" style="color: #f39c12; font-size: 14px; margin-top: 5px; font-weight: bold;"></div>
     </div>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then((reg) => {
+          console.log('✅ Service Worker registered successfully:', reg.scope);
+        })
+        .catch((err) => {
+          console.log('❌ Service Worker registration failed:', err);
+        });
+    });
+  }
+</script>
+
 
 <script>
 window.addEventListener('load', async function() {
