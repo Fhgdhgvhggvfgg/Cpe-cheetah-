@@ -70,3 +70,5 @@ p(2500,950) s(300,180) "ثالث اصدار من لعبة الفهد العدا�
 cheetah_run_x.zip
 p(2150,350) s(300,180) "مسابقة افضل شعار للعبة. مدتها اربعة ايام"
 https://fhgdhgvhggvfgg.github.io/Cpe-cheetah-/cheetah_run/racers/index.html&&racers_p.png
+p(2900,350) s(1000,1300) "وهذا هو الفائز بالمسابقة"
+https://www.tiktok.com/@iq_13k?_r=1&_t=ZS-9BESWSiLGoW&&photo5.png
