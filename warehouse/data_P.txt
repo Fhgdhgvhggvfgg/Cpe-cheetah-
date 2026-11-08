@@ -61,7 +61,7 @@ https://fhgdhgvhggvfgg.github.io/Cpe-cheetah-/cheetah-m/index.html&&mindustry-pa
 p(1200,500) s(300,400) "new character"
 https://www.tiktok.com/@noxl_cat?_r=1&_t=ZS-9AifQ7UDNLB&&jullya_t.png
 p(2150,550) s(300,400) "لعبة الفهد العداء"
-https://fhgdhgvhggvfgg.github.io/Cpe-cheetah-/cheetah_run/&&cheetah_jump_p.png
+https://fhgdhgvhggvfgg.github.io/Cpe-cheetah-/cheetah_run/indexR.html&&cheetah_jump_p.png
 p(2500,550) s(300,180) "اول اصدار من لعبة الفهد العداء"
 cheetah_run.zip
 p(2500,750) s(300,180) "ثاني اصدار من لعبة الفهد العداء"
