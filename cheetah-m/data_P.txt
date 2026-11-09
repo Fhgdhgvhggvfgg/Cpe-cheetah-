@@ -58,3 +58,5 @@ p(0,-200) s(350,500) "صممي شخصيتكي الفهدة💕."
 https://fhgdhgvhggvfgg.github.io/Cpe-cheetah-/edit_ch/index.html&&edit_ch.png
 p(3600,500) s(550,850) "الفائز بفانارت الشهر 💕😻🔥."
 https://www.tiktok.com/@yasmin.wasef2?_r=1&_t=ZS-9B2BSTVhGI0&&lora_fanart_diamond.png
+p(4000,1450) s(300,440) "فانارت يدوي من صديقي المميز."
+https://www.tiktok.com/@laith.al.jarjari?_r=1&_t=ZS-9BGp3I4TcH7&&fanart_e.png
