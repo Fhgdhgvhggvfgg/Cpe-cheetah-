@@ -38,10 +38,26 @@ async function fetchWithRetry(url, retries = 3) {
   throw new Error(`❌ فشل نهائي في تحميل الملف بعد عدة محاولات: ${url}`);
 }
 
-// 1. مرحلة التثبيت مع نظام إعادة المحاولة التلقائية
+// 1. مرحلة التثبيت: طلب التخزين الدائم مع نظام إعادة المحاولة التلقائية
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(async (cache) => {
+    (async () => {
+      // أ) طلب التخزين الدائم من المتصفح لمنع الحذف التلقائي
+      if (navigator.storage && navigator.storage.persist) {
+        try {
+          const isPersistent = await navigator.storage.persist();
+          if (isPersistent) {
+            console.log("🔒 تم منح صلاحية التخزين الدائم بنجاح.");
+          } else {
+            console.log("⚠️ تم رفض طلب التخزين الدائم أو لم يوافِ المتصفح الشروط.");
+          }
+        } catch (e) {
+          console.warn("⚠️ حدث خطأ أثناء طلب التخزين الدائم:", e);
+        }
+      }
+
+      // ب) بدء التخزين الدائم مع فحص الملفات وإعادة المحاولة
+      const cache = await caches.open(CACHE_NAME);
       console.log('🔄 بدء التخزين الدائم مع فحص الملفات...');
       
       for (let asset of assetsToCache) {
@@ -55,8 +71,9 @@ self.addEventListener('install', (event) => {
       }
       
       console.log('🎉 اكتملت عملية التثبيت وتثبيت كافة الملحقات بنجاح تام!');
-    }).then(() => {
       return self.skipWaiting();
+    })().catch((err) => {
+      console.error('❌ فشل أثناء التثبيت أو طلب التخزين الدائم:', err);
     })
   );
 });
