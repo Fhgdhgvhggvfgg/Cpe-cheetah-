@@ -19,6 +19,7 @@
 <script src="boss/game_boss4.js"></script>
 <script src="boss/game_boss5.js"></script>
 <script src="boss/game_boss6.js"></script>
+<script src="boss/game_boss7.js"></script>
 <script src="gameP/start_p.js"></script>
 
 
@@ -285,7 +286,7 @@
         const timerCount = document.getElementById('timer-count');
         let roadMarks = [];
         let roadMarkSpawnAccumulator = 0;
-        this.bossToggle = 2;
+        this.bossToggle = 7;
         this.mascot_t = 1000;
         updateSelectedPlayer(charManager.currentPlayerImage);
 
@@ -724,8 +725,11 @@ function startBossBattle() {
         } else if (this.bossToggle === 5) {
             currentBoss = new GameBoss5(gameContainer, () => currentLane, () => lanes[currentLane], () => endGame(), () => isJumping);
             this.bossToggle = 6;
-        } else {
+           } else if (this.bossToggle === 6) {
             currentBoss = new GameBoss6(gameContainer, () => currentLane, () => lanes[currentLane], () => endGame(), () => isJumping);
+            this.bossToggle = 7;
+        } else {
+            currentBoss = new GameBoss7(gameContainer, () => currentLane, () => lanes[currentLane], () => endGame(), () => isJumping);
             this.bossToggle = 1;
         }
     }
