@@ -48,6 +48,8 @@ p(1500,1850) s(450,515) "مودات minecraft في media fire"
 https://www.mediafire.com/folder/0beoyon807m2u/Minecraft+mods&&minecraft.png
 p(1000,2150) s(450,270) "وهذا رابط اللعبة للايفون والاندرويد"
 https://www.mediafire.com/folder/0pylhgjl3gxzy/unhappy+raccoon+download&&unhappy_raccoon_D.png
+p(1000,2425) s(450,580) "هذا فانارت من صديقتي 🔥😻"
+https://www.tiktok.com/@yasmin.wasef2?_r=1&_t=ZS-9BK0CHU3uMu&&kitana_fanart.png
 p(0,1650) s(450,470) "هذا رابط اللعبة في مستودع احتياطي على codeberg"
 https://cheetah_art.codeberg.page/Cheetah_engine/game_power/&&codeberg.png
 p(500,1750) s(450,500) "قصة keven الحقيقية. وكيف خسر اطرافه 🔥🦾"
