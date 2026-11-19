@@ -52,6 +52,8 @@ p(3200,1450) s(350,500) "amazing fanart 🔥🌩️☄️."
 https://www.tiktok.com/@noxl_cat?_r=1&_t=ZS-9AifQ7UDNLB&&fanart_4.png
 p(3600,1450) s(350,700) "فان ارت مميز من افضل متابعيني😻"
 https://www.tiktok.com/@2meox?_r=1&_t=ZS-9Anwaz6C4RR&&lora_fanart.png
+p(3600,2200) s(350,560) "فان ارت من معجبة مميزة 😼❤️"
+https://www.tiktok.com/@rodaina_rs2?_r=1&_t=ZS-9BXNKZbQ6xJ&&lisa_fanart.png
 p(3200,900) s(350,500) "lora cute 🔥😻."
 https://www.tiktok.com/@noxl_cat?_r=1&_t=ZS-9AifQ7UDNLB&&lora_fanartC.png
 p(2800,900) s(350,500) "strong jeen 💪😼."
